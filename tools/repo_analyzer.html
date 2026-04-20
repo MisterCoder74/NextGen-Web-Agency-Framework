@@ -4,365 +4,167 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Repo Analyzer — VivacityGPT</title>
-
+<link rel="stylesheet" href="css/global.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #fff;
-  overflow: hidden;
-}
-
-/* ── PAGE ── */
-.page {
-  height: 100vh;
-  display: flex; flex-direction: column;
-  padding: 24px 28px 20px; gap: 16px;
-}
-
-/* ── HEADER ── */
-.page-header { display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0; }
-.icon-badge { font-size: 2.2rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(20,184,166,0.5)); }
-.page-header-text h1 {
-  font-size: 1.4rem; font-weight: 800;
-  background: linear-gradient(90deg, #14b8a6, #67e8f9);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.page-header-text p { font-size: 0.73rem; color: rgba(255,255,255,0.35); margin-top: 3px; font-style: italic; }
-
-hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-
-/* ── INPUT ROW ── */
-.input-row {
-  display: flex; gap: 10px; align-items: center; flex-shrink: 0;
-}
-#repoUrl {
-  flex: 1;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
-  color: #fff; padding: 10px 14px; font-size: 0.88rem;
-  outline: none; transition: border-color 0.2s; font-family: inherit;
-}
-#repoUrl:focus { border-color: rgba(20,184,166,0.5); }
-#repoUrl::placeholder { color: rgba(255,255,255,0.25); }
-
-.btn-analyze {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 10px 20px; border-radius: 10px; font-size: 0.84rem; font-weight: 800;
-  cursor: pointer; border: 1px solid rgba(20,184,166,0.5);
-  background: linear-gradient(90deg, rgba(20,184,166,0.28), rgba(103,232,249,0.18));
-  color: #fff; transition: transform 0.16s, box-shadow 0.16s; white-space: nowrap;
-  font-family: inherit;
-}
-.btn-analyze:hover { transform: scale(1.04); box-shadow: 0 4px 18px rgba(20,184,166,0.3); }
-.btn-analyze:active { transform: scale(0.97); }
-
-/* ── ERROR ── */
-#error {
-  display: none; font-size: 0.78rem; font-weight: 700; padding: 8px 14px;
-  border-radius: 9px; background: rgba(239,68,68,0.1);
-  color: #ff6b6b; border: 1px solid rgba(239,68,68,0.25); flex-shrink: 0;
-}
-
-/* ── LOADING ── */
-#loading {
-  display: none; flex-direction: column; align-items: center;
-  justify-content: center; gap: 10px; flex: 1;
-}
-.spinner {
-  width: 38px; height: 38px;
-  border: 3px solid rgba(20,184,166,0.2);
-  border-top-color: #14b8a6; border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-#loading p { font-size: 0.84rem; color: rgba(255,255,255,0.5); }
-#loading small { font-size: 0.72rem; color: rgba(255,255,255,0.3); font-style: italic; }
-
-/* ── RESULTS ── */
-#results {
-  flex: 1; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 14px;
-  padding-right: 4px;
-}
-#results::-webkit-scrollbar { width: 5px; }
-#results::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.25); border-radius: 4px; }
-
-/* ── RESULT SECTION ── */
-.result-section {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(20,184,166,0.15);
-  border-radius: 14px; padding: 14px 18px;
-}
-.result-section h2 {
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: rgba(20,184,166,0.8);
-  margin-bottom: 10px; padding-bottom: 6px;
-  border-bottom: 1px solid rgba(20,184,166,0.15);
-}
-
-/* repoInfo */
-#repoInfo h3 { font-size: 1rem; font-weight: 800; color: #67e8f9; margin-bottom: 6px; }
-#repoInfo p { font-size: 0.83rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 4px; }
-#repoInfo a { color: #14b8a6; text-decoration: none; }
-#repoInfo a:hover { text-decoration: underline; }
-#repoInfo strong { color: rgba(255,255,255,0.9); }
-
-/* description / aiAnalysis */
-.description { font-size: 0.85rem; line-height: 1.75; color: rgba(255,255,255,0.78); }
-.description p { margin-bottom: 6px; }
-.description br + br { display: none; }
-
-/* tech badges */
-.tech-stack { display: flex; flex-wrap: wrap; gap: 7px; }
-.tech-badge {
-  font-size: 0.73rem; font-weight: 700; padding: 4px 10px;
-  border-radius: 20px; background: rgba(20,184,166,0.12);
-  border: 1px solid rgba(20,184,166,0.3); color: #5eead4;
-}
-
-/* file tree */
-.file-tree {
-  font-family: "Courier New", monospace; font-size: 0.78rem;
-  color: rgba(255,255,255,0.6); line-height: 1.8;
-  max-height: 200px; overflow-y: auto;
-  background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 12px;
-}
-.file-tree::-webkit-scrollbar { width: 4px; }
-.file-tree::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.2); border-radius: 4px; }
-.file-item { white-space: pre; }
-
-/* stats */
-.stats { display: flex; flex-wrap: wrap; gap: 10px; }
-.stat-card {
-  flex: 1; min-width: 100px;
-  background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.2);
-  border-radius: 12px; padding: 12px 14px; text-align: center;
-}
-.stat-value { font-size: 1.3rem; font-weight: 800; color: #14b8a6; margin-bottom: 4px; }
-.stat-card div:last-child { font-size: 0.72rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* AI analysis info box */
-#aiAnalysis div { border-radius: 8px; padding: 16px; font-size: 0.83rem; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 600px) {
-  html, body { overflow: auto; }
-  .page { height: auto; overflow: visible; padding: 14px; }
-  #results { max-height: none; }
-  .input-row { flex-direction: column; }
-  .btn-analyze { width: 100%; }
-}
+    .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+    #repoUrl {
+        flex: 1;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+        color: #fff; padding: 10px 14px; font-size: 0.88rem; outline: none;
+    }
+    
+    #results { display: none; flex-direction: column; gap: 14px; }
+    .result-section {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 16px 20px;
+    }
+    .tech-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tech-badge {
+        font-size: 0.75rem; font-weight: 700; padding: 4px 12px;
+        border-radius: 20px; background: rgba(20,184,166,0.1);
+        border: 1px solid rgba(20,184,166,0.3); color: #5eead4;
+    }
+    .file-tree {
+        font-family: monospace; font-size: 0.8rem; color: rgba(255,255,255,0.6);
+        background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;
+        max-height: 250px; overflow-y: auto;
+    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+    .stat-card {
+        background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-value { font-size: 1.2rem; font-weight: 800; color: #14b8a6; }
+    .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; }
 </style>
 </head>
 <body>
 
 <div class="page">
-
-  <div class="page-header">
-    <div class="icon-badge">📦</div>
-    <div class="page-header-text">
-      <h1>AI Repo Analyzer</h1>
-      <p>Insert a GitHub repository URL and get a complete AI-powered analysis</p>
+    <div class="page-header">
+        <div class="icon-badge">📦</div>
+        <div class="page-header-text">
+            <h1>AI Repo Analyzer</h1>
+            <p>Analyze any GitHub repository to understand its structure and technology</p>
+        </div>
     </div>
-  </div>
 
-  <hr class="divider">
+    <hr class="divider">
 
-  <!-- INPUT -->
-  <div class="input-row">
-    <input type="text" id="repoUrl" placeholder="https://github.com/username/repository">
-    <button class="btn-analyze" onclick="analyzeRepo()">🔍 Analyze</button>
-  </div>
+    <div class="scroll-area">
+        <div class="card">
+            <div class="section-title">🔗 Repository URL</div>
+            <div class="input-row">
+                <input type="text" id="repoUrl" placeholder="https://github.com/username/repo">
+                <button class="btn btn-primary" id="btnAnalyze">🔍 Analyze Repo</button>
+            </div>
+        </div>
 
-  <!-- ERROR -->
-  <div id="error"></div>
+        <div id="loading" style="display: none; text-align: center; padding: 40px;">
+            <div class="preloader active">Analyzing...</div>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.5);">Fetching data from GitHub and processing with AI</p>
+        </div>
 
-  <!-- LOADING -->
-  <div id="loading" style="display:none;">
-    <div class="spinner"></div>
-    <p>Analyzing repository…</p>
-    <small>This might take a few seconds</small>
-  </div>
+        <div id="results">
+            <div class="result-section">
+                <div class="section-title">📌 Repository Info</div>
+                <div id="repoInfo"></div>
+            </div>
+            
+            <div class="result-section">
+                <div class="section-title">🤖 AI Analysis</div>
+                <div id="aiAnalysis" style="line-height: 1.6; font-size: 0.9rem;"></div>
+            </div>
 
-  <!-- RESULTS -->
-  <div id="results" style="display:none;">
-    <div class="result-section"><h2>Repository Information</h2><div id="repoInfo"></div></div>
-    <div class="result-section"><h2>Project Description</h2><div class="description" id="description"></div></div>
-    <div class="result-section"><h2>AI Project Analysis</h2><div class="description" id="aiAnalysis" style="display:none;"></div></div>
-    <div class="result-section"><h2>Technologies Used</h2><div class="tech-stack" id="techStack"></div></div>
-    <div class="result-section"><h2>File Structure</h2><div class="file-tree" id="fileTree"></div></div>
-    <div class="result-section"><h2>Statistics</h2><div class="stats" id="stats"></div></div>
-  </div>
+            <div class="result-section">
+                <div class="section-title">🛠 Tech Stack</div>
+                <div id="techStack" class="tech-stack"></div>
+            </div>
 
+            <div class="result-section">
+                <div class="section-title">📊 Stats</div>
+                <div id="stats" class="stats-grid"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">📂 File Tree (Partial)</div>
+                <div id="fileTree" class="file-tree"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script src="js/core.js"></script>
 <script>
-function parseGitHubUrl(url) {
-  const regex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = url.match(regex);
-  if (!match) throw new Error('Invalid GitHub URL');
-  return { owner: match[1], repo: match[2].replace('.git', '') };
-}
+    async function analyzeRepo() {
+        const url = document.getElementById('repoUrl').value.trim();
+        if (!url) return;
 
-function showError(msg) {
-  const e = document.getElementById('error');
-  e.textContent = msg; e.style.display = 'block';
-  setTimeout(() => e.style.display = 'none', 5000);
-}
+        const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+        if (!match) { alert('Invalid GitHub URL'); return; }
+        const [_, owner, repo] = match;
 
-function detectTechnologies(files, languages) {
-  const techs = new Set();
-  if (languages) { Object.keys(languages).forEach(l => techs.add(l)); }
-  const techMap = {
-    'package.json': ['Node.js', 'npm'],
-    'requirements.txt': ['Python'],
-    'Gemfile': ['Ruby', 'Bundler'],
-    'pom.xml': ['Java', 'Maven'],
-    'build.gradle': ['Java', 'Gradle'],
-    'Cargo.toml': ['Rust', 'Cargo'],
-    'go.mod': ['Go'],
-    'composer.json': ['PHP', 'Composer'],
-    'Dockerfile': ['Docker'],
-    'docker-compose.yml': ['Docker Compose'],
-    '.github/workflows': ['GitHub Actions']
-  };
-  files.forEach(f => {
-    Object.keys(techMap).forEach(k => {
-      if (f.path.includes(k)) { techMap[k].forEach(t => techs.add(t)); }
-    });
-  });
-  return Array.from(techs);
-}
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
 
-function buildFileTree(files) {
-  const max = 50; const tree = {};
-  files.slice(0, max).forEach(f => {
-    const parts = f.path.split('/');
-    let cur = tree;
-    parts.forEach((p, i) => {
-      if (!cur[p]) cur[p] = i === parts.length - 1 ? null : {};
-      if (cur[p] !== null) cur = cur[p];
-    });
-  });
-  function render(o, prefix = '') {
-    let html = '';
-    Object.keys(o).forEach(k => {
-      const isFolder = o[k] !== null;
-      const icon = isFolder ? '📁' : '📄';
-      html += `<div class="file-item">${prefix}${icon} ${k}</div>`;
-      if (isFolder) { html += render(o[k], prefix + '  '); }
-    });
-    return html;
-  }
-  return render(tree);
-}
+        try {
+            // 1. Fetch from GitHub API
+            const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+            if (!repoRes.ok) throw new Error('Repo not found');
+            const repoData = await repoRes.json();
 
-async function analyzeRepo() {
-  const url = document.getElementById('repoUrl').value.trim();
-  if (!url) { showError('Please enter a valid GitHub URL'); return; }
-  try {
-    const { owner, repo } = parseGitHubUrl(url);
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('results').style.display = 'none';
-    document.getElementById('error').style.display = 'none';
+            const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${repoData.default_branch}?recursive=1`);
+            const treeData = await treeRes.json();
 
-    const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-    if (!repoResponse.ok) throw new Error('Repository not found or private');
-    const repoData = await repoResponse.json();
+            const langRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`);
+            const languages = await langRes.json();
 
-    const treeResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${repoData.default_branch}?recursive=1`);
-    const treeData = await treeResponse.json();
+            // 2. Display basic info
+            document.getElementById('repoInfo').innerHTML = `
+                <h3 style="color: #5eead4;">${repoData.full_name}</h3>
+                <p style="font-size: 0.85rem; margin-top: 5px;">${repoData.description || 'No description'}</p>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.5);">
+                    ⭐ ${repoData.stargazers_count} stars &nbsp;·&nbsp; 🍴 ${repoData.forks_count} forks
+                </div>
+            `;
 
-    const langResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`);
-    const languages = await langResponse.json();
+            const techs = Object.keys(languages);
+            document.getElementById('techStack').innerHTML = techs.map(t => `<span class="tech-badge">${t}</span>`).join('');
 
-    let readmeContent = '';
-    try {
-      const readmeResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`);
-      const readmeData = await readmeResponse.json();
-      readmeContent = atob(readmeData.content);
-    } catch (e) { readmeContent = 'No README available'; }
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${treeData.tree.length}</div><div class="stat-label">Files</div></div>
+                <div class="stat-card"><div class="stat-value">${(repoData.size / 1024).toFixed(1)}</div><div class="stat-label">MB</div></div>
+                <div class="stat-card"><div class="stat-value">${new Date(repoData.created_at).getFullYear()}</div><div class="stat-label">Created</div></div>
+            `;
 
-    displayResults(repoData, treeData.tree, languages, readmeContent);
-    analyzeWithAI(repoData, treeData.tree, readmeContent, owner, repo);
-  } catch (err) {
-    showError('Error: ' + err.message);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
-  }
-}
+            let treeHtml = "";
+            treeData.tree.slice(0, 50).forEach(f => {
+                treeHtml += `<div>${f.type === 'tree' ? '📁' : '📄'} ${f.path}</div>`;
+            });
+            document.getElementById('fileTree').innerHTML = treeHtml;
 
-function displayResults(repo, files, languages, readme) {
-  document.getElementById('repoInfo').innerHTML = `
-    <h3>${repo.full_name}</h3>
-    <p>${repo.description || 'No description available'}</p>
-    <p><strong>⭐ Stars:</strong> ${repo.stargazers_count} &nbsp;|&nbsp; <strong>🍴 Forks:</strong> ${repo.forks_count} &nbsp;|&nbsp; <strong>Branch:</strong> ${repo.default_branch}</p>
-    <p><strong>🔗 URL:</strong> <a href="${repo.html_url}" target="_blank">${repo.html_url}</a></p>
-  `;
+            // 3. AI Analysis
+            const fileList = treeData.tree.slice(0, 100).map(f => f.path).join('\n');
+            const messages = [
+                { role: 'system', content: 'You are a technical architect. Analyze the repository structure and description.' },
+                { role: 'user', content: `Analyze this repo: ${repoData.full_name}\nDescription: ${repoData.description}\nFiles:\n${fileList}\n\nProvide a summary of the project architecture, main features, and potential use cases. No markdown.` }
+            ];
 
-  const description = readme.split('\n').slice(0, 10).join('\n').substring(0, 500);
-  document.getElementById('description').innerHTML = `<p>${description.replace(/[#*`]/g, '')}${readme.length > 500 ? '…' : ''}</p>`;
+            const aiRes = await Core.callAI(messages);
+            document.getElementById('aiAnalysis').innerHTML = aiRes.choices[0].message.content.replace(/\n/g, '<br>');
 
-  const techs = detectTechnologies(files, languages);
-  document.getElementById('techStack').innerHTML = techs.length
-    ? techs.map(t => `<span class="tech-badge">${t}</span>`).join('')
-    : '<span style="color:rgba(255,255,255,0.3);font-size:.8rem;">No technologies detected</span>';
+            document.getElementById('results').style.display = 'flex';
+        } catch (error) {
+            alert('Analysis Failed: ' + error.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
 
-  document.getElementById('fileTree').innerHTML = buildFileTree(files);
-
-  const stats = [
-    { label: 'Total Files', value: files.length },
-    { label: 'Languages',   value: Object.keys(languages).length },
-    { label: 'Size',        value: `${(repo.size / 1024).toFixed(1)} MB` },
-    { label: 'Created',     value: new Date(repo.created_at).getFullYear() }
-  ];
-  document.getElementById('stats').innerHTML = stats.map(s =>
-    `<div class="stat-card"><div class="stat-value">${s.value}</div><div>${s.label}</div></div>`
-  ).join('');
-
-  document.getElementById('results').style.display = 'flex';
-}
-
-document.getElementById('repoUrl').addEventListener('keypress', e => { if (e.key === 'Enter') analyzeRepo(); });
-
-async function analyzeWithAI(repoData, files, readme, owner, repo) {
-  const aiDiv = document.getElementById('aiAnalysis');
-  aiDiv.style.display = 'block';
-  const apikey = localStorage.getItem("openaikey");
-  if (!apikey) {
-    aiDiv.innerHTML = `<div style="color:#92400e;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:12px 16px;font-size:.82rem;">Set your OpenAI API Key in the main setup to enable AI analysis.</div>`;
-    return;
-  }
-  aiDiv.innerHTML = `<div style="display:inline-flex;align-items:center;gap:8px;font-size:.75rem;font-weight:700;padding:6px 12px;border-radius:20px;background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.25);color:#14b8a6;"><span style="width:6px;height:6px;border-radius:50%;background:#14b8a6;display:inline-block;animation:spin .9s linear infinite;"></span> AI is analyzing the repository…</div>`;
-  try {
-    const fileList = files.slice(0, 100).map(f => f.path).join('\n');
-    const prompt = `Analyze this GitHub repository: ${repoData.full_name}\nSummary: ${repoData.description || 'Not available'}\n\nREADME:\n${readme.substring(0, 2000)}\n\nFILES:\n${fileList}\n\nProvide analysis describing: purpose, type, target users, main features, tech stack, use cases. Don't use markdown formatting nor fencing except '\n' to change line.`;
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apikey}` },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a software analyst who explains GitHub projects clearly and concisely.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 1500, temperature: 0.7
-      })
-    });
-    if (!response.ok) { const err = await response.json(); throw new Error(err.error?.message || 'API Error'); }
-    const data = await response.json();
-    const analysis = data.choices[0].message.content;
-    aiDiv.innerHTML = analysis
-      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#67e8f9;">$1</strong>')
-      .replace(/\n/g, '<br>');
-  } catch (err) {
-    aiDiv.innerHTML = `<div style="color:#ff6b6b;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:12px 16px;font-size:.82rem;">AI Analysis Error: ${err.message}</div>`;
-  }
-}
+    document.getElementById('btnAnalyze').onclick = analyzeRepo;
+    document.getElementById('repoUrl').onkeydown = (e) => { if(e.key === 'Enter') analyzeRepo(); };
 </script>
 </body>
 </html>

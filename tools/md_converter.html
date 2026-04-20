@@ -3,435 +3,154 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>README.md ⇄ HTML Converter — VivacityGPT</title>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<title>Markdown Converter — VivacityGPT</title>
+<link rel="stylesheet" href="css/global.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
+    .col-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    
+    #editor {
+        width: 100%;
+        flex: 1;
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-family: monospace;
+        padding: 14px;
+        resize: none;
+        outline: none;
+    }
+    #editor:focus { border-color: #a78bfa; }
 
-html, body {
-height: 100%;
-font-family: "Segoe UI", Roboto, sans-serif;
-background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-color: #fff;
-overflow: hidden;
-}
-
-.page {
-height: 100vh;
-display: flex;
-flex-direction: column;
-padding: 24px 28px 20px;
-gap: 16px;
-}
-
-.page-header { display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0; }
-.icon-badge {
-font-size: 2.2rem; line-height: 1;
-filter: drop-shadow(0 2px 8px rgba(180,100,255,0.5));
-}
-.page-header-text h1 {
-font-size: 1.4rem; font-weight: 800;
-background: linear-gradient(90deg, #b465da, #cf6cc9, #ee609c);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-background-clip: text;
-}
-.page-header-text p {
-font-size: 0.73rem;
-color: rgba(255,255,255,0.35);
-margin-top: 3px;
-font-style: italic;
-}
-
-hr.divider {
-border: none;
-border-top: 1px solid rgba(255,255,255,0.08);
-flex-shrink: 0;
-}
-
-.main-cols {
-display: flex;
-gap: 18px;
-flex: 1;
-min-height: 0;
-}
-
-.col-left {
-width: 280px;
-flex-shrink: 0;
-display: flex;
-flex-direction: column;
-gap: 14px;
-}
-
-.col-right {
-flex: 1;
-display: flex;
-flex-direction: column;
-gap: 12px;
-min-width: 0;
-}
-
-.card {
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.09);
-border-radius: 14px;
-padding: 16px 18px;
-backdrop-filter: blur(6px);
-display: flex;
-flex-direction: column;
-max-height: 240px;        
-}
-.cardlong {
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.09);
-border-radius: 14px;
-padding: 16px 18px;
-backdrop-filter: blur(6px);
-display: flex;
-flex-direction: column;
-max-height: 480px;        
-}        
-
-.field-label {
-font-size: 0.68rem;
-font-weight: 700;
-letter-spacing: 1px;
-text-transform: uppercase;
-color: rgba(180,100,255,0.85);
-margin-bottom: 8px;
-user-select: none;
-}
-
-.file-drop {
-position: relative;
-width: 100%;
-border: 2px dashed rgba(180,100,255,0.3);
-border-radius: 12px;
-padding: 20px 14px;
-text-align: center;
-cursor: pointer;
-transition: border-color 0.2s, background 0.2s;
-background: rgba(180,100,255,0.04);
-user-select: none;
-}
-.file-drop:hover {
-border-color: rgba(180,100,255,0.6);
-background: rgba(180,100,255,0.08);
-}
-.file-drop input[type="file"] {
-position: absolute;
-inset: 0;
-opacity: 0;
-cursor: pointer;
-width: 100%;
-height: 100%;
-}
-.file-drop .drop-icon {
-font-size: 1.8rem;
-margin-bottom: 5px;
-}
-.file-drop .drop-hint {
-font-size: 0.75rem;
-color: rgba(255,255,255,0.4);
-user-select: none;
-}
-.file-drop .drop-hint span {
-color: #b465da;
-font-weight: 600;
-user-select: none;
-}
-
-#vfeedback {
-font-size: 0.73rem;
-color: rgba(180,100,255,0.7);
-min-height: 14px;
-font-style: italic;
-margin-top: 6px;
-text-align: center;
-}
-
-#editor {
-flex: 1;
-width: 100%;
-max-height: 240px;
-font-family: monospace;
-font-size: 14px;
-color: #fff;
-background: rgba(0,0,0,0.2);
-border: 1px solid rgba(180,100,255,0.3);
-border-radius: 12px;
-padding: 12px 14px;
-resize: vertical;
-outline-offset: 0;
-outline-color: #b465da;
-transition: border-color 0.25s ease;
-
-}
-#editor:focus {
-border-color: #b465da;
-background: rgba(30,15,60,0.5);
-}
-
-.btn {
-display: inline-flex;
-align-items: center;
-justify-content: center;
-gap: 5px;
-padding: 8px 14px;
-border-radius: 9px;
-font-size: 0.78rem;
-font-weight: 700;
-cursor: pointer;
-border: 1px solid rgba(255,255,255,0.1);
-background: rgba(255,255,255,0.06);
-color: #fff;
-transition: transform 0.16s, background 0.16s, box-shadow 0.16s;
-user-select: none;
-white-space: nowrap;
-font-family: inherit;
-}
-.btn:hover:not(:disabled) {
-transform: scale(1.04);
-background: rgba(180,100,255,0.18);
-box-shadow: 0 3px 14px rgba(180,100,255,0.25);
-border-color: rgba(180,100,255,0.4);
-}
-.btn:active:not(:disabled) {
-transform: scale(0.97);
-}
-.btn:disabled {
-opacity: 0.5;
-pointer-events: none;
-cursor: default;
-}
-
-.btn-row {
-display: flex;
-gap: 8px;
-margin-top: 10px;
-}
-
-#output-container {
-flex: 1;
-background: rgba(255,255,255,0.03);
-border: 1px solid rgba(180,100,255,0.12);
-border-radius: 14px;
-padding: 18px 20px;
-overflow-y: auto;
-white-space: pre-wrap;
-font-family: monospace;
-font-size: 0.88rem;
-color: #ddd;
-user-select: text;
-}
-
-.section-label {
-font-size: 0.68rem;
-font-weight: 700;
-letter-spacing: 1.5px;
-text-transform: uppercase;
-color: rgba(255,255,255,0.28);
-padding-bottom: 6px;
-border-bottom: 1px solid rgba(255,255,255,0.06);
-flex-shrink: 0;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 680px) {
-html, body {
-overflow: auto;
-}
-.page {
-height: auto;
-overflow: visible;
-padding: 16px;
-}
-.main-cols {
-flex-direction: column;
-}
-.col-left {
-width: 100%;
-}
-#editor {
-height: 200px;
-}
-#output-container {
-min-height: 200px;
-}
-}
+    #output-container {
+        flex: 1;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .preview-html { color: #fff; }
+    .preview-html h1, .preview-html h2, .preview-html h3 { color: #a78bfa; margin-top: 1em; margin-bottom: 0.5em; }
+    .preview-html p { margin-bottom: 1em; line-height: 1.6; }
+    .preview-html code { background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; }
+    
+    @media (max-width: 800px) {
+        .main-cols { flex-direction: column; }
+        .col-left { width: 100%; }
+    }
 </style>
-
 </head>
 <body>
 
 <div class="page">
+    <div class="page-header">
+        <div class="icon-badge">📝</div>
+        <div class="page-header-text">
+            <h1>Markdown Converter</h1>
+            <p>Bidirectional converter between README.md and styled HTML</p>
+        </div>
+    </div>
 
-<div class="page-header">
-<div class="icon-badge">📝</div>
-<div class="page-header-text">
-<h1>README.md ⇄ HTML Converter</h1>
-<p>Upload, edit and convert Markdown &lt;-&gt; HTML with live preview</p>
-</div>
-</div>
+    <hr class="divider">
 
-<hr class="divider">
+    <div class="main-cols">
+        <div class="col-left">
+            <div class="card">
+                <div class="section-title">📂 Upload File</div>
+                <div class="file-drop-zone">
+                    <input type="file" id="fileInput" accept=".md,.markdown,.html,.htm">
+                    <div style="font-size: 1.5rem;">📄</div>
+                    <div style="font-size: 0.8rem;">Drop file or click to browse</div>
+                </div>
+                <div id="vfeedback" style="font-size: 0.75rem; margin-top: 8px;"></div>
+            </div>
 
-<div class="main-cols">
+            <div class="card">
+                <div class="section-title">⚙️ Actions</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="btnMdToHtml" class="btn" disabled>Markdown ➔ HTML</button>
+                    <button id="btnHtmlToMd" class="btn" disabled>HTML ➔ Markdown</button>
+                    <button id="btnDownload" class="btn btn-success" disabled>⬇️ Download Output</button>
+                </div>
+            </div>
+        </div>
 
-<div class="col-left">
-<div class="card">
-<span class="field-label">📂 File Upload</span>
-
-<div class="file-drop">
-<input type="file" id="fileInput" accept=".md,.markdown,.html,.htm" />
-<div class="drop-icon">📄</div>
-<div class="drop-hint">Drop file or <span>click to browse</span></div>
-<div class="drop-hint" style="margin-top:4px;">.md, .markdown, .html, .htm</div>
-</div>
-
-<div id="vfeedback" style="min-height: 18px; margin-top: 6px;"></div>
-
-<div class="btn-row">
-<button id="btnMdToHtml" class="btn" disabled>Convert to HTML</button>
-<button id="btnHtmlToMd" class="btn" disabled>Convert to MD</button>
-</div>
-</div>
-</div>
-
-<div class="col-right">
-
-<div class="card" style="flex: 1; display: flex; flex-direction: column;">
-<span class="field-label">✍️ Editor</span>
-<textarea id="editor" rows="6" placeholder="Paste or edit your Markdown or HTML here"></textarea>
-</div>
-
-<div class="section-label">Preview Output</div>
-
-<div id="output-container" class="cardlong">
-<div id="outputText">No output yet.</div>
-</div>
-
-</div>
-
-</div>
-
+        <div class="col-right">
+            <div class="section-title">✍️ Editor</div>
+            <textarea id="editor" placeholder="Paste your content here..."></textarea>
+            
+            <div class="section-title" style="margin-top: 14px;">👁 Preview</div>
+            <div id="output-container">
+                <div id="outputText" class="preview-html" style="color: rgba(255,255,255,0.3);">No preview available</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
-
+<script src="js/core.js"></script>
 <script>
-$(document).ready(function() {
-const $fileInput = $('#fileInput');
-const $btnMdToHtml = $('#btnMdToHtml');
-const $btnHtmlToMd = $('#btnHtmlToMd');
-const $editor = $('#editor');
-const $outputText = $('#outputText');
-const $vfeedback = $('#vfeedback');
+    const editor = document.getElementById('editor');
+    const outputText = document.getElementById('outputText');
+    const fileInput = document.getElementById('fileInput');
+    const btnMdToHtml = document.getElementById('btnMdToHtml');
+    const btnHtmlToMd = document.getElementById('btnHtmlToMd');
+    const btnDownload = document.getElementById('btnDownload');
+    let currentMode = 'md';
 
-let currentFormat = null; // 'md' or 'html'
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            editor.value = evt.target.result;
+            detectAndEnable();
+        };
+        reader.readAsText(file);
+    };
 
-// Funzione per rilevare il formato da nome file
-function detectFormat(filename) {
-filename = filename.toLowerCase();
-if (filename.endsWith('.md') || filename.endsWith('.markdown')) return 'md';
-if (filename.endsWith('.html') || filename.endsWith('.htm')) return 'html';
-return null;
-}
+    editor.oninput = detectAndEnable;
 
-// Carica file in editor e aggiorna bottoni
-$fileInput.on('change', function() {
-const file = this.files[0];
-if (!file) return;
+    function detectAndEnable() {
+        const val = editor.value.trim();
+        if (!val) {
+            btnMdToHtml.disabled = btnHtmlToMd.disabled = btnDownload.disabled = true;
+            return;
+        }
+        if (val.startsWith('<')) {
+            btnMdToHtml.disabled = true;
+            btnHtmlToMd.disabled = false;
+        } else {
+            btnMdToHtml.disabled = false;
+            btnHtmlToMd.disabled = true;
+        }
+    }
 
-const format = detectFormat(file.name);
-if (!format) {
-$vfeedback.text('Unsupported file format. Use .md or .html');
-$btnMdToHtml.prop('disabled', true);
-$btnHtmlToMd.prop('disabled', true);
-return;
-}
+    btnMdToHtml.onclick = () => {
+        const html = marked.parse(editor.value);
+        outputText.innerHTML = html;
+        currentMode = 'html';
+        btnDownload.disabled = false;
+    };
 
-currentFormat = format;
-$vfeedback.text('');
-const reader = new FileReader();
-reader.onload = function(e) {
-$editor.val(e.target.result);
-$outputText.text('');
-if (currentFormat === 'md') {
-$btnMdToHtml.prop('disabled', false);
-$btnHtmlToMd.prop('disabled', true);
-} else {
-$btnMdToHtml.prop('disabled', true);
-$btnHtmlToMd.prop('disabled', false);
-}
-};
-reader.readAsText(file);
-});
+    btnHtmlToMd.onclick = () => {
+        const turndownService = new TurndownService();
+        const md = turndownService.turndown(editor.value);
+        outputText.innerText = md;
+        currentMode = 'md';
+        btnDownload.disabled = false;
+    };
 
-// Conversione Markdown -> HTML
-$btnMdToHtml.on('click', function() {
-const mdText = $editor.val();
-if (!mdText.trim()) {
-$vfeedback.text('Editor is empty.');
-return;
-}
-const html = marked.parse(mdText);
-// Per una migliore visualizzazione, sostituisco \n con <br> ma marked già formatta bene.
-// Qui uso innerHTML
-$outputText.html(html);
-$editor.val(html);
-currentFormat = 'html';
-$btnMdToHtml.prop('disabled', true);
-$btnHtmlToMd.prop('disabled', false);
-$vfeedback.text('Converted Markdown to HTML');
-});
-
-// Conversione HTML -> Markdown (con heading abilitato)
-$btnHtmlToMd.on('click', function() {
-const htmlText = $editor.val();
-if (!htmlText.trim()) {
-$vfeedback.text('Editor is empty.');
-return;
-}
-const turndownService = new TurndownService();
-turndownService.addRule('heading', {
-filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-replacement: function(content, node) {
-const hLevel = node.nodeName.toLowerCase();
-const level = parseInt(hLevel.charAt(1));
-return '\n' + '#'.repeat(level) + ' ' + content + '\n';
-}
-});
-const md = turndownService.turndown(htmlText);
-$outputText.text(md);
-$editor.val(md);
-currentFormat = 'md';
-$btnMdToHtml.prop('disabled', false);
-$btnHtmlToMd.prop('disabled', true);
-$vfeedback.text('Converted HTML to Markdown');
-});
-
-// Se l'utente modifica manualmente il testo in editor
-$editor.on('input', function() {
-const val = $editor.val().trim();
-if (val.startsWith('<') && val.endsWith('>')) {
-currentFormat = 'html';
-$btnMdToHtml.prop('disabled', true);
-$btnHtmlToMd.prop('disabled', false);
-} else {
-currentFormat = 'md';
-$btnMdToHtml.prop('disabled', false);
-$btnHtmlToMd.prop('disabled', true);
-}
-$outputText.text('');
-$vfeedback.text('');
-});
-
-});
+    btnDownload.onclick = () => {
+        const content = currentMode === 'html' ? outputText.innerHTML : outputText.innerText;
+        const ext = currentMode === 'html' ? 'html' : 'md';
+        Core.downloadFile(content, `converted_docs.${ext}`, `text/${ext}`);
+    };
 </script>
-
 </body>
 </html>

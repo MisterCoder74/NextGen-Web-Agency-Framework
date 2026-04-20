@@ -1,512 +1,199 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>VivacityGPT Complete - AI Image Rebuilder</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
+<title>AI Image Rebuilder — VivacityGPT</title>
+<link rel="stylesheet" href="css/global.css">
 <style>
-/* Base resets and fonts */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-height: 100%;
-font-family: "Segoe UI", Roboto, sans-serif;
-background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-color: #fff;
-overflow-x: hidden;
-padding: 20px;
-}
-
-main.main-container {
-max-width: 1100px;
-margin: 0 auto;
-}
-
-h1.heading {
-font-size: 1.8rem;
-font-weight: 800;
-background: linear-gradient(90deg, #f59e0b, #fcd34d);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-background-clip: text;
-margin-bottom: 1rem;
-}
-
-/* Container for original and rebuilt image panels */
-.image-comparison-container {
-display: flex;
-gap: 30px;
-flex-wrap: wrap;
-margin-bottom: 20px;
-}
-
-.image-panel {
-flex: 1;
-min-width: 320px;
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.09);
-border-radius: 16px;
-padding: 20px;
-backdrop-filter: blur(6px);
-color: #fff;
-display: flex;
-flex-direction: column;
-align-items: center;
-}
-
-.image-panel h3 {
-margin-bottom: 14px;
-font-weight: 700;
-color: #fcd34d;
-user-select: none;
-}
-
-.thumbnail-box {
-width: 100%;
-min-height: 220px;
-background: rgba(255,255,255,0.1);
-border-radius: 14px;
-border: 1px solid rgba(245,158,11,0.3);
-display: flex;
-justify-content: center;
-align-items: center;
-overflow: hidden;
-position: relative;
-}
-
-.thumbnail-box img {
-max-width: 100%;
-max-height: 100%;
-display: block;
-border-radius: 12px;
-}
-
-/* Form styling */
-#voperations form {
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.09);
-border-radius: 16px;
-padding: 20px;
-backdrop-filter: blur(6px);
-margin-bottom: 20px;
-display: flex;
-flex-wrap: wrap;
-gap: 14px;
-align-items: center;
-}
-
-#voperations input[type="file"].fixedwidth {
-flex: 1 1 300px;
-background: rgba(255,255,255,0.07);
-border-radius: 10px;
-border: 1px solid rgba(255,255,255,0.12);
-color: #fff;
-padding: 10px 14px;
-font-family: inherit;
-font-size: 0.9rem;
-}
-
-#vfeedback {
-flex-basis: 100%;
-margin-top: 10px;
-color: #f59e0b;
-font-weight: 600;
-min-height: 20px;
-}
-
-#voperations button.btn {
-flex: 0 0 auto;
-min-width: 140px;
-}
-
-/* Text box styling */
-#text-box {
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.09);
-border-radius: 16px;
-padding: 20px;
-backdrop-filter: blur(6px);
-margin-bottom: 20px;
-color: #f59e0b;
-}
-
-#text-box b {
-display: block;
-margin-bottom: 8px;
-user-select: none;
-font-weight: 700;
-}
-
-#image-analysis-output {
-margin-top: 8px;
-min-height: 60px;
-color: #fff;
-font-size: 0.95rem;
-line-height: 1.4;
-}
-
-#commands {
-margin-bottom: 40px;
-}
-
-/* Buttons style */
-.btn {
-cursor: pointer;
-background: rgba(245,158,11,0.15);
-border: 1px solid rgba(245,158,11,0.5);
-color: #fff;
-padding: 10px 18px;
-border-radius: 12px;
-font-weight: 700;
-font-size: 0.9rem;
-transition:
-background 0.25s ease,
-box-shadow 0.25s ease,
-transform 0.15s ease;
-user-select: none;
-}
-.btn:hover:not(:disabled) {
-background: rgba(245,158,11,0.35);
-box-shadow: 0 5px 15px rgba(245,158,11,0.4);
-transform: scale(1.04);
-}
-.btn:active {
-transform: scale(0.97);
-}
-.btn:disabled {
-cursor: not-allowed;
-opacity: 0.6;
-}
-
-/* Page header */
-.page-header {
-  display: flex; align-items: flex-start; gap: 14px;
-  margin-bottom: 16px;
-}
-.page-header .icon-badge {
-  font-size: 2.2rem; line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(245,158,11,0.5));
-}
-.page-header-text h1 {
-  font-size: 1.4rem; font-weight: 800;
-  background: linear-gradient(90deg, #f59e0b, #fcd34d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.page-header-text p {
-  font-size: 0.73rem; color: rgba(255,255,255,0.35); margin-top: 3px; font-style: italic;
-}
-hr.divider {
-  border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px;
-}
-input[type="password"] {
-  width: 100%;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  color: rgba(255,255,255,0.35);
-  padding: 9px 14px;
-  font-size: 0.8rem;
-  outline: none;
-  font-style: italic;
-  cursor: default;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  margin-bottom: 16px;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-.image-comparison-container {
-flex-direction: column;
-}
-.image-panel {
-min-width: 100%;
-margin-bottom: 20px;
-}
-#voperations form {
-flex-direction: column;
-align-items: stretch;
-}
-#voperations button.btn {
-width: 100%;
-}
-}
+    .image-comparison-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .image-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    .thumbnail-box {
+        width: 100%;
+        height: 350px;
+        background: rgba(0,0,0,0.2);
+        border: 2px dashed rgba(255,255,255,0.1);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+    .thumbnail-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    #image-analysis-output {
+        min-height: 80px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 700px) {
+        .image-comparison-container { flex-direction: column; }
+        .thumbnail-box { height: 250px; }
+    }
 </style>
 </head>
 <body>
 
-<main class="main-container">
-<!-- HEADER -->
-<div class="page-header">
-  <div class="icon-badge">🔁</div>
-  <div class="page-header-text">
-    <h1>AI Image Rebuilder</h1>
-    <p>Upload an image, get the description and produce a new variant — gpt-4.1-nano + dall-e-3</p>
-  </div>
-</div>
-<hr class="divider">
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🖼️</div>
+        <div class="page-header-text">
+            <h1>AI Image Rebuilder</h1>
+            <p>Analyze an image and generate a high-quality variation using AI</p>
+        </div>
+    </div>
 
-<input type="password" id="apikey" placeholder="API key loaded from localStorage…" readonly>
+    <hr class="divider">
 
-<div class="image-comparison-container">
-<div class="image-panel">
-<h3>Original</h3>
-<div class="thumbnail-box" id="original-image">
-<img id="uploaded-image" src="" alt="Uploaded Image" style="display: none;">
-</div>
-</div>
-<div class="image-panel">
-<h3>Rebuilt</h3>
-<div class="thumbnail-box" id="generated-image"></div>
-</div>
+    <div class="scroll-area">
+        <div class="image-comparison-container">
+            <div class="image-panel">
+                <div class="section-title">Original Image</div>
+                <div class="thumbnail-box" id="original-box">
+                    <span style="color: rgba(255,255,255,0.3);">No image uploaded</span>
+                </div>
+            </div>
+            <div class="image-panel">
+                <div class="section-title">AI Rebuilt Image</div>
+                <div class="thumbnail-box" id="generated-box">
+                    <span style="color: rgba(255,255,255,0.3);">Waiting for analysis...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📤 Upload & Analyze</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <input type="file" id="vfile-input" accept="image/*" style="display: none;">
+                <button class="btn" onclick="document.getElementById('vfile-input').click()">📁 Select Image</button>
+                <button class="btn btn-primary" id="btnAnalyze" disabled>🔍 Analyze Image</button>
+                <span id="uploadStatus" style="font-size: 0.8rem; color: rgba(255,255,255,0.5);"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📝 Image Analysis</div>
+            <div id="image-analysis-output" contenteditable="true">Analysis will appear here. You can edit it before rebuilding.</div>
+            <button class="btn btn-primary" id="btnRebuild" style="margin-top: 12px;" disabled>🔁 Rebuild Image</button>
+        </div>
+    </div>
 </div>
 
-<div id="voperations">
-<form enctype="multipart/form-data" method="POST" novalidate>
-<input class="fixedwidth" type="file" accept=".jpg,.png" name="file" id="vfile-input" required>
-<div id="vfeedback"></div>
-<button id="vuploadBtn" type="submit" class="btn btn-primary">Upload the image</button>
-<button type="button" class="btn btn-primary" onclick="getChatGPTResponseIMG();">Analyze the image</button>
-</form>
-</div>
-
-<div id="text-box">
-<b>Your Image analysis will appear here...</b>
-<p id="image-analysis-output"></p>
-</div>
-
-<div id="commands">
-<button type="button" class="btn btn-primary" onclick="generateImage();">Rebuild the image</button>
-</div>
-</main>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="js/core.js"></script>
 <script>
-function resizeImage(img, containerWidth, containerHeight) {
-const imgWidth = img.naturalWidth;
-const imgHeight = img.naturalHeight;
-const imgRatio = imgWidth / imgHeight;
-const containerRatio = containerWidth / containerHeight;
-let newWidth, newHeight;
-if (imgRatio > containerRatio) {
-newWidth = containerWidth;
-newHeight = containerWidth / imgRatio;
-} else {
-newHeight = containerHeight;
-newWidth = containerHeight * imgRatio;
-}
-img.style.width = newWidth + 'px';
-img.style.height = newHeight + 'px';
-}
+    let currentImageUrl = "";
+    let analysisContent = "";
 
-$(document).ready(function () {
-document.getElementById("apikey").value = localStorage.getItem("openaikey") || "";
-$('#vuploadBtn').click(function (e) {
-e.preventDefault();
-$.ajax({
-url: 'vupload.php',
-type: 'POST',
-data: new FormData($('form')[0]),
-processData: false,
-contentType: false,
-success: function (response) {
-const data = JSON.parse(response);
-if (data.status === "success") {
-$('#vfeedback').html("Your file was uploaded.");
-var fileInput = document.getElementById('vfile-input');
-var file = fileInput.files[0];
-if (file) {
-var originalimageUrl = URL.createObjectURL(file);
-var img = $('#uploaded-image')[0];
-img.src = originalimageUrl;
-img.onload = function() {
-const container = $('#original-image')[0];
-const containerWidth = container.clientWidth - 16;
-const containerHeight = container.clientHeight - 16;
-resizeImage(img, containerWidth, containerHeight);
-$(img).show();
-};
-}
-$('#voperations button[type="button"]').attr('onclick', `submitImage("${data.url}");`);
-} else {
-$('#vfeedback').html(data);
-}
-}
-});
-});
-});
+    document.getElementById('vfile-input').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            document.getElementById('original-box').innerHTML = `<img src="${url}" alt="Original">`;
+            document.getElementById('btnAnalyze').disabled = false;
+            document.getElementById('uploadStatus').textContent = file.name;
+            
+            // In a real app we'd upload to a server to get a public URL for GPT-4 Vision
+            // Here we'll simulate the process or use base64 if allowed
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                currentImageUrl = evt.target.result; // base64
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
-function myFunction() {
-var x = document.getElementById("myTopnav");
-if (x.className === "topnav") {
-x.className += " responsive";
-} else {
-x.className = "topnav";
-}
-}
+    document.getElementById('btnAnalyze').onclick = async () => {
+        const btn = document.getElementById('btnAnalyze');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analyzing...';
+        
+        try {
+            const messages = [
+                { role: 'system', content: 'You are an AI image analyzer. Provide a detailed, descriptive prompt suitable for image generation based on the provided image.' },
+                { role: 'user', content: [
+                    { type: 'text', text: 'Provide a detailed description of the image content for rebuilding it. Focus on style, subjects, lighting, and composition. No intro/outro.' },
+                    { type: 'image_url', image_url: { url: currentImageUrl } }
+                ]}
+            ];
+            
+            const data = await Core.callAI(messages, 'gpt-4o-mini');
+            analysisContent = Core.cleanResponse(data.choices[0].message.content);
+            document.getElementById('image-analysis-output').textContent = analysisContent;
+            document.getElementById('btnRebuild').disabled = false;
+        } catch (error) {
+            alert('Analysis Error: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analyze Image';
+        }
+    };
 
-let chatMemory = [];
-chatMemory = createMemory([{
-role: "system",
-content: "You are an AI image analyzer and rebuilder."
-}]);
+    document.getElementById('btnRebuild').onclick = async () => {
+        const btn = document.getElementById('btnRebuild');
+        const prompt = document.getElementById('image-analysis-output').textContent.trim();
+        if (!prompt) return;
 
-function createMemory(messages) {
-const memory = [];
-for (const msg of messages) {
-memory.push({
-role: msg.role,
-content: msg.content
-});
-}
-return memory;
-}
+        btn.disabled = true;
+        btn.textContent = '⏳ Rebuilding...';
+        document.getElementById('generated-box').innerHTML = '<div class="preloader active"></div>';
 
-async function submitImage(imgUrl) {
-return await getChatGPTResponseIMG("https://www.vivacitydesign.net/vdgptscomplete/" + imgUrl, chatMemory);
-        // riportare l'url al dominio finale dle server
-}
+        try {
+            // Direct DALL-E call as it's not handled by the chat proxy
+            const apiKey = Core.getApiKey();
+            const response = await fetch("https://api.openai.com/v1/images/generations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + apiKey
+                },
+                body: JSON.stringify({
+                    model: "dall-e-3",
+                    prompt: prompt,
+                    n: 1,
+                    size: "1024x1024"
+                })
+            });
 
-async function getChatGPTResponseIMG(fileUrl, chatMemory) {
-console.log(fileUrl);
-const apikey = localStorage.getItem("openaikey");
-console.log(apikey);
-if (!apikey) {
-alert("No OpenAI API Key found.");
-return;
-}
-const chatContainer = document.getElementById("text-box");
-const typingIndicator = document.createElement("p");
-typingIndicator.id = "typing-indicator";
-typingIndicator.innerHTML = '<img src="preloader.gif" class="preloader" alt="Loading...">';
-chatContainer.appendChild(typingIndicator);
-try {
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-Authorization: "Bearer " + apikey
-},
-body: JSON.stringify({
-model: "gpt-4.1-nano",
-messages: [
-...chatMemory.map((item) => ({ ...item })),
-{
-role: "user",
-content: [
-{
-type: "text",
-text: "Provide a detailed description of the image content. Don't thank, greet or propose the user to ask further questions, only provide the image description. If there are any people in the image, make sure to highlight their hair length and color, and their body type."
-},
-{
-type: "image_url",
-image_url: {
-url: fileUrl
-}
-}
-]
-}
-],
-max_tokens: 450
-})
-});
-if (!response.ok) {
-throw new Error("Error while requesting to the API.");
-}
-const data = await response.json();
-if (!data.choices || !data.choices.length || !data.choices[0].message || !data.choices[0].message.content) {
-throw new Error("Invalid API response.");
-}
-var chatGPTResponse = data.choices[0].message.content;
-chatGPTResponse = chatGPTResponse.replace(/\*\*(.*?)\*\*/g, "$1");
-chatContainer.removeChild(typingIndicator);
-const responsediv = document.getElementById("image-analysis-output");
-responsediv.innerHTML = `<div contenteditable="true" style="border: 1px solid #ccc; padding: 8px; min-height: 50px;">${chatGPTResponse}</div>`;
-chatMemory.push({ role: "user", content: fileUrl });
-chatMemory.push({ role: "assistant", content: chatGPTResponse });
-return chatMemory;
-} catch (error) {
-console.error(error);
-alert("An error occurred during the request. Check your OpenAI account or try later.");
-}
-}
+            if (!response.ok) throw new Error('Image generation failed');
+            
+            const data = await response.json();
+            const url = data.data[0].url;
+            
+            document.getElementById('generated-box').innerHTML = `<img src="${url}" alt="Generated">`;
+            
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'btn btn-success';
+            dlBtn.style.marginTop = '10px';
+            dlBtn.textContent = '⬇️ Download Image';
+            dlBtn.onclick = () => window.open(url, '_blank');
+            document.getElementById('generated-box').appendChild(dlBtn);
 
-async function generateImage() {
-const apikey = localStorage.getItem("openaikey");
-console.log(apikey);
-const prompt = document.getElementById("image-analysis-output").textContent;
-const chatContainer = document.getElementById("generated-image");
-chatContainer.innerHTML = "";
-const typingIndicator = document.createElement("p");
-typingIndicator.id = "typing-indicator";
-typingIndicator.innerHTML = '<img src="preloader.gif" class="preloader" alt="Loading...">';
-chatContainer.appendChild(typingIndicator);
-console.log(prompt);
-try {
-const response = await fetch("https://api.openai.com/v1/images/generations", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-Authorization: "Bearer " + apikey
-},
-body: JSON.stringify({
-model: "dall-e-3",
-prompt: prompt,
-n: 1,
-size: "1024x1024"
-})
-});
-const data = await response.json();
-const imageUrl = data.data[0].url;
-const responseDiv = document.createElement("div");
-responseDiv.style.width = "100%";
-responseDiv.style.height = "100%";
-responseDiv.style.display = "flex";
-responseDiv.style.flexDirection = "column";
-responseDiv.style.alignItems = "center";
-responseDiv.style.justifyContent = "center";
-const image = document.createElement("img");
-image.src = imageUrl;
-image.alt = "Generated Image";
-image.onload = function() {
-const container = document.getElementById("generated-image");
-const containerWidth = container.clientWidth - 16;
-const containerHeight = container.clientHeight - 56;
-resizeImage(image, containerWidth, containerHeight);
-};
-responseDiv.appendChild(image);
-const downloadLink = document.createElement("a");
-downloadLink.href = imageUrl;
-downloadLink.target = "_blank";
-downloadLink.textContent = "Download Image";
-downloadLink.className = "btn btn-primary";
-downloadLink.style.marginTop = "10px";
-responseDiv.appendChild(downloadLink);
-chatContainer.removeChild(typingIndicator);
-chatContainer.innerHTML = "";
-chatContainer.appendChild(responseDiv);
-} catch (error) {
-console.error(error);
-alert("An error occurred during the request. Check your OpenAI account or try later.");
-}
-}
-
-window.addEventListener('resize', function() {
-const uploadedImg = document.getElementById('uploaded-image');
-if (uploadedImg.style.display !== 'none') {
-const container = document.getElementById('original-image');
-const containerWidth = container.clientWidth - 16;
-const containerHeight = container.clientHeight - 16;
-resizeImage(uploadedImg, containerWidth, containerHeight);
-}
-const generatedImg = document.querySelector('#generated-image img:not(.preloader)');
-if (generatedImg) {
-const container = document.getElementById('generated-image');
-const containerWidth = container.clientWidth - 16;
-const containerHeight = container.clientHeight - 56;
-resizeImage(generatedImg, containerWidth, containerHeight);
-}
-});
+        } catch (error) {
+            alert('Generation Error: ' + error.message);
+            document.getElementById('generated-box').innerHTML = '<span style="color: #ff6b6b;">Error generating image</span>';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔁 Rebuild Image';
+        }
+    };
 </script>
 </body>
 </html>
