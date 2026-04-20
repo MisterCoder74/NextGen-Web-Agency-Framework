@@ -889,6 +889,15 @@ body {
   flex-wrap: wrap;
 }
 
+.deploy-feedback { margin-top: 10px; width: 100%; }
+.deploy-link {
+  display: inline-block; margin-top: 8px; padding: 6px 12px;
+  background: var(--cyan-dim); border: 1px solid var(--cyan);
+  border-radius: var(--radius); color: var(--cyan); text-decoration: none;
+  font-weight: 800; font-size: 0.85rem; transition: var(--transition);
+}
+.deploy-link:hover { background: var(--cyan-glow); transform: translateY(-2px); }
+
 /* --- TOAST --- */
 .toast {
   position: fixed;

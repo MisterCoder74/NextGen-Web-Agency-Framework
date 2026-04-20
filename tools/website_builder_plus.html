@@ -120,8 +120,12 @@
             </div>
 
             <div id="actionButtons" style="display: none; flex-direction: column; gap: 10px;">
-                <button class="btn btn-success" id="btnDownloadZip" style="width: 100%;">📦 Download Project (ZIP)</button>
-                <button class="btn" id="btnDeploy" style="width: 100%;">🌐 Deploy Microapp</button>
+                <div class="button-group">
+                    <button class="btn btn-success" id="btnDownloadZip" style="flex: 1;">📦 Download ZIP</button>
+                    <button class="btn btn-secondary" id="btnDownloadHtml">↓ HTML</button>
+                    <button class="btn btn-secondary" id="btnDownloadPhp">↓ PHP</button>
+                </div>
+                <button class="btn btn-primary" id="btnDeploy" style="width: 100%;">🚀 Deploy App</button>
             </div>
 
             <div id="statusArea"></div>
@@ -274,24 +278,33 @@ NEVER use markdown in your responses.`;
         ], 'ai_website_project');
     };
 
+    document.getElementById('btnDownloadHtml').onclick = () => {
+        Core.downloadFile(currentFrontend, 'index.html');
+    };
+
+    document.getElementById('btnDownloadPhp').onclick = () => {
+        Core.downloadFile(currentBackend, 'backend.php', 'application/x-httpd-php');
+    };
+
     document.getElementById('btnDeploy').onclick = async () => {
         const btn = document.getElementById('btnDeploy');
+        const statusArea = document.getElementById('statusArea');
         btn.disabled = true;
-        btn.textContent = '🚀 Deploying...';
+        statusArea.innerHTML = '<div class="preloader active">Deploying...</div>';
         
         const result = await Core.deployProject(currentFrontend, currentBackend);
         if (result.success) {
-            const statusArea = document.getElementById('statusArea');
             statusArea.innerHTML = `
                 <div class="success-message" style="margin-top: 10px;">
-                    ✅ Deployed! <a href="${result.url}" target="_blank" style="color: inherit; font-weight: 800;">Open App</a>
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
                 </div>
             `;
         } else {
-            alert('Deploy failed: ' + result.message);
+            statusArea.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
         }
         btn.disabled = false;
-        btn.textContent = '🌐 Deploy Microapp';
     };
 </script>
 </body>
