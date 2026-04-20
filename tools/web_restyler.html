@@ -417,7 +417,7 @@ async function startWorkflow() {
     };
 
     document.getElementById("btnDownloadZip").onclick = () => {
-        const defaultPhp = "<?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+        const defaultPhp = "<" + "?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
         Core.downloadZip([
             { name: 'index.html', content: cleanedCode },
             { name: 'backend.php', content: defaultPhp }
@@ -431,7 +431,7 @@ async function startWorkflow() {
         btn.disabled = true;
         feedback.innerHTML = '<div class="preloader active">Deploying...</div>';
         
-        const defaultPhp = "<?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+        const defaultPhp = "<" + "?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
         const result = await Core.deployProject(cleanedCode, defaultPhp);
         
         if (result.success) {
