@@ -31,6 +31,8 @@
     }
     .analysis-content h3 { color: #5eead4; margin-top: 16px; margin-bottom: 8px; font-size: 1rem; }
     .analysis-content p { margin-bottom: 10px; line-height: 1.6; }
+    .analysis-content ul { margin-bottom: 16px; padding-left: 20px; }
+    .analysis-content li { margin-bottom: 8px; line-height: 1.5; color: rgba(255,255,255,0.85); }
     
     @media (max-width: 800px) {
         .main-cols { flex-direction: column; }
@@ -123,7 +125,7 @@
             const messages = [
                 { role: 'system', content: 'You are a senior Web Designer and UX Specialist. Analyze the provided image and provide a professional review.' },
                 { role: 'user', content: [
-                    { type: 'text', text: `Analyze this ${type} layout. Focus on: Structure, Colors, Typography, Navigation, and UX. Provide a rating (1-10) for each and an overall score. Format as clean HTML (h3, p, ul, li). No markdown.` },
+                    { type: 'text', text: `Analyze this ${type} layout. Focus on: Structure, Colors, Typography, Navigation, and UX. For each of these 5 aspects, provide a detailed analysis of at least 80 words. Provide a rating (1-10) for each and an overall score. Format as clean HTML (h3, p, ul, li). No markdown.` },
                     { type: 'image_url', image_url: { url: currentImageData } }
                 ]}
             ];

@@ -35,13 +35,19 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) fixed;
   color: var(--text);
   font-family: var(--font-display);
   font-size: 14px;
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* --- PAGE OVERRIDE --- */
+.page {
+  padding: 0 !important;
+  gap: 0 !important;
 }
 
 /* --- NOISE TEXTURE --- */
@@ -448,6 +454,43 @@ body {
   color: var(--text-muted);
   text-transform: uppercase;
   margin-bottom: 14px;
+}
+
+.presets-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.presets-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preset-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.preset-chip:hover {
+  background: var(--bg-card-h);
+  border-color: var(--cyan-dim);
+  color: var(--cyan);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.1);
 }
 
 .request-card textarea {
