@@ -11,8 +11,6 @@
   <link rel="stylesheet" href="css/style.css" />
   <style>
     /* Specific overrides for WebForge style integration */
-    .site-header { margin-bottom: 0; }
-    .main-container { padding-top: 20px; }
     .btn-back-dashboard { margin-right: 10px; }
   </style>
 </head>
@@ -21,32 +19,21 @@
   <div class="noise"></div>
 
   <div class="page">
-    <!-- HEADER -->
-    <header class="site-header page-header">
-    <div class="header-inner" style="width: 100%; max-width: none;">
-      <div class="logo">
-        <span class="logo-mark">▶</span>
-        <span class="logo-text">WebForge <em>AI</em></span>
-      </div>
-      <div class="header-meta">
-        <span class="badge" id="status-badge">IDLE</span>
-        <button class="btn-icon" id="projects-toggle" title="Projects Archive">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        </button>
-      </div>
+    <div class="page-header">
+        <div class="icon-badge">🛠️</div>
+        <div class="page-header-text">
+            <h1>WebForge <em>AI</em></h1>
+            <p>Virtual Web Agency Pipeline — Collaborative AI Development</p>
+        </div>
+        <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <span class="badge" id="status-badge">IDLE</span>
+            <a href="dashboard.html" class="btn btn-ghost" style="text-decoration: none; font-size: 0.8rem;">
+              <span class="btn-icon-left">⬅</span> Back to Dashboard
+            </a>
+        </div>
     </div>
-  </header>
 
-  <!-- PROJECTS PANEL -->
-  <div class="projects-panel" id="projects-panel">
-    <div class="projects-panel-header">
-      <h3>Projects Archive</h3>
-      <button class="btn-icon" id="projects-panel-close">✕</button>
-    </div>
-    <div class="projects-list" id="projects-list">
-      <div class="projects-empty">No saved projects yet.</div>
-    </div>
-  </div>
+    <hr class="divider">
 
     <div class="scroll-area">
       <!-- MAIN -->
@@ -310,51 +297,47 @@ const STATE = {
 
 const $ = (id) => document.getElementById(id);
 const DOM = {
-  statusBadge:        $('status-badge'),
-  userRequest:        $('user-request'),
-  charCount:          $('char-count'),
-  runPipelineBtn:     $('run-pipeline-btn'),
-  pipelineProgress:   $('pipeline-progress-fill'),
-  resultsSection:     $('results-section'),
-  previewBtn:         $('preview-btn'),
-  downloadBtn:        $('download-btn'),
-  docBtn:             $('doc-btn'),
-  resetBtn:           $('reset-btn'),
-  toast:              $('error-toast'),
-  toastMessage:       $('toast-message'),
-  toastClose:         $('toast-close'),
-  outputModal:        $('output-modal'),
-  outputModalTitle:   $('output-modal-title'),
-  outputModalContent: $('output-modal-content'),
-  outputModalTabs:    $('output-modal-tabs'),
-  outputModalClose:   $('output-modal-close'),
-  previewModal:       $('preview-modal'),
-  previewModalClose:  $('preview-modal-close'),
-  previewIframe:      $('preview-iframe'),
-  previewProjectName: $('preview-project-name'),
-  previewDesktop:     $('preview-desktop'),
-  previewTablet:      $('preview-tablet'),
-  previewMobile:      $('preview-mobile'),
-  previewWrapper:     $('preview-wrapper'),
-  deployBtn:          $('deploy-btn'),
-  deployFeedback:     $('deploy-feedback'),
-  downloadHtmlBtn:    $('download-html-btn'),
-  downloadPhpBtn:     $('download-php-btn'),
-  docModal:           $('doc-modal'),
-  docContent:         $('doc-content'),
-  docModalClose:      $('doc-modal-close'),
-  docDownloadMd:      $('doc-download-md'),
-  docDownloadHtml:    $('doc-download-html'),
-  projectsToggle:     $('projects-toggle'),
-  projectsPanel:      $('projects-panel'),
-  projectsPanelClose: $('projects-panel-close'),
-  projectsList:       $('projects-list'),
-  presetsBar:         $('presets-bar'),
-  screenshotUpload:   $('screenshot-upload'),
-  uploadBtn:          $('upload-btn'),
-  screenshotPreview:  $('screenshot-preview'),
-  screenshotPreviewContainer: $('screenshot-preview-container'),
-  removeScreenshot:   $('remove-screenshot'),
+statusBadge:        $('status-badge'),
+userRequest:        $('user-request'),
+charCount:          $('char-count'),
+runPipelineBtn:     $('run-pipeline-btn'),
+pipelineProgress:   $('pipeline-progress-fill'),
+resultsSection:     $('results-section'),
+previewBtn:         $('preview-btn'),
+downloadBtn:        $('download-btn'),
+docBtn:             $('doc-btn'),
+resetBtn:           $('reset-btn'),
+toast:              $('error-toast'),
+toastMessage:       $('toast-message'),
+toastClose:         $('toast-close'),
+outputModal:        $('output-modal'),
+outputModalTitle:   $('output-modal-title'),
+outputModalContent: $('output-modal-content'),
+outputModalTabs:    $('output-modal-tabs'),
+outputModalClose:   $('output-modal-close'),
+previewModal:       $('preview-modal'),
+previewModalClose:  $('preview-modal-close'),
+previewIframe:      $('preview-iframe'),
+previewProjectName: $('preview-project-name'),
+previewDesktop:     $('preview-desktop'),
+previewTablet:      $('preview-tablet'),
+previewMobile:      $('preview-mobile'),
+previewWrapper:     $('preview-wrapper'),
+deployBtn:          $('deploy-btn'),
+deployFeedback:     $('deploy-feedback'),
+downloadHtmlBtn:    $('download-html-btn'),
+downloadPhpBtn:     $('download-php-btn'),
+docModal:           $('doc-modal'),
+docContent:         $('doc-content'),
+docModalClose:      $('doc-modal-close'),
+docDownloadMd:      $('doc-download-md'),
+docDownloadHtml:    $('doc-download-html'),
+presetsBar:         $('presets-bar'),
+screenshotUpload:   $('screenshot-upload'),
+uploadBtn:          $('upload-btn'),
+screenshotPreview:  $('screenshot-preview'),
+screenshotPreviewContainer: $('screenshot-preview-container'),
+removeScreenshot:   $('remove-screenshot'),
 };
 
 function showToast(msg) {
@@ -393,7 +376,6 @@ async function startPipeline() {
     await runBot2();
     await runBot3();
     await runBot4();
-    saveCurrentProject();
     showResults();
   } catch (err) {
     showToast(err.message);
@@ -553,7 +535,38 @@ DOM.deployBtn.onclick = async () => {
 DOM.previewBtn.onclick = () => {
     DOM.previewIframe.srcdoc = STATE.outputs.bot4.preview_html;
     DOM.previewModal.classList.add('open');
+    DOM.previewDesktop.click();
 };
+
+DOM.docBtn.onclick = () => {
+    if (STATE.outputs.bot4 && STATE.outputs.bot4.summary) {
+        DOM.docContent.textContent = STATE.outputs.bot4.summary;
+        DOM.docModal.classList.add('open');
+    }
+};
+
+DOM.previewDesktop.onclick = () => {
+    DOM.previewIframe.style.width = '100%';
+    DOM.previewDesktop.classList.add('active');
+    DOM.previewTablet.classList.remove('active');
+    DOM.previewMobile.classList.remove('active');
+};
+
+DOM.previewTablet.onclick = () => {
+    DOM.previewIframe.style.width = '768px';
+    DOM.previewTablet.classList.add('active');
+    DOM.previewDesktop.classList.remove('active');
+    DOM.previewMobile.classList.remove('active');
+};
+
+DOM.previewMobile.onclick = () => {
+    DOM.previewIframe.style.width = '375px';
+    DOM.previewMobile.classList.add('active');
+    DOM.previewDesktop.classList.remove('active');
+    DOM.previewTablet.classList.remove('active');
+};
+
+DOM.docModalClose.onclick = () => DOM.docModal.classList.remove('open');
 DOM.outputModalClose.onclick = () => DOM.outputModal.classList.remove('open');
 DOM.previewModalClose.onclick = () => DOM.previewModal.classList.remove('open');
 
@@ -567,11 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.presetsBar.appendChild(chip);
     });
 });
-
-// Mocking storage functions for brevity in this task, but in real app they'd be fully implemented
-function saveCurrentProject() {}
-function loadProjects() { return []; }
-function renderProjectsList() {}
 
 </script>
 </body>
