@@ -44,11 +44,7 @@ body {
   overflow-x: hidden;
 }
 
-/* --- PAGE OVERRIDE --- */
-.page {
-  padding: 0 !important;
-  gap: 0 !important;
-}
+/* Page shell uses global.css defaults */
 
 /* --- NOISE TEXTURE --- */
 .noise {
@@ -476,21 +472,21 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
 }
 
 .preset-chip:hover {
-  background: var(--bg-card-h);
-  border-color: var(--cyan-dim);
-  color: var(--cyan);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.1);
+  background: var(--cyan-dim);
+  border-color: var(--cyan);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--cyan-glow);
 }
 
 .request-card textarea {
@@ -889,6 +885,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+  flex-wrap: wrap;
   box-shadow: 0 0 48px var(--green-dim);
   animation: results-appear 0.5s ease forwards;
 }
@@ -930,9 +927,10 @@ body {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.deploy-feedback { margin-top: 10px; width: 100%; }
+.deploy-feedback { margin-top: 15px; width: 100%; }
 .deploy-link {
   display: inline-block; margin-top: 8px; padding: 6px 12px;
   background: var(--cyan-dim); border: 1px solid var(--cyan);
@@ -1149,8 +1147,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
-  overflow: hidden;
+  background: #111;
+  overflow: auto;
   position: relative;
 }
 
@@ -1160,6 +1158,7 @@ body {
   border: none;
   transition: width 0.3s ease;
   display: block;
+  background: #fff;
 }
 
 /* --- RESPONSIVE --- */
