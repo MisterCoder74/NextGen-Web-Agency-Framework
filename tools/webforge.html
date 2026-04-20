@@ -529,7 +529,7 @@ DOM.deployBtn.onclick = async () => {
     DOM.deployFeedback.innerHTML = '<div class="preloader active">Deploying...</div>';
     
     const htmlFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html')) || { content: '' };
-    const phpFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php')) || { content: '<?php // Default backend' };
+    const phpFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php')) || { content: '<' + '?php // Default backend' };
     
     const result = await Core.deployProject(htmlFile.content, phpFile.content);
     

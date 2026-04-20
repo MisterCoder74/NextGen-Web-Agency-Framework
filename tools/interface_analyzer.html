@@ -21,7 +21,7 @@
         position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
     }
     
-    #uploaded-image { width: 100%; border-radius: 10px; border: 1px solid rgba(6,182,212,0.2); margin-top: 10px; }
+    #uploaded-image { width: 100%; border-radius: 10px; border: 1px solid rgba(6,182,212,0.2); margin-top: 10px; max-height: 400px; object-fit: contain; }
     
     #text-box {
         flex: 1; overflow-y: auto;
@@ -51,43 +51,45 @@
 
     <hr class="divider">
 
-    <div class="main-cols">
-        <div class="col-left">
-            <div class="card">
-                <div class="section-title">Interface Type</div>
-                <select id="choice" style="width: 100%; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px;">
-                    <option value="website">Website</option>
-                    <option value="application">Mobile/Desktop App</option>
-                </select>
+    <div class="scroll-area">
+        <div class="main-cols">
+            <div class="col-left">
+                <div class="card">
+                    <div class="section-title">Interface Type</div>
+                    <select id="choice" style="width: 100%; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px;">
+                        <option value="website">Website</option>
+                        <option value="application">Mobile/Desktop App</option>
+                    </select>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">Upload Design</div>
+                    <div class="file-drop">
+                        <input type="file" accept="image/*" id="vfile-input">
+                        <div style="font-size: 2rem;">🖥️</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Drop image or click to browse</div>
+                    </div>
+                    <img id="uploaded-image" style="display: none;">
+                    <button class="btn btn-primary" id="btnAnalyze" style="width: 100%; margin-top: 12px;" disabled>🔍 Analyze Interface</button>
+                </div>
             </div>
 
-            <div class="card">
-                <div class="section-title">Upload Design</div>
-                <div class="file-drop">
-                    <input type="file" accept="image/*" id="vfile-input">
-                    <div style="font-size: 2rem;">🖥️</div>
-                    <div style="font-size: 0.8rem; margin-top: 5px;">Drop image or click to browse</div>
+            <div class="col-right">
+                <div class="section-title">Analysis Report</div>
+                <div id="text-box">
+                    <div id="analysisPlaceholder" style="color: rgba(255,255,255,0.2); text-align: center; margin-top: 40px;">
+                        <div style="font-size: 3rem;">📋</div>
+                        <p>Upload a screenshot to get started</p>
+                    </div>
+                    <div id="image-analysis-output" class="analysis-content"></div>
                 </div>
-                <img id="uploaded-image" style="display: none;">
-                <button class="btn btn-primary" id="btnAnalyze" style="width: 100%; margin-top: 12px;" disabled>🔍 Analyze Interface</button>
-            </div>
-        </div>
-
-        <div class="col-right">
-            <div class="section-title">Analysis Report</div>
-            <div id="text-box">
-                <div id="analysisPlaceholder" style="color: rgba(255,255,255,0.2); text-align: center; margin-top: 40px;">
-                    <div style="font-size: 3rem;">📋</div>
-                    <p>Upload a screenshot to get started</p>
+                <div id="actionButtons" style="display: none; margin-top: 10px;">
+                    <button class="btn btn-success" id="btnDownload">⬇️ Download Report (.txt)</button>
                 </div>
-                <div id="image-analysis-output" class="analysis-content"></div>
-            </div>
-            <div id="actionButtons" style="display: none; margin-top: 10px;">
-                <button class="btn btn-success" id="btnDownload">⬇️ Download Report (.txt)</button>
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 <script src="js/core.js"></script>
 <script>

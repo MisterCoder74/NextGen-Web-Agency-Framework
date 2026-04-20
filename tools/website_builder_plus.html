@@ -218,7 +218,7 @@ NEVER use markdown in your responses.`;
             const backendMatch = response.match(/---- start of backend section ----([\s\S]*?)---- end of backend section ----/i);
             
             currentFrontend = frontendMatch ? frontendMatch[1].trim() : Core.cleanResponse(response);
-            currentBackend = backendMatch ? backendMatch[1].trim() : "<?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+            currentBackend = backendMatch ? backendMatch[1].trim() : "<" + "?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
 
             appendMessage('VivacityGPT', currentFrontend, true);
             chatMemory.push({ role: 'assistant', content: response });
