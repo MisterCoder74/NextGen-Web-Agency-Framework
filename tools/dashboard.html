@@ -1,1 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VivacityGPT Dashboard</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+    .api-key-card {
+        margin-bottom: 20px;
+    }
+    .api-key-input-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .api-key-input-group input {
+        flex: 1;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: #fff;
+        padding: 10px 13px;
+        font-size: 0.86rem;
+    }
+</style>
+</head>
+<body>
 
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🚀</div>
+        <div class="page-header-text">
+            <h1>VivacityGPT NextGen</h1>
+            <p>Integrated Web Agency Framework — AI-Powered Development Suite</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <!-- API KEY SECTION -->
+        <div class="card api-key-card">
+            <div class="section-title">🔑 OpenAI API Configuration</div>
+            <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Set your API Key here to use it across all tools. Stored only in your browser.</p>
+            <div class="api-key-input-group">
+                <input type="password" id="globalApiKey" placeholder="sk-...">
+                <button class="btn btn-primary" id="btnSaveKey">Save Key</button>
+            </div>
+            <div id="apiKeyStatus" style="margin-top: 10px; font-size: 0.75rem;"></div>
+        </div>
+
+        <div class="section-title">🛠 Available Tools</div>
+        
+        <div class="dashboard-grid">
+            <a href="webforge.html" class="tool-card">
+                <div class="tool-icon">🛠️</div>
+                <h2>WebForge AI</h2>
+                <p>Multi-agent pipeline for full-stack web applications. Strategist, Frontend, Backend & Validator.</p>
+            </a>
+
+            <a href="website_builder_plus.html" class="tool-card">
+                <div class="tool-icon">✨</div>
+                <h2>Website Builder Plus</h2>
+                <p>Generate complete websites with 4 preset styles and smart content generation.</p>
+            </a>
+
+            <a href="web_restyler.html" class="tool-card">
+                <div class="tool-icon">🎭</div>
+                <h2>Web Restyler</h2>
+                <p>Restyle existing HTML, generate from prompts, or convert WordPress to clean code.</p>
+            </a>
+
+            <a href="collabra.html" class="tool-card">
+                <div class="tool-icon">🤝</div>
+                <h2>Collabra</h2>
+                <p>Collaborative dev tool for dual-agent workflow (Frontend & Backend).</p>
+            </a>
+
+            <a href="interface_analyzer.html" class="tool-card">
+                <div class="tool-icon">🔍</div>
+                <h2>Interface Analyzer</h2>
+                <p>Analyze UI screenshots or URLs for UX/UI improvements and accessibility.</p>
+            </a>
+
+            <a href="repo_analyzer.html" class="tool-card">
+                <div class="tool-icon">📦</div>
+                <h2>Repo Analyzer</h2>
+                <p>Gain insights from GitHub repositories and technical documentation.</p>
+            </a>
+
+            <a href="img_rebuilder.html" class="tool-card">
+                <div class="tool-icon">🖼️</div>
+                <h2>Image Rebuilder</h2>
+                <p>AI-powered image manipulation and regeneration for web assets.</p>
+            </a>
+
+            <a href="md_converter.html" class="tool-card">
+                <div class="tool-icon">📝</div>
+                <h2>Markdown Converter</h2>
+                <p>Convert README.md to professional documentation or vice-versa.</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="js/core.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const keyInput = document.getElementById('globalApiKey');
+        const saveBtn = document.getElementById('btnSaveKey');
+        const status = document.getElementById('apiKeyStatus');
+
+        // Load existing key
+        const savedKey = Core.getApiKey();
+        if (savedKey) {
+            keyInput.value = savedKey;
+            status.innerHTML = '✅ API Key is set and ready.';
+            status.style.color = '#00f2a0';
+        }
+
+        saveBtn.addEventListener('click', () => {
+            const key = keyInput.value.trim();
+            if (key) {
+                Core.setApiKey(key);
+                status.innerHTML = '✅ API Key saved successfully!';
+                status.style.color = '#00f2a0';
+                setTimeout(() => {
+                    status.innerHTML = '✅ API Key is set and ready.';
+                }, 3000);
+            } else {
+                localStorage.removeItem('openaikey');
+                status.innerHTML = '⚠️ API Key removed.';
+                status.style.color = '#ff6b6b';
+            }
+        });
+    });
+</script>
+</body>
+</html>

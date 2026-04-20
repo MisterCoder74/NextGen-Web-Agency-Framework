@@ -4,374 +4,145 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Interface Analyzer — VivacityGPT</title>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<link rel="stylesheet" href="css/global.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-  font-family: "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #fff;
-  overflow: hidden;
-}
-
-.page {
-  height: 100vh;
-  display: flex; flex-direction: column;
-  padding: 24px 28px 20px; gap: 16px;
-}
-
-/* ── HEADER ── */
-.page-header { display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0; }
-.icon-badge { font-size: 2.2rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(6,182,212,0.5)); }
-.page-header-text h1 {
-  font-size: 1.4rem; font-weight: 800;
-  background: linear-gradient(90deg, #06b6d4, #67e8f9);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.page-header-text p { font-size: 0.73rem; color: rgba(255,255,255,0.35); margin-top: 3px; font-style: italic; }
-
-hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
-
-/* ── LAYOUT ── */
-.main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
-.col-left  { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
-.col-right { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-
-/* ── CARD ── */
-.card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 14px; padding: 14px 16px; backdrop-filter: blur(6px);
-}
-
-/* ── FIELD LABEL ── */
-.field-label {
-  font-size: 0.68rem; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: rgba(6,182,212,0.85); display: block; margin-bottom: 7px;
-}
-
-/* ── SELECT ── */
-select {
-  width: 100%; background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
-  color: #fff; padding: 9px 12px; font-size: 0.83rem;
-  outline: none; cursor: pointer; transition: border-color 0.2s;
-  appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2306b6d4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
-}
-select:focus { border-color: rgba(6,182,212,0.5); }
-select option { background: #1a1a3e; color: #fff; }
-
-/* ── FILE DROP ── */
-.file-drop {
-  position: relative; width: 100%;
-  border: 2px dashed rgba(6,182,212,0.3); border-radius: 12px;
-  padding: 20px 14px; text-align: center; cursor: pointer;
-  transition: border-color 0.2s, background 0.2s; background: rgba(6,182,212,0.04);
-}
-.file-drop:hover { border-color: rgba(6,182,212,0.6); background: rgba(6,182,212,0.08); }
-.file-drop input[type="file"] {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-}
-.file-drop .drop-icon { font-size: 1.8rem; margin-bottom: 5px; }
-.file-drop .drop-hint { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-.file-drop .drop-hint span { color: #06b6d4; font-weight: 600; }
-
-#vfeedback { font-size: 0.73rem; color: rgba(6,182,212,0.7); min-height: 14px; font-style: italic; margin-top: 6px; text-align: center; }
-
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 8px 14px; border-radius: 9px; font-size: 0.78rem; font-weight: 700;
-  cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.06); color: #fff;
-  transition: transform 0.16s, background 0.16s, box-shadow 0.16s;
-  user-select: none; white-space: nowrap; font-family: inherit;
-}
-.btn:hover { transform: scale(1.04); background: rgba(6,182,212,0.18); box-shadow: 0 3px 14px rgba(6,182,212,0.25); border-color: rgba(6,182,212,0.4); }
-.btn:active { transform: scale(0.97); }
-
-.btn-row { display: flex; gap: 8px; margin-top: 10px; }
-.btn-upload { flex: 1; background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.35); }
-.btn-analyze {
-  flex: 1; font-weight: 800;
-  background: linear-gradient(90deg, rgba(6,182,212,0.28), rgba(103,232,249,0.18));
-  border-color: rgba(6,182,212,0.5);
-}
-
-/* ── PREVIEW CARD ── */
-.image-preview-card { display: none; flex-direction: column; align-items: center; gap: 10px; }
-.image-preview-card.visible { display: flex; }
-#uploaded-image { width: 100%; border-radius: 10px; border: 1px solid rgba(6,182,212,0.2); object-fit: cover; max-height: 180px; display: none; }
-
-/* ── SECTION LABEL ── */
-.section-label {
-  font-size: 0.68rem; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: rgba(255,255,255,0.28);
-  padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
-}
-
-/* ── ANALYSIS OUTPUT ── */
-#text-box {
-  flex: 1; overflow-y: auto;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(6,182,212,0.12);
-  border-radius: 14px; padding: 18px 20px;
-  display: flex; flex-direction: column; gap: 14px;
-}
-#text-box::-webkit-scrollbar { width: 5px; }
-#text-box::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.25); border-radius: 4px; }
-
-/* HTML injected by JS */
-#image-analysis-output { font-size: 0.86rem; line-height: 1.75; color: rgba(255,255,255,0.85); }
-#image-analysis-output h3 { font-size: 0.95rem; font-weight: 700; color: #67e8f9; margin: 12px 0 4px; }
-#image-analysis-output p  { margin-bottom: 8px; }
-#image-analysis-output ul { padding-left: 18px; margin-bottom: 8px; }
-#image-analysis-output li { margin-bottom: 4px; }
-#image-analysis-output strong { color: #67e8f9; }
-
-/* download link appended by JS */
-#text-box a {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.75rem; font-weight: 700; padding: 6px 14px;
-  border-radius: 8px; border: 1px solid rgba(0,242,160,0.3);
-  background: rgba(0,242,160,0.08); color: #00f2a0;
-  text-decoration: none; transition: background 0.18s; align-self: flex-start;
-}
-#text-box a:hover { background: rgba(0,242,160,0.18); }
-
-/* loading pill */
-.loading-pill {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 0.75rem; font-weight: 700; padding: 6px 12px;
-  border-radius: 20px; background: rgba(6,182,212,0.1);
-  border: 1px solid rgba(6,182,212,0.25); color: #06b6d4; align-self: flex-start;
-}
-.loading-pill .dot {
-  width: 6px; height: 6px; border-radius: 50%; background: #06b6d4;
-  animation: pulse 1.2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
-
-/* empty state */
-.analysis-placeholder {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 10px; flex: 1;
-  color: rgba(255,255,255,0.15); font-size: 0.85rem; text-align: center;
-}
-.analysis-placeholder .ph-icon { font-size: 3rem; opacity: 0.2; }
-
-/* ── RESPONSIVE ── */
-@media (max-width: 680px) {
-  html, body { overflow: auto; }
-  .page { height: auto; overflow: visible; padding: 16px; }
-  .main-cols { flex-direction: column; }
-  .col-left { width: 100%; }
-  #text-box { min-height: 300px; }
-}
+    .main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
+    .col-left  { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    
+    .file-drop {
+        position: relative; width: 100%;
+        border: 2px dashed rgba(6,182,212,0.3); border-radius: 12px;
+        padding: 20px 14px; text-align: center; cursor: pointer;
+        transition: border-color 0.2s, background 0.2s; background: rgba(6,182,212,0.04);
+    }
+    .file-drop:hover { border-color: rgba(6,182,212,0.6); background: rgba(6,182,212,0.08); }
+    .file-drop input[type="file"] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    
+    #uploaded-image { width: 100%; border-radius: 10px; border: 1px solid rgba(6,182,212,0.2); margin-top: 10px; }
+    
+    #text-box {
+        flex: 1; overflow-y: auto;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 18px 20px;
+    }
+    .analysis-content h3 { color: #5eead4; margin-top: 16px; margin-bottom: 8px; font-size: 1rem; }
+    .analysis-content p { margin-bottom: 10px; line-height: 1.6; }
+    
+    @media (max-width: 800px) {
+        .main-cols { flex-direction: column; }
+        .col-left { width: 100%; }
+    }
 </style>
 </head>
 <body>
 
 <div class="page">
-
-  <div class="page-header">
-    <div class="icon-badge">🔍</div>
-    <div class="page-header-text">
-      <h1>AI Interface Analyzer</h1>
-      <p>Get a professional review of your website or app UI — structure, colors, typography, navigation and more</p>
+    <div class="page-header">
+        <div class="icon-badge">🔍</div>
+        <div class="page-header-text">
+            <h1>AI Interface Analyzer</h1>
+            <p>Professional UX/UI review of your web or mobile designs</p>
+        </div>
     </div>
-  </div>
 
-  <hr class="divider">
+    <hr class="divider">
 
-  <div class="main-cols">
-
-    <!-- LEFT -->
-    <div class="col-left">
-
-      <div class="card">
-        <span class="field-label">Interface Type</span>
-        <select id="choice">
-          <option value="">Select type…</option>
-          <option value="website">Website</option>
-          <option value="application">Application</option>
-        </select>
-      </div>
-
-      <div class="card">
-        <span class="field-label">📂 Upload Screenshot</span>
-        <div id="voperations">
-          <form enctype="multipart/form-data" method="POST">
-            <div class="file-drop">
-              <input type="file" accept=".jpg,.png" name="file" id="vfile-input">
-              <div class="drop-icon">🖥️</div>
-              <div class="drop-hint">Drop image or <span>click to browse</span></div>
-              <div class="drop-hint" style="margin-top:3px;">JPG · PNG</div>
+    <div class="main-cols">
+        <div class="col-left">
+            <div class="card">
+                <div class="section-title">Interface Type</div>
+                <select id="choice" style="width: 100%; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px;">
+                    <option value="website">Website</option>
+                    <option value="application">Mobile/Desktop App</option>
+                </select>
             </div>
-            <div id="vfeedback"></div>
-            <div class="btn-row">
-              <button id="vuploadBtn" class="btn btn-upload" type="submit">⬆️ Upload</button>
-              <button type="button" class="btn btn-analyze" onclick="getChatGPTResponseIMG();">🔍 Analyze</button>
+
+            <div class="card">
+                <div class="section-title">Upload Design</div>
+                <div class="file-drop">
+                    <input type="file" accept="image/*" id="vfile-input">
+                    <div style="font-size: 2rem;">🖥️</div>
+                    <div style="font-size: 0.8rem; margin-top: 5px;">Drop image or click to browse</div>
+                </div>
+                <img id="uploaded-image" style="display: none;">
+                <button class="btn btn-primary" id="btnAnalyze" style="width: 100%; margin-top: 12px;" disabled>🔍 Analyze Interface</button>
             </div>
-          </form>
         </div>
-      </div>
 
-      <!-- Image preview -->
-      <div class="card image-preview-card" id="previewCard">
-        <span class="field-label">Preview</span>
-        <div id="original-image">
-          <img id="uploaded-image" src="" alt="Uploaded screenshot">
+        <div class="col-right">
+            <div class="section-title">Analysis Report</div>
+            <div id="text-box">
+                <div id="analysisPlaceholder" style="color: rgba(255,255,255,0.2); text-align: center; margin-top: 40px;">
+                    <div style="font-size: 3rem;">📋</div>
+                    <p>Upload a screenshot to get started</p>
+                </div>
+                <div id="image-analysis-output" class="analysis-content"></div>
+            </div>
+            <div id="actionButtons" style="display: none; margin-top: 10px;">
+                <button class="btn btn-success" id="btnDownload">⬇️ Download Report (.txt)</button>
+            </div>
         </div>
-      </div>
-
     </div>
-
-    <!-- RIGHT -->
-    <div class="col-right">
-      <div class="section-label">Analysis Report</div>
-      <div id="text-box">
-        <div class="analysis-placeholder" id="analysisPlaceholder">
-          <div class="ph-icon">🔍</div>
-          <div>Upload a screenshot and click Analyze<br>to receive a professional UI review</div>
-        </div>
-        <p id="image-analysis-output"></p>
-      </div>
-    </div>
-
-  </div>
 </div>
 
+<script src="js/core.js"></script>
 <script>
-$(document).ready(function () {
-  $('#vuploadBtn').click(function (e) {
-    e.preventDefault();
-    $.ajax({
-      url: 'vupload.php',
-      type: 'POST',
-      data: new FormData($('form')[0]),
-      processData: false,
-      contentType: false,
-      success: function (response) {
-        const data = JSON.parse(response);
-        if (data.status === "success") {
-          $('#vfeedback').html("✅ File uploaded.");
-          var fileInput = document.getElementById('vfile-input');
-          var file = fileInput.files[0];
-          if (file) {
-            var originalimageUrl = URL.createObjectURL(file);
-            $('#uploaded-image').attr('src', originalimageUrl).show();
-            document.getElementById('previewCard').classList.add('visible');
-          }
-          $('#voperations button[type="button"]').attr('onclick', `submitImage("${data.url}");`);
-        } else {
-          $('#vfeedback').html(data);
+    let currentImageData = "";
+    let analysisResult = "";
+
+    document.getElementById('vfile-input').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            const img = document.getElementById('uploaded-image');
+            img.src = url;
+            img.style.display = 'block';
+            document.getElementById('btnAnalyze').disabled = false;
+            
+            const reader = new FileReader();
+            reader.onload = (evt) => { currentImageData = evt.target.result; };
+            reader.readAsDataURL(file);
         }
-      }
-    });
-  });
-});
+    };
 
-let chatMemory = [];
-chatMemory = createMemory([{
-  role: "system",
-  content: "You are senior Web Designer. You will analyze the image of a website or app layout and you will provide a professional analysis focalizing on the following points: structure, choice of colors, typography, navigation, text content arrangement. For each of these point you will also provide a rating between 1 (very bad) and 10 (very good). You will also use the same rating scale to provide an overall final rating of the layout, and you will suggest how to improve the final layout."
-}]);
+    document.getElementById('btnAnalyze').onclick = async () => {
+        const btn = document.getElementById('btnAnalyze');
+        const type = document.getElementById('choice').value;
+        btn.disabled = true;
+        btn.textContent = '⏳ Analyzing...';
+        document.getElementById('analysisPlaceholder').style.display = 'none';
+        document.getElementById('image-analysis-output').innerHTML = '<div class="preloader active">Processing...</div>';
 
-function createMemory(messages) {
-  const memory = [];
-  for (const msg of messages) {
-    memory.push({ role: msg.role, content: msg.content });
-  }
-  return memory;
-}
+        try {
+            const messages = [
+                { role: 'system', content: 'You are a senior Web Designer and UX Specialist. Analyze the provided image and provide a professional review.' },
+                { role: 'user', content: [
+                    { type: 'text', text: `Analyze this ${type} layout. Focus on: Structure, Colors, Typography, Navigation, and UX. Provide a rating (1-10) for each and an overall score. Format as clean HTML (h3, p, ul, li). No markdown.` },
+                    { type: 'image_url', image_url: { url: currentImageData } }
+                ]}
+            ];
+            
+            const data = await Core.callAI(messages, 'gpt-4o-mini');
+            analysisResult = data.choices[0].message.content;
+            document.getElementById('image-analysis-output').innerHTML = analysisResult;
+            document.getElementById('actionButtons').style.display = 'block';
+        } catch (error) {
+            alert('Analysis Error: ' + error.message);
+            document.getElementById('analysisPlaceholder').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analyze Interface';
+        }
+    };
 
-async function submitImage(imgUrl) {
-  return await getChatGPTResponseIMG("https://www.vivacitydesign.net/vdgptscomplete/" + imgUrl, chatMemory);
-        // riportare la url finale di dominio
-}
-
-async function getChatGPTResponseIMG(fileUrl, chatMemory) {
-  const apikey = localStorage.getItem("openaikey");
-  if (!apikey) { alert("No OpenAI API Key found."); return; }
-
-  var selectedValue = document.querySelector('#choice').value;
-
-  // Remove placeholder
-  const placeholder = document.getElementById("analysisPlaceholder");
-  if (placeholder) placeholder.remove();
-
-  const chatContainer = document.getElementById("text-box");
-  const loader = document.createElement("div");
-  loader.id = "typing-indicator";
-  loader.className = "loading-pill";
-  loader.innerHTML = `<span class="dot"></span> Analyzing interface…`;
-  chatContainer.appendChild(loader);
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apikey },
-      body: JSON.stringify({
-        model: "gpt-4.1-nano",
-        messages: [
-          ...chatMemory.map(item => ({ ...item })),
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `You are senior Web Designer and Desktop applications developer. You will analyze the image of a ${selectedValue} layout and you will provide a professional analysis focalizing on the following points: structure, choice of colors, typography, navigation, icons and general graphics, text content arrangement. For each of these point you will also provide a rating between 1 (very bad) and 10 (very good). You will also use the same rating scale to provide an overall final rating of the ${selectedValue} layout, and you will suggest how to improve the final layout. Format your entire response as valid HTML using tags like <h3>, <p>, <ul>, <li>, <strong> etc. Do not use markdown. Do not include <html>, <head> or <body> tags, because your answer will be inserted into a <div> element.`
-              },
-              { type: "image_url", image_url: { url: fileUrl } }
-            ]
-          }
-        ],
-        max_tokens: 1200
-      })
-    });
-
-    if (!response.ok) throw new Error("API error: HTTP " + response.status);
-    const data = await response.json();
-    if (!data.choices?.[0]?.message?.content) throw new Error("Invalid API response.");
-
-    var chatGPTResponse = data.choices[0].message.content;
-    chatGPTResponse = chatGPTResponse.replace(/\*\*(.*?)\*\*/g, "$1");
-
-    const ldr = document.getElementById("typing-indicator");
-    if (ldr) ldr.remove();
-
-    const responsediv = document.getElementById("image-analysis-output");
-    responsediv.innerHTML = chatGPTResponse;
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const blob = new Blob([chatGPTResponse], { type: "text/plain" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `interface_analysis_${timestamp}.txt`;
-    link.innerHTML = "⬇️ Download Analysis";
-    chatContainer.appendChild(link);
-
-    chatMemory.push({ role: "user", content: fileUrl });
-    chatMemory.push({ role: "assistant", content: chatGPTResponse });
-    return chatMemory;
-
-  } catch (error) {
-    const ldr = document.getElementById("typing-indicator");
-    if (ldr) ldr.remove();
-    const errDiv = document.createElement("div");
-    errDiv.style.cssText = "font-size:.78rem;color:#ff6b6b;font-weight:700;";
-    errDiv.textContent = "❌ " + error.message;
-    chatContainer.appendChild(errDiv);
-    console.error(error);
-  }
-}
+    document.getElementById('btnDownload').onclick = () => {
+        const cleanText = document.getElementById('image-analysis-output').innerText;
+        Core.downloadFile(cleanText, 'interface_analysis.txt', 'text/plain');
+    };
 </script>
-
 </body>
 </html>

@@ -3,300 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>1-Page Dev Collabra</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700&display=swap" rel="stylesheet">
+<title>Collabra — VivacityGPT</title>
+<link rel="stylesheet" href="css/global.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --acc:#00f5c4;--acc2:#ff6b6b;--acc3:#ffd93d;
-  --panel:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);
-  --text:#e8eaf6;--muted:#7986cb;
-  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;
-}
-html,body{min-height:100vh;background:#0a0a1a;color:var(--text);font-family:var(--sans)}
-body{padding:2rem 1.5rem 4rem}
+    .collab-container {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .pipeline-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .agent-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.05);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-family: monospace;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+    }
+    .dot.active { background: #14b8a6; box-shadow: 0 0 8px #14b8a6; }
+    .dot.be { background: #a78bfa; }
+    .dot.be.active { box-shadow: 0 0 8px #a78bfa; }
 
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal-overlay.hidden{display:none}
-.modal{background:#12122a;border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:440px}
-.modal h2{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:6px}
-.modal p{font-size:0.78rem;color:var(--muted);font-family:var(--mono);margin-bottom:1.4rem;line-height:1.6}
-.modal label{display:block;font-size:0.7rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
-.modal input[type=password]{width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:0.85rem;padding:10px 12px;outline:none;transition:border-color 0.2s;margin-bottom:1rem}
-.modal input[type=password]:focus{border-color:var(--acc)}
-.modal-actions{display:flex;gap:8px}
-.btn-primary{flex:1;padding:10px;background:linear-gradient(135deg,var(--acc),#00c896);border:none;border-radius:8px;color:#0a0a1a;font-family:var(--sans);font-size:0.9rem;font-weight:700;cursor:pointer}
-.btn-ghost{padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:0.8rem;cursor:pointer}
-.btn-ghost:hover{border-color:var(--acc2);color:var(--acc2)}
-.key-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:0.72rem;color:var(--muted);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:20px;transition:all 0.2s}
-.key-badge:hover{border-color:var(--acc);color:var(--acc)}
-.key-badge .kdot{width:7px;height:7px;border-radius:50%;background:#ff4444}
-.key-badge .kdot.ok{background:var(--acc)}
+    #logArea {
+        height: 120px;
+    }
 
-.header{text-align:center;margin-bottom:2rem}
-.header-top{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:6px;flex-wrap:wrap}
-.header h1{font-size:2rem;font-weight:700;letter-spacing:-0.03em;color:#fff}
-.header h1 span{color:var(--acc)}
-.header p{font-size:0.8rem;color:var(--muted);font-family:var(--mono)}
-
-.pipeline{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:2rem;flex-wrap:wrap}
-.agent{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.75rem;font-family:var(--mono)}
-.agent .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.dot-fe{background:var(--acc)}
-.dot-be{background:var(--acc2)}
-.arrow{color:var(--muted);font-size:1rem}
-
-.prompt-area{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;max-width:860px;margin-left:auto;margin-right:auto}
-.prompt-area label{display:block;font-size:0.72rem;font-family:var(--mono);color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.1em}
-.prompt-area textarea{width:100%;background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:0.82rem;padding:12px;resize:vertical;min-height:80px;outline:none;line-height:1.6;transition:border-color 0.2s}
-.prompt-area textarea:focus{border-color:var(--acc)}
-.run-btn{width:100%;margin-top:12px;padding:12px;background:linear-gradient(135deg,var(--acc),#00c896);border:none;border-radius:10px;color:#0a0a1a;font-family:var(--sans);font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:0.03em;transition:opacity 0.2s,transform 0.1s}
-.run-btn:hover:not(:disabled){opacity:0.92;transform:translateY(-1px)}
-.run-btn:disabled{opacity:0.45;cursor:not-allowed}
-
-.logs-wrap{max-width:860px;margin:0 auto 1.5rem}
-.logs-label{font-size:0.7rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
-.logs{background:rgba(0,0,0,0.45);border:1px solid var(--border);border-radius:12px;padding:1rem;min-height:90px;max-height:200px;overflow-y:auto;font-family:var(--mono);font-size:0.74rem;line-height:1.9}
-.log-line{animation:fadein 0.3s ease}
-.log-fe{color:var(--acc)}
-.log-be{color:var(--acc2)}
-.log-sys{color:var(--muted)}
-.log-ok{color:var(--acc3)}
-.log-err{color:#ff4444}
-@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-
-.results{display:none;max-width:990px;margin:0 auto;gap:1.2rem;flex-direction:column}
-.results.show{display:flex}
-.section-label{font-size:0.7rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
-.tabs{display:flex;gap:4px}
-.tab{padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--panel);font-size:0.75rem;font-family:var(--mono);cursor:pointer;color:var(--muted);transition:all 0.2s;user-select:none}
-.tab.active{background:rgba(0,245,196,0.1);color:var(--acc);border-color:var(--acc)}
-.code-panel{background:rgba(0,0,0,0.55);border:1px solid var(--border);border-radius:0 12px 12px 12px;padding:1.1rem;font-family:var(--mono);font-size:0.74rem;line-height:1.65;max-height:280px;overflow:auto;white-space:pre;tab-size:2}
-.code-html{color:#c5cae9}
-.code-php{color:#ffcdd2}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.action-btn{flex:1;min-width:150px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-family:var(--mono);font-size:0.75rem;cursor:pointer;transition:all 0.2s;text-align:center}
-.action-btn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
-.action-btn:disabled{opacity:0.4;cursor:not-allowed}
-iframe.preview-frame{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;min-height:480px;display:block}
-.divider{border:none;border-top:1px solid var(--border);margin:0.5rem 0}
+    .results-area {
+        display: none;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .results-area.active { display: flex; }
 </style>
 </head>
 <body>
 
-<div class="modal-overlay hidden" id="modalOverlay">
-  <div class="modal">
-    <h2>OpenAI API Key</h2>
-    <p>Enter your OpenAI API key to power the frontend and backend agents. The key is stored only in your browser's localStorage and never sent anywhere except directly to OpenAI.</p>
-    <label>API Key</label>
-    <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="saveApiKey()">Save &amp; Continue</button>
-      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🤝</div>
+        <div class="page-header-text">
+            <h1>Collabra AI</h1>
+            <p>Dual-agent collaborative workflow for rapid frontend and backend generation</p>
+        </div>
     </div>
-  </div>
-</div>
 
-<div class="header">
-<div class="header-top">
-<h1>1-Page <span>Dev Collabra</span></h1>
-<span class="key-badge" id="keyBadge" onclick="openModal()">
-<span class="kdot" id="keyDot"></span>
-<span id="keyLabel">set api key</span>
-</span>
-</div>
-<p>The smallest web agency ever</p>
-</div>
+    <hr class="divider">
 
-<div class="pipeline">
-  <div class="agent"><span class="dot dot-fe"></span>Frontend Agent</div>
-  <span class="arrow">&rarr;</span>
-  <div class="agent"><span class="dot dot-be"></span>Backend PHP Agent</div>
-</div>
+    <div class="scroll-area">
+        <div class="collab-container">
+            <div class="pipeline-status">
+                <div class="agent-status"><div class="dot" id="dotFE"></div> Frontend Agent</div>
+                <div style="color: rgba(255,255,255,0.3);">→</div>
+                <div class="agent-status"><div class="dot be" id="dotBE"></div> Backend PHP Agent</div>
+            </div>
 
-<div class="prompt-area">
-  <label>What do you want to build?</label>
-  <textarea id="userPrompt" placeholder="e.g. A contact form with name, email, message fields and a PHP handler that sends an email confirmation..."></textarea>
-  <button class="run-btn" id="runBtn" onclick="runPipeline()">&#9654; Run Pipeline</button>
-</div>
+            <div class="card">
+                <div class="section-title">🚀 Project Requirements</div>
+                <textarea id="userPrompt" rows="4" placeholder="Describe the feature or page you want to build (e.g., A contact form with validation and PHP confirmation email)..."></textarea>
+                <button class="btn btn-primary" id="runBtn" style="width: 100%; margin-top: 12px;">▶ Launch Pipeline</button>
+            </div>
 
-<div class="logs-wrap">
-  <div class="logs-label">Pipeline log</div>
-  <div class="logs" id="logs"><span class="log-sys">// pipeline idle &mdash; enter a prompt and run</span></div>
-</div>
+            <div class="section-title">📜 Pipeline Log</div>
+            <div id="logArea"></div>
 
-<div class="results" id="results">
-  <div>
-    <div class="section-label">Generated code</div>
-    <div class="tabs">
-      <div class="tab active" id="tab-html" onclick="switchTab('html')">index.html</div>
-      <div class="tab" id="tab-php" onclick="switchTab('php')">handler.php</div>
+            <div class="results-area" id="results">
+                <div class="card">
+                    <div class="section-title">📂 Generated Code</div>
+                    <div class="input-tabs">
+                        <button class="tab-btn active" data-tab="html">index.html</button>
+                        <button class="tab-btn" data-tab="php">handler.php</button>
+                    </div>
+                    <div class="tab-content active" id="tabHtml">
+                        <pre id="codeHtml" class="code-view" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; overflow: auto; max-height: 300px; color: #a5b4fc;"></pre>
+                    </div>
+                    <div class="tab-content" id="tabPhp">
+                        <pre id="codePhp" class="code-view" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; overflow: auto; max-height: 300px; color: #fca5a5;"></pre>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 12px;">
+                        <button class="btn btn-success" id="btnDownloadZip">📦 Download Project (ZIP)</button>
+                        <button class="btn" id="btnDeploy">🌐 Deploy Microapp</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">👁 Live Preview (Frontend)</div>
+                    <iframe id="previewFrame" style="width: 100%; height: 500px; background: white; border-radius: 10px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="code-panel code-html" id="codeHtml"></div>
-    <div class="code-panel code-php" id="codePhp" style="display:none"></div>
-  </div>
-  <div class="actions">
-    <button class="action-btn" onclick="downloadFile('html')">&#8595; Download index.html</button>
-    <button class="action-btn" onclick="downloadFile('php')">&#8595; Download handler.php</button>
-  </div>
-  <hr class="divider">
-  <div>
-    <div class="section-label">Live preview</div>
-    <iframe class="preview-frame" id="previewFrame" title="Live preview"></iframe>
-  </div>
 </div>
 
+<script src="js/core.js"></script>
 <script>
-var generatedHtml = '';
-var generatedPhp  = '';
+    let generatedHtml = '';
+    let generatedPhp = '';
 
-function getApiKey(){ return localStorage.getItem('openai_api_key') || ''; }
+    function appendLog(msg, type = 'sys') {
+        const log = document.getElementById('logArea');
+        const line = document.createElement('div');
+        line.style.marginBottom = '4px';
+        line.style.color = type === 'fe' ? '#14b8a6' : (type === 'be' ? '#a78bfa' : 'rgba(255,255,255,0.5)');
+        line.textContent = `[${Core.getFormattedTime()}] ${msg}`;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+    }
 
-function saveApiKey(){
-  var val = document.getElementById('apiKeyInput').value.trim();
-  if(!val){ alert('Please enter a valid API key.'); return; }
-  localStorage.setItem('openai_api_key', val);
-  updateKeyBadge();
-  closeModal();
-}
+    // TABS
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`tab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+        });
+    });
 
-function openModal(){
-  var existing = getApiKey();
-  if(existing){
-    document.getElementById('apiKeyInput').value = existing;
-  }
-  document.getElementById('modalOverlay').classList.remove('hidden');
-}
+    async function runPipeline() {
+        const prompt = document.getElementById('userPrompt').value.trim();
+        if (!prompt) return;
 
-function closeModal(){
-  document.getElementById('modalOverlay').classList.add('hidden');
-  sessionStorage.setItem('modal_dismissed', '1');
-}
+        const btn = document.getElementById('runBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+        document.getElementById('logArea').innerHTML = '';
+        document.getElementById('results').classList.remove('active');
+        
+        try {
+            // Frontend Agent
+            document.getElementById('dotFE').classList.add('active');
+            appendLog('Frontend Agent started...', 'fe');
+            const feSystem = 'You are an expert frontend developer. Given a feature request, output ONLY a complete, self-contained index.html file with embedded CSS and vanilla JavaScript. No frameworks. No markdown fences. No explanation. Output raw HTML only, starting with <!DOCTYPE html>.';
+            const feData = await Core.callAI([{ role: 'system', content: feSystem }, { role: 'user', content: prompt }]);
+            generatedHtml = Core.cleanResponse(feData.choices[0].message.content);
+            appendLog(`index.html generated (${generatedHtml.length} chars)`, 'fe');
+            document.getElementById('dotFE').classList.remove('active');
 
-function updateKeyBadge(){
-  var key = getApiKey();
-  var dot   = document.getElementById('keyDot');
-  var label = document.getElementById('keyLabel');
-  if(key){
-    dot.className = 'kdot ok';
-    label.textContent = 'sk-...' + key.slice(-4);
-  } else {
-    dot.className = 'kdot';
-    label.textContent = 'set api key';
-  }
-}
+            // Backend Agent
+            document.getElementById('dotBE').classList.add('active');
+            appendLog('Backend Agent started...', 'be');
+            const beSystem = 'You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete handler.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with <?php.';
+            const beData = await Core.callAI([{ role: 'system', content: beSystem }, { role: 'user', content: `Feature: ${prompt}\n\nFrontend HTML:\n${generatedHtml.slice(0, 4000)}` }]);
+            generatedPhp = Core.cleanResponse(beData.choices[0].message.content);
+            appendLog(`handler.php generated (${generatedPhp.length} chars)`, 'be');
+            document.getElementById('dotBE').classList.remove('active');
 
-document.getElementById('modalOverlay').addEventListener('click', function(e){
-  if(e.target === this) closeModal();
-});
+            // Finalize
+            document.getElementById('codeHtml').textContent = generatedHtml;
+            document.getElementById('codePhp').textContent = generatedPhp;
+            document.getElementById('previewFrame').srcdoc = generatedHtml;
+            document.getElementById('results').classList.add('active');
+            appendLog('Pipeline completed successfully!', 'sys');
+            
+        } catch (error) {
+            appendLog('Error: ' + error.message, 'be');
+            alert(error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '▶ Launch Pipeline';
+        }
+    }
 
-function log(msg, cls){
-  cls = cls || 'log-sys';
-  var el = document.getElementById('logs');
-  var line = document.createElement('div');
-  line.className = 'log-line ' + cls;
-  line.textContent = msg;
-  el.appendChild(line);
-  el.scrollTop = el.scrollHeight;
-}
-function clearLogs(){ document.getElementById('logs').innerHTML = ''; }
+    document.getElementById('runBtn').onclick = runPipeline;
 
-function switchTab(tab){
-  document.getElementById('tab-html').classList.toggle('active', tab==='html');
-  document.getElementById('tab-php').classList.toggle('active',  tab==='php');
-  document.getElementById('codeHtml').style.display = tab==='html' ? 'block' : 'none';
-  document.getElementById('codePhp').style.display  = tab==='php'  ? 'block' : 'none';
-}
+    document.getElementById('btnDownloadZip').onclick = () => {
+        Core.downloadZip([
+            { name: 'index.html', content: generatedHtml },
+            { name: 'handler.php', content: generatedPhp }
+        ], 'collabra_project');
+    };
 
-async function callGPT(systemPrompt, userMsg){
-  var key = getApiKey();
-  if(!key) throw new Error('No API key set. Click "set api key" to add your OpenAI key.');
-  var res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + key
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      max_tokens: 16000,
-      messages: [
-        {role: 'system', content: systemPrompt},
-        {role: 'user',   content: userMsg}
-      ]
-    })
-  });
-  var data = await res.json();
-  if(data.error) throw new Error(data.error.message);
-  return data.choices[0].message.content;
-}
-
-async function runPipeline(){
-  var prompt = document.getElementById('userPrompt').value.trim();
-  if(!prompt) return;
-  var apiKey = localStorage.getItem('openai_api_key');
-  document.getElementById('apiKeyInput').value = apiKey || '';
-  if(!apiKey){
-    alert('No OpenAI API Key found. Click "set api key" to add it.');
-    return;
-  }
-
-  clearLogs();
-  document.getElementById('results').classList.remove('show');
-  var btn = document.getElementById('runBtn');
-  btn.disabled = true;
-  btn.textContent = 'Running...';
-
-  try {
-    log('Prompt: "' + prompt.slice(0,70) + (prompt.length>70?'...':'') + '"', 'log-sys');
-    log('', 'log-sys');
-    log('[Frontend Agent] Generating index.html...', 'log-fe');
-
-    var feSystem = 'You are an expert frontend developer. Given a feature request, output ONLY a complete, self-contained index.html file with embedded CSS and vanilla JavaScript. No frameworks. No markdown fences. No explanation. Output raw HTML only, starting with <!DOCTYPE html>.';
-    var feResult = await callGPT(feSystem, prompt);
-    generatedHtml = feResult.trim().replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
-    log('[Frontend Agent] index.html ready (' + generatedHtml.length + ' chars)', 'log-fe');
-
-    log('', 'log-sys');
-    log('[Backend Agent] Generating handler.php...', 'log-be');
-
-    var beSystem = 'You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete handler.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with <\?php.';
-    var beResult = await callGPT(beSystem, 'Feature: ' + prompt + '\n\nFrontend HTML (excerpt):\n' + generatedHtml.slice(0, 3000));
-    generatedPhp = beResult.trim().replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim();
-    log('[Backend Agent] handler.php ready (' + generatedPhp.length + ' chars)', 'log-be');
-
-    log('', 'log-sys');
-    log('[System] Rendering preview...', 'log-ok');
-
-    document.getElementById('codeHtml').textContent = generatedHtml;
-    document.getElementById('codePhp').textContent  = generatedPhp;
-    document.getElementById('previewFrame').srcdoc  = generatedHtml;
-    document.getElementById('results').classList.add('show');
-    log('[System] Done. Preview is live.', 'log-ok');
-
-  } catch(e){
-    log('[Error] ' + e.message, 'log-err');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Run Pipeline';
-}
-
-function downloadFile(type){
-  var content  = type==='html' ? generatedHtml : generatedPhp;
-  var filename = type==='html' ? 'index.html'  : 'handler.php';
-  var mime     = type==='html' ? 'text/html'   : 'application/x-httpd-php';
-  var blob = new Blob([content], {type: mime});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  updateKeyBadge();
-});
+    document.getElementById('btnDeploy').onclick = async () => {
+        const btn = document.getElementById('btnDeploy');
+        btn.disabled = true;
+        btn.textContent = '🚀 Deploying...';
+        const result = await Core.deployProject(generatedHtml, generatedPhp);
+        if (result.success) {
+            appendLog(`Deploy successful: ${result.url}`, 'sys');
+            window.open(result.url, '_blank');
+        } else {
+            alert('Deploy failed: ' + result.message);
+        }
+        btn.disabled = false;
+        btn.textContent = '🌐 Deploy Microapp';
+    };
 </script>
 </body>
 </html>

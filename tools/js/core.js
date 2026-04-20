@@ -1,0 +1,143 @@
+/**
+ * VivacityGPT Core JS
+ * Centralized logic for API Key, API calls, and common UI utilities.
+ */
+
+const Core = {
+    // API KEY MANAGEMENT
+    getApiKey: () => {
+        return localStorage.getItem('openaikey') || '';
+    },
+    setApiKey: (key) => {
+        localStorage.setItem('openaikey', key);
+    },
+    
+    // API CALLS
+    callAI: async (messages, model = 'gpt-4o-mini', options = {}) => {
+        const apiKey = Core.getApiKey();
+        if (!apiKey) {
+            throw new Error('Missing API Key. Please set it in the dashboard.');
+        }
+
+        const response = await fetch('api/chat.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: apiKey,
+                model: model,
+                messages: messages,
+                max_tokens: options.max_tokens || 8000,
+                temperature: options.temperature || 0.3
+            })
+        });
+
+        if (!response.ok) {
+            let errorMsg = 'API Error';
+            try {
+                const error = await response.json();
+                errorMsg = error.error?.message || error.error || 'API Error';
+            } catch(e) {}
+            throw new Error(errorMsg);
+        }
+
+        return await response.json();
+    },
+
+    // UTILITIES
+    cleanResponse: (text) => {
+        if (!text) return "";
+        let clean = text.replace(/(```html|```css|```javascript|```php|```python|```json|```)/gs, '');
+        return clean.trim();
+    },
+
+    // DOWNLOAD & DEPLOY
+    downloadFile: (content, filename, type = 'text/html') => {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    },
+
+    downloadZip: async (files, projectName = 'project') => {
+        // files should be an array of { name: 'file.html', content: '...' }
+        const formData = new FormData();
+        formData.append('project_name', projectName);
+        formData.append('files', JSON.stringify(files));
+
+        try {
+            const response = await fetch('api/download.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/zip')) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${projectName}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    // Fallback for when ZipArchive is not available
+                    const result = await response.json();
+                    if (result.files) {
+                        result.files.forEach(f => Core.downloadFile(f.content, f.name));
+                    }
+                }
+            } else {
+                throw new Error('Failed to generate ZIP file.');
+            }
+        } catch (error) {
+            console.error('ZIP Error:', error);
+            alert('Error generating ZIP: ' + error.message);
+        }
+    },
+
+    deployProject: async (frontendCode, backendCode) => {
+        try {
+            const response = await fetch('deploy.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    frontend: frontendCode,
+                    backend: backendCode
+                })
+            });
+
+            return await response.json();
+        } catch (error) {
+            console.error('Deploy Error:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    // UI UTILS
+    getFormattedTime: () => {
+        const t = new Date();
+        return `${t.getHours().toString().padStart(2, '0')}:${t.getMinutes().toString().padStart(2, '0')}`;
+    }
+};
+
+// Common UI Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Add "Back to Dashboard" button if it's not the dashboard itself
+    const isDashboard = window.location.pathname.endsWith('dashboard.html');
+    if (!isDashboard) {
+        const header = document.querySelector('.page-header');
+        if (header && !document.querySelector('.btn-back-dashboard')) {
+            const backBtn = document.createElement('a');
+            backBtn.href = 'dashboard.html';
+            backBtn.className = 'btn btn-back-dashboard';
+            backBtn.style.marginLeft = 'auto';
+            backBtn.innerHTML = '🏠 Dashboard';
+            header.appendChild(backBtn);
+        }
+    }
+});
