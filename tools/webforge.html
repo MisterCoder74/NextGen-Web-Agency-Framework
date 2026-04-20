@@ -20,9 +20,9 @@
 
   <div class="page">
     <div class="page-header">
-        <div class="icon-badge">🛠️</div>
+        <div class="icon-badge">🚀</div>
         <div class="page-header-text">
-            <h1>WebForge <em>AI</em></h1>
+            <h1>VivacityGPT <em>NextGen</em></h1>
             <p>Virtual Web Agency Pipeline — Collaborative AI Development</p>
         </div>
         <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
@@ -307,6 +307,10 @@ previewBtn:         $('preview-btn'),
 downloadBtn:        $('download-btn'),
 docBtn:             $('doc-btn'),
 resetBtn:           $('reset-btn'),
+viewBtn1:           $('view-btn-1'),
+viewBtn2:           $('view-btn-2'),
+viewBtn3:           $('view-btn-3'),
+viewBtn4:           $('view-btn-4'),
 toast:              $('error-toast'),
 toastMessage:       $('toast-message'),
 toastClose:         $('toast-close'),
@@ -388,7 +392,7 @@ async function startPipeline() {
 
 async function runBot1() {
   setCardState(1, 'running', 'Planning...');
-  const sys = `You are a web strategist. Plan the project architecture. Return JSON only.`;
+  const sys = `You are a web strategist. Plan the project architecture. Frontend has internal CSS and JS, no external files. Return JSON only.`;
   
   let userContent = STATE.userRequest;
   if (STATE.screenshot) {
@@ -410,7 +414,7 @@ async function runBot1() {
 
 async function runBot2() {
   setCardState(2, 'running', 'Designing...');
-  const sys = `You are a frontend dev. Create production HTML/CSS/JS. Return JSON: {"html":"","css":"","js":""}`;
+  const sys = `You are a frontend dev receiving a strategic plan. Create production HTML with internal CSS and JS, NO external files. Return JSON: {"html":""}`;
   const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: JSON.stringify(STATE.outputs.bot1) }]);
   STATE.outputs.bot2 = parseJSON(raw, 'Bot 2');
   setCardState(2, 'done', 'Frontend ready');
@@ -419,7 +423,7 @@ async function runBot2() {
 
 async function runBot3() {
   setCardState(3, 'running', 'Building Backend...');
-  const sys = `You are a PHP dev. Create backend files. Return JSON: {"files":[{"name":"","content":""}]}`;
+  const sys = `You are a PHP dev receiving a frontend code. Create backend files. Return JSON: {"files":[{"name":"","content":""}]}`;
   const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: JSON.stringify(STATE.outputs.bot2) }]);
   STATE.outputs.bot3 = parseJSON(raw, 'Bot 3');
   setCardState(3, 'done', 'Backend ready');
@@ -467,10 +471,12 @@ function showResults() {
 
 function resetCards() {
   for (let i=1; i<=4; i++) {
-    $(`card-${i}`).className = 'agent-card';
+    const card = $(`card-${i}`);
+    card.className = 'agent-card' + (i === 4 ? ' agent-card--final' : '');
     $(`status-${i}`).textContent = 'Waiting...';
     $(`progress-${i}`).style.width = '0%';
     $(`view-btn-${i}`).disabled = true;
+    card.querySelectorAll('.output-chip').forEach(c => c.classList.remove('ready'));
     if(i<4) { $(`line-${i}`).classList.remove('active'); $(`pulse-${i}`).classList.remove('animating'); }
   }
 }
@@ -564,6 +570,60 @@ DOM.previewMobile.onclick = () => {
     DOM.previewMobile.classList.add('active');
     DOM.previewDesktop.classList.remove('active');
     DOM.previewTablet.classList.remove('active');
+};
+
+const showOutput = (title, files) => {
+    DOM.outputModalTitle.textContent = title;
+    DOM.outputModalTabs.innerHTML = '';
+    DOM.outputModalContent.textContent = '';
+
+    if (Array.isArray(files)) {
+        files.forEach((file, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `modal-tab ${idx === 0 ? 'active' : ''}`;
+            btn.textContent = file.name;
+            btn.onclick = () => {
+                DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                DOM.outputModalContent.textContent = file.content;
+            };
+            DOM.outputModalTabs.appendChild(btn);
+            if (idx === 0) DOM.outputModalContent.textContent = file.content;
+        });
+    } else if (files && typeof files === 'object') {
+        const keys = Object.keys(files);
+        keys.forEach((key, idx) => {
+            if (key === 'preview_html') return; // skip internal preview
+            const btn = document.createElement('button');
+            btn.className = `modal-tab ${idx === 0 ? 'active' : ''}`;
+            btn.textContent = key.toUpperCase();
+            btn.onclick = () => {
+                DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                DOM.outputModalContent.textContent = typeof files[key] === 'string' ? files[key] : JSON.stringify(files[key], null, 2);
+            };
+            DOM.outputModalTabs.appendChild(btn);
+            if (idx === 0) DOM.outputModalContent.textContent = typeof files[key] === 'string' ? files[key] : JSON.stringify(files[key], null, 2);
+        });
+    }
+    DOM.outputModal.classList.add('open');
+};
+
+DOM.viewBtn1.onclick = () => showOutput('Idea Strategist Output', STATE.outputs.bot1);
+DOM.viewBtn2.onclick = () => showOutput('Frontend DevBot Output', STATE.outputs.bot2);
+DOM.viewBtn3.onclick = () => showOutput('Backend DevBot Output', STATE.outputs.bot3 ? STATE.outputs.bot3.files : []);
+DOM.viewBtn4.onclick = () => showOutput('Final Validator Output', STATE.outputs.bot4 ? STATE.outputs.bot4.files : []);
+
+DOM.resetBtn.onclick = () => {
+    DOM.userRequest.value = '';
+    STATE.outputs = { bot1: null, bot2: null, bot3: null, bot4: null };
+    STATE.screenshot = null;
+    DOM.screenshotPreviewContainer.style.display = 'none';
+    DOM.screenshotUpload.value = '';
+    setPipelineProgress(0);
+    resetCards();
+    DOM.resultsSection.style.display = 'none';
+    setStatusBadge('idle', 'IDLE');
 };
 
 DOM.docModalClose.onclick = () => DOM.docModal.classList.remove('open');
