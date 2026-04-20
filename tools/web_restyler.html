@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Web Restyler — VivacityGPT</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  color: #fff;
+  overflow: hidden;
+}
+
+/* ── PAGE SHELL ── */
+.page {
+  height: 100vh;
+  display: flex; flex-direction: column;
+  padding: 22px 28px 16px; gap: 14px;
+}
+
+/* ── HEADER ── */
+.page-header { display: flex; align-items: flex-start; gap: 14px; flex-shrink: 0; }
+.icon-badge { font-size: 2.2rem; line-height: 1; filter: drop-shadow(0 2px 8px rgba(20,184,166,0.5)); }
+.page-header-text h1 {
+  font-size: 1.4rem; font-weight: 800;
+  background: linear-gradient(90deg, #14b8a6, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.page-header-text p { font-size: 0.73rem; color: rgba(255,255,255,0.35); margin-top: 3px; font-style: italic; }
+
+hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  padding-right: 4px;
+}
+.scroll-area::-webkit-scrollbar { width: 5px; }
+.scroll-area::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.25); border-radius: 4px; }
+
+/* ── CARD ── */
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px; padding: 14px 16px; backdrop-filter: blur(6px);
+  flex-shrink: 0;
+}
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: rgba(20,184,166,0.85);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.required-badge {
+  font-size: 0.62rem; font-weight: 700; color: #ff6b6b;
+  background: rgba(255,80,80,0.12); border: 1px solid rgba(255,80,80,0.25);
+  border-radius: 4px; padding: 1px 5px; text-transform: uppercase;
+}
+.optional-badge {
+  font-size: 0.62rem; color: rgba(255,255,255,0.3); font-weight: 400;
+  text-transform: none; letter-spacing: 0;
+}
+
+/* ── TABS ── */
+.input-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.tab-btn {
+  padding: 7px 14px; border-radius: 9px; cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6); font-size: 0.78rem; font-weight: 700;
+  transition: all 0.18s; font-family: inherit;
+}
+.tab-btn:hover { background: rgba(20,184,166,0.15); border-color: rgba(20,184,166,0.35); color: #fff; }
+.tab-btn.active { background: rgba(20,184,166,0.2); border-color: rgba(20,184,166,0.5); color: #5eead4; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── FILE UPLOAD ── */
+.file-drop-zone {
+  border: 2px dashed rgba(20,184,166,0.3); border-radius: 12px;
+  padding: 16px; text-align: center; cursor: pointer;
+  background: rgba(20,184,166,0.04); transition: all 0.2s; position: relative;
+}
+.file-drop-zone:hover { border-color: rgba(20,184,166,0.6); background: rgba(20,184,166,0.08); }
+#fileUpload {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.file-drop-zone p { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.file-drop-zone .drop-main { font-size: 0.85rem; color: rgba(20,184,166,0.8); font-weight: 600; }
+
+.file-info {
+  display: none; margin-top: 8px; font-size: 0.75rem; font-weight: 700; padding: 7px 12px;
+  border-radius: 8px; background: rgba(0,242,160,0.08); color: #00f2a0;
+  border: 1px solid rgba(0,242,160,0.2);
+}
+.wordpress-detection {
+  display: none; margin-top: 8px; font-size: 0.75rem; font-weight: 700; padding: 7px 12px;
+  border-radius: 8px; background: rgba(251,191,36,0.08); color: #fcd34d;
+  border: 1px solid rgba(251,191,36,0.25);
+}
+
+/* ── TEXTAREA ── */
+textarea {
+  width: 100%; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+  color: #fff; padding: 10px 13px; font-size: 0.86rem;
+  font-family: inherit; resize: vertical; outline: none;
+  transition: border-color 0.2s; line-height: 1.6; min-height: 90px;
+}
+textarea:focus { border-color: rgba(20,184,166,0.5); }
+textarea::placeholder { color: rgba(255,255,255,0.22); }
+
+/* ── MODE SECTION ── */
+.mode-section {
+  margin-top: 12px; padding: 12px 14px;
+  background: rgba(255,255,255,0.03); border-radius: 10px;
+  border: 1px solid rgba(20,184,166,0.15);
+}
+.mode-section h4 { font-size: 0.7rem; font-weight: 700; color: rgba(20,184,166,0.7); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+
+/* ── RADIO / CHECKBOX GROUPS ── */
+.radio-group, .checkbox-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 7px;
+}
+.radio-group label, .checkbox-grid label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 8px; cursor: pointer;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.8rem; color: rgba(255,255,255,0.7);
+  transition: all 0.18s; user-select: none;
+}
+.radio-group label:hover:not([style*="pointer-events:none"]),
+.checkbox-grid label:hover {
+  background: rgba(20,184,166,0.12); border-color: rgba(20,184,166,0.35); color: #fff;
+}
+.radio-group input[type="radio"],
+.checkbox-grid input[type="checkbox"] { accent-color: #14b8a6; cursor: pointer; flex-shrink: 0; }
+
+/* ── COLOR PICKERS ── */
+.color-picker-group {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;
+}
+.color-picker-item { display: flex; flex-direction: column; gap: 6px; }
+.color-picker-item label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.55); letter-spacing: 0.5px; }
+.color-picker-item input[type="color"] {
+  width: 100%; height: 44px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; cursor: pointer;
+  background: transparent; padding: 2px;
+}
+
+/* ── CONTROL GROUP ── */
+.control-group { margin-bottom: 16px; }
+.control-group:last-child { margin-bottom: 0; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06); color: #fff;
+  transition: transform 0.16s, background 0.16s, box-shadow 0.16s;
+  user-select: none; font-family: inherit;
+}
+.btn:hover:not(:disabled) { transform: scale(1.04); }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+
+.button-group { display: flex; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+
+#btnGenerate {
+  background: linear-gradient(90deg, rgba(20,184,166,0.3), rgba(167,139,250,0.2));
+  border-color: rgba(20,184,166,0.5); font-weight: 800;
+}
+#btnGenerate:hover:not(:disabled) { background: rgba(20,184,166,0.35); box-shadow: 0 4px 18px rgba(20,184,166,0.3); }
+#btnExport { border-color: rgba(0,242,160,0.3); color: #00f2a0; }
+#btnExport:hover:not(:disabled) { background: rgba(0,242,160,0.12); border-color: rgba(0,242,160,0.5); }
+#btnClearLog { border-color: rgba(255,80,80,0.25); color: rgba(255,120,120,0.7); }
+#btnClearLog:hover:not(:disabled) { background: rgba(255,80,80,0.1); }
+
+/* ── STATUS CARD ── */
+.status-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(20,184,166,0.2);
+  border-radius: 12px; padding: 12px 16px;
+}
+.status-card .role-title { font-size: 0.78rem; font-weight: 700; color: rgba(20,184,166,0.8); margin-bottom: 6px; }
+.status-card .card-status { font-size: 0.82rem; color: rgba(255,255,255,0.55); white-space: pre-line; }
+
+.progress-bar {
+  height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px;
+  margin-top: 10px; overflow: hidden; visibility: hidden;
+}
+.progress-bar span {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, #14b8a6, #a78bfa);
+  width: 0%; transition: width 0.3s ease;
+}
+
+/* ── PRELOADER ── */
+.preloader { display: none; }
+.preloader.active {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.75rem; font-weight: 700; padding: 6px 12px;
+  border-radius: 20px; background: rgba(20,184,166,0.1);
+  border: 1px solid rgba(20,184,166,0.25); color: #14b8a6;
+}
+.preloader.active::before {
+  content: '';
+  width: 7px; height: 7px; border-radius: 50%; background: #14b8a6;
+  animation: pulse 1.2s infinite; flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ── MESSAGES ── */
+#messageContainer { flex-shrink: 0; }
+.success-message {
+  font-size: 0.78rem; font-weight: 700; padding: 8px 14px; border-radius: 9px;
+  background: rgba(0,242,160,0.1); color: #00f2a0; border: 1px solid rgba(0,242,160,0.25);
+  margin-bottom: 8px;
+}
+.error-message {
+  font-size: 0.78rem; font-weight: 700; padding: 8px 14px; border-radius: 9px;
+  background: rgba(239,68,68,0.1); color: #ff6b6b; border: 1px solid rgba(239,68,68,0.25);
+  margin-bottom: 8px;
+}
+
+/* ── LOG AREA ── */
+#logArea {
+  background: rgba(0,0,0,0.4); color: #34d399;
+  padding: 10px 14px; border-radius: 10px;
+  font-family: "Courier New", monospace; font-size: 0.75rem;
+  max-height: 140px; overflow-y: auto; white-space: pre-wrap;
+  border: 1px solid rgba(20,184,166,0.15); flex-shrink: 0;
+}
+#logArea::-webkit-scrollbar { width: 4px; }
+#logArea::-webkit-scrollbar-thumb { background: rgba(20,184,166,0.2); border-radius: 4px; }
+
+/* ── CONTENT DISPLAY (preview + code) ── */
+.content-display { display: none; gap: 12px; flex-shrink: 0; }
+.content-display.active { display: flex; }
+
+.preview-panel { flex: 65%; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.code-panel    { flex: 35%; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.preview-panel h3, .code-panel h3 {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: rgba(20,184,166,0.7);
+}
+
+#previewFrame {
+  width: 100%; height: 500px;
+  border: 1px solid rgba(20,184,166,0.2); border-radius: 10px;
+  background: #fff;
+}
+
+#codeDisplay {
+  background: rgba(0,0,0,0.35); color: #a5b4fc;
+  padding: 10px 12px; border-radius: 10px; overflow: auto;
+  font-family: "Courier New", monospace; font-size: 0.73rem;
+  height: 500px; white-space: pre-wrap; word-break: break-all;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#codeDisplay::-webkit-scrollbar { width: 4px; }
+#codeDisplay::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.3); border-radius: 4px; }
+
+/* ── TOKEN INFO ── */
+#tokenInfo {
+  display: none;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(20,184,166,0.2);
+  border-radius: 12px; padding: 14px 16px; flex-shrink: 0;
+}
+#tokenInfo h3 { font-size: 0.78rem; font-weight: 700; color: #14b8a6; margin-bottom: 10px; }
+.token-details {
+  background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 12px;
+  font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 10px;
+}
+.token-details strong { color: rgba(255,255,255,0.85); }
+.token-summary {
+  background: linear-gradient(90deg, rgba(20,184,166,0.2), rgba(167,139,250,0.15));
+  border: 1px solid rgba(20,184,166,0.3);
+  border-radius: 8px; padding: 10px 14px; text-align: center;
+  font-size: 0.82rem; font-weight: 700; color: #5eead4;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  html, body { overflow: auto; }
+  .page { height: auto; overflow: visible; padding: 14px; }
+  .scroll-area { overflow: visible; max-height: none; }
+  .content-display { flex-direction: column; }
+  .preview-panel, .code-panel { flex: none; }
+  #previewFrame, #codeDisplay { height: 300px; }
+  .radio-group, .checkbox-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="icon-badge">🎭</div>
+    <div class="page-header-text">
+      <h1>AI Website Restyler & Generator</h1>
+      <p>Restyle existing HTML, generate from prompt, or De-WordPress — powered by gpt-4o-mini</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area">
+
+    <!-- INPUT SECTION -->
+    <div class="card">
+      <div class="section-title">📥 Input Source</div>
+
+      <div class="input-tabs">
+        <button class="tab-btn active" data-tab="file">📁 Upload HTML/TXT</button>
+        <button class="tab-btn" data-tab="prompt">✍️ Write Prompt</button>
+      </div>
+
+      <div class="tab-content active" id="tabFile">
+        <div class="file-drop-zone">
+          <input type="file" id="fileUpload" accept=".html,.txt,.htm">
+          <div style="font-size:1.6rem;margin-bottom:6px;">📂</div>
+          <div class="drop-main">Click to upload an HTML or TXT file</div>
+          <p>Supports .html · .htm · .txt</p>
+        </div>
+        <div id="fileInfo" class="file-info"></div>
+        <div id="wordpressDetection" class="wordpress-detection">
+          ⚠️ <strong>WordPress detected!</strong> Enable De-WordPress mode below.
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabPrompt">
+        <textarea id="prompt" rows="4" placeholder="Describe the web page you want to create (e.g., 'A modern landing page for a fitness app with hero section, features, pricing and testimonials')"></textarea>
+      </div>
+
+      <div class="mode-section">
+        <h4>🔧 Operation Mode</h4>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="operationMode" value="standard" checked>
+            <span>Standard Restyling / Generation</span>
+          </label>
+          <label id="deWpModeLabel" style="opacity:0.4; pointer-events:none;">
+            <input type="radio" name="operationMode" value="dewordpress" disabled>
+            <span>🔄 De-WordPress Mode</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROLS SECTION -->
+    <div class="card">
+
+      <div class="control-group">
+        <div class="section-title">🎨 Layout Style <span class="required-badge">Required</span></div>
+        <div class="radio-group">
+          <label><input type="radio" name="layoutStyle" value="minimalistic"><span>Minimalistic</span></label>
+          <label><input type="radio" name="layoutStyle" value="creative"><span>Creative</span></label>
+          <label><input type="radio" name="layoutStyle" value="hi-tech"><span>Hi-Tech</span></label>
+          <label><input type="radio" name="layoutStyle" value="professional"><span>Professional</span></label>
+          <label><input type="radio" name="layoutStyle" value="enterprise"><span>Enterprise</span></label>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="section-title">🎨 Color Scheme <span class="required-badge">Required</span></div>
+        <div class="color-picker-group">
+          <div class="color-picker-item">
+            <label>Primary Color</label>
+            <input type="color" id="color1" value="#0078d7">
+          </div>
+          <div class="color-picker-item">
+            <label>Secondary Color</label>
+            <input type="color" id="color2" value="#28a745">
+          </div>
+          <div class="color-picker-item">
+            <label>Accent Color</label>
+            <input type="color" id="color3" value="#ffc107">
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="section-title">📋 Sections to Include <span class="optional-badge">(optional)</span></div>
+        <div class="checkbox-grid">
+          <label><input type="checkbox" name="sections" value="header"><span>Header</span></label>
+          <label><input type="checkbox" name="sections" value="hero"><span>Hero Section</span></label>
+          <label><input type="checkbox" name="sections" value="horizontal-navbar"><span>H. Navbar</span></label>
+          <label><input type="checkbox" name="sections" value="vertical-navbar"><span>V. Navbar</span></label>
+          <label><input type="checkbox" name="sections" value="about"><span>About</span></label>
+          <label><input type="checkbox" name="sections" value="services"><span>Services</span></label>
+          <label><input type="checkbox" name="sections" value="products"><span>Products</span></label>
+          <label><input type="checkbox" name="sections" value="testimonials"><span>Testimonials</span></label>
+          <label><input type="checkbox" name="sections" value="image-gallery"><span>Image Gallery</span></label>
+          <label><input type="checkbox" name="sections" value="social-sharing"><span>Social Sharing</span></label>
+          <label><input type="checkbox" name="sections" value="footer"><span>Footer</span></label>
+          <label><input type="checkbox" name="sections" value="contact-form"><span>Contact Form</span></label>
+          <label><input type="checkbox" name="sections" value="auth-system"><span>Login/Register</span></label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="button-group">
+      <button class="btn" id="btnGenerate">🚀 Start Generation / Restyling</button>
+      <button class="btn" id="btnExport" disabled>⬇️ Download HTML</button>
+      <button class="btn" id="btnClearLog">🗑 Clear Log</button>
+    </div>
+
+    <!-- STATUS CARD -->
+    <div class="status-card" id="cardProcessor">
+      <div class="role-title">🤖 AI Processor</div>
+      <div class="card-status">Waiting for your input…</div>
+      <div class="progress-bar"><span></span></div>
+    </div>
+
+    <!-- PRELOADER -->
+    <div class="preloader" id="preloader">Processing…</div>
+
+    <!-- MESSAGES -->
+    <div id="messageContainer"></div>
+
+    <!-- LOG -->
+    <div id="logArea"></div>
+
+    <!-- PREVIEW + CODE -->
+    <div class="content-display" id="contentDisplay">
+      <div class="preview-panel">
+        <h3>👁 Live Preview</h3>
+        <iframe id="previewFrame" title="Live Preview"></iframe>
+      </div>
+      <div class="code-panel">
+        <h3>📄 Generated Code</h3>
+        <pre id="codeDisplay"></pre>
+      </div>
+    </div>
+
+    <!-- TOKEN INFO -->
+    <div id="tokenInfo"></div>
+
+  </div><!-- /.scroll-area -->
+
+</div><!-- /.page -->
+
+<!-- Hidden API key field (used by JS) -->
+<input type="password" id="apikey" style="display:none;" readonly>
+
+<script>
+function getFormattedTime() {
+  const t = new Date();
+  return `${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+}
+
+let uploadedFileContent = null;
+let currentActiveTab = 'file';
+let lastGeneratedCode = null;
+let lastTokenData = null;
+
+// TABS
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+    currentActiveTab = tabId;
+  });
+});
+
+// FILE UPLOAD
+document.getElementById('fileUpload').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    uploadedFileContent = evt.target.result;
+    const fileInfoEl = document.getElementById('fileInfo');
+    fileInfoEl.innerHTML = `✅ Uploaded: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(2)} KB)`;
+    fileInfoEl.style.display = 'block';
+    appendLog(`File uploaded: ${file.name}`);
+
+    const isWordPress = detectWordPress(uploadedFileContent);
+    const wpDetection  = document.getElementById('wordpressDetection');
+    const deWpModeLabel = document.getElementById('deWpModeLabel');
+    const deWpModeRadio = document.querySelector('input[name="operationMode"][value="dewordpress"]');
+
+    if (isWordPress) {
+      wpDetection.style.display = 'block';
+      deWpModeLabel.style.opacity = '1';
+      deWpModeLabel.style.pointerEvents = 'auto';
+      deWpModeRadio.disabled = false;
+      appendLog('WordPress detected!');
+    } else {
+      wpDetection.style.display = 'none';
+      deWpModeLabel.style.opacity = '0.4';
+      deWpModeLabel.style.pointerEvents = 'none';
+      deWpModeRadio.disabled = true;
+      deWpModeRadio.checked = false;
+      document.querySelector('input[name="operationMode"][value="standard"]').checked = true;
+    }
+  };
+  reader.readAsText(file);
+});
+
+function detectWordPress(content) {
+  const sigs = ['wp-content','wp-includes','wordpress','wp_head','wp_footer','wp-','bloginfo(','get_header(','get_footer(','[shortcode','class="wp-'];
+  const l = content.toLowerCase();
+  return sigs.some(s => l.includes(s.toLowerCase()));
+}
+
+function startProgress(cardId) {
+  const bar  = document.querySelector(`#${cardId} .progress-bar`);
+  const span = bar.querySelector("span");
+  bar.style.visibility = "visible"; span.style.width = "0%";
+  let w = 0;
+  const timer = setInterval(() => {
+    w += Math.random() * 8;
+    if (w >= 95) w = 95;
+    span.style.width = w + "%";
+  }, 400);
+  return timer;
+}
+
+function finishProgress(cardId, timer) {
+  clearInterval(timer);
+  const bar = document.querySelector(`#${cardId} .progress-bar`);
+  bar.querySelector("span").style.width = "100%";
+  setTimeout(() => (bar.style.visibility = "hidden"), 1500);
+}
+
+function appendLog(message) {
+  const log = document.getElementById("logArea");
+  log.textContent += `[${getFormattedTime()}] ${message}\n`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function updateCard(id, message, tokens = null) {
+  const card = document.getElementById(id);
+  const st   = card.querySelector(".card-status");
+  let msg = message;
+  if (tokens !== null) msg += `\nTokens: ${tokens}`;
+  st.textContent = msg;
+  appendLog(`AI Processor → ${message}`);
+}
+
+function showMessage(message, type = "success") {
+  const container = document.getElementById("messageContainer");
+  const msgDiv = document.createElement("div");
+  msgDiv.className = type === "success" ? "success-message" : "error-message";
+  msgDiv.textContent = message;
+  container.appendChild(msgDiv);
+  setTimeout(() => { if (msgDiv.parentNode) msgDiv.parentNode.removeChild(msgDiv); }, 4000);
+}
+
+function saveToFile(content, name, type = "text/html") {
+  const blob = new Blob([content], { type });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function cleanResponse(text) {
+  let clean = text.replace(/(```html|```css|```javascript|```php|```python|```)/gs, '');
+  clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
+  return clean.trim();
+}
+
+function showPreview(htmlCode, fullCode) {
+  const frame          = document.getElementById("previewFrame");
+  const codeDisplay    = document.getElementById("codeDisplay");
+  const contentDisplay = document.getElementById("contentDisplay");
+  const blob = new Blob([htmlCode], { type: "text/html" });
+  frame.src = URL.createObjectURL(blob);
+  codeDisplay.textContent = fullCode;
+  contentDisplay.classList.add('active');
+}
+
+async function callOpenAI(userInput, isRestyling, isDeWordPress) {
+  const apikey = localStorage.getItem("openaikey");
+  if (!apikey) throw new Error('OpenAI API Key not found in localStorage!');
+
+  const layoutStyle      = document.querySelector('input[name="layoutStyle"]:checked')?.value;
+  const color1           = document.getElementById('color1').value;
+  const color2           = document.getElementById('color2').value;
+  const color3           = document.getElementById('color3').value;
+  const selectedSections = Array.from(document.querySelectorAll('input[name="sections"]:checked')).map(cb => cb.value);
+
+  if (!layoutStyle) throw new Error('Select a Layout Style before proceeding!');
+
+  const styleDescriptions = {
+    minimalistic: "clean, minimalist, spacious with lots of white space, elegant and simple typography",
+    creative: "bold, artistic, with unique graphic elements and unconventional layouts",
+    "hi-tech": "modern, futuristic, technological with advanced effects and innovative design",
+    professional: "professional, reliable, corporate with traditional but elegant layout",
+    enterprise: "robust, scalable, business-oriented with focus on usability and performance"
+  };
+
+  let systemPrompt = '';
+
+  if (isDeWordPress) {
+    systemPrompt = `You are an expert WordPress to vanilla HTML converter.
+INPUT: You will receive HTML code from a WordPress website/page.
+YOUR MISSION: Convert this WordPress page into a clean, standalone, WordPress-free HTML page.
+MANDATORY ACTIONS - REMOVE: ALL WordPress-specific classes and IDs, ALL WordPress script dependencies, ALL WordPress shortcodes, ALL WordPress PHP functions, ALL WordPress admin elements, ALL WordPress-specific stylesheets.
+MANDATORY ACTIONS - PRESERVE: ALL text content, ALL images (convert paths to relative: ./imagename.jpg), Layout structure and visual hierarchy, Forms functionality, Navigation menus.
+MANDATORY ACTIONS - CONVERT TO: Clean HTML5 semantic markup, Internal CSS only, Vanilla JavaScript if needed, Apply the ${layoutStyle} style: ${styleDescriptions[layoutStyle]}, Use ONLY these colors: Primary ${color1}, Secondary ${color2}, Accent ${color3}${selectedSections.length > 0 ? ', Focus on these sections: ' + selectedSections.join(', ') : ''}
+OUTPUT FORMAT: Provide ONLY the complete, clean HTML code. Start with <!DOCTYPE html> and end with </html>. No explanations, no markdown blocks, just pure HTML.`;
+
+  } else if (isRestyling) {
+    systemPrompt = `You are an expert web designer and developer. Your task is to RESTYLE and REDESIGN a complete, modern, and functional web page.
+RESTYLING MODE: You will receive existing HTML code. Your job is to completely redesign it with new layout structure following the ${layoutStyle} style, new color scheme using these exact colors: Primary ${color1}, Secondary ${color2}, Accent ${color3}, improved UX/UI and accessibility, modern CSS techniques, keep functional elements but improve their design.
+MANDATORY REQUIREMENTS: 1. STYLE: ${layoutStyle} - ${styleDescriptions[layoutStyle]} 2. COLORS: Use ONLY these three colors: Primary ${color1}, Secondary ${color2}, Accent ${color3} 3. SECTIONS: ${selectedSections.length > 0 ? 'Include: ' + selectedSections.join(', ') : 'Use appropriate sections based on content'} 4. OUTPUT: Complete HTML with internal CSS and JavaScript 5. RESPONSIVE: Mobile-first design with media queries 6. SEO: Include proper meta tags, semantic HTML5 7. ACCESSIBILITY: ARIA labels, proper contrast 8. NO EXTERNAL DEPENDENCIES: All CSS and JS must be inline/internal
+OUTPUT FORMAT: Provide ONLY the complete HTML code. No explanations, no markdown blocks, just pure HTML starting with <!DOCTYPE html>.`;
+
+  } else {
+    systemPrompt = `You are an expert web designer and developer. Your task is to CREATE FROM SCRATCH a complete, modern, and functional web page.
+CREATION MODE: You will receive a description. Create a complete web page with layout following the ${layoutStyle} style: ${styleDescriptions[layoutStyle]}, color scheme using these exact colors: Primary ${color1}, Secondary ${color2}, Accent ${color3}, modern, responsive design.
+MANDATORY REQUIREMENTS: 1. STYLE: ${layoutStyle} - ${styleDescriptions[layoutStyle]} 2. COLORS: Use ONLY these three colors: Primary ${color1}, Secondary ${color2}, Accent ${color3} 3. SECTIONS: ${selectedSections.length > 0 ? 'Include: ' + selectedSections.join(', ') : 'Use appropriate sections'} 4. OUTPUT: Complete HTML with internal CSS and JavaScript 5. RESPONSIVE: Mobile-first design with media queries 6. SEO: Include proper meta tags, semantic HTML5 7. ACCESSIBILITY: ARIA labels, proper contrast 8. NO EXTERNAL DEPENDENCIES: All CSS and JS must be inline/internal
+OUTPUT FORMAT: Provide ONLY the complete HTML code. No explanations, no markdown blocks, just pure HTML starting with <!DOCTYPE html>.`;
+  }
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apikey}` },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      max_tokens: 8000,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userInput }
+      ]
+    })
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`API Error ${res.status}: ${errorText}`);
+  }
+  const data    = await res.json();
+  const content = data.choices?.[0]?.message?.content?.trim() || "No response.";
+  const tokens  = data.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+  return { content, tokens };
+}
+
+async function startWorkflow() {
+  let userInput   = '';
+  let isRestyling = false;
+  const operationMode = document.querySelector('input[name="operationMode"]:checked')?.value || 'standard';
+  const isDeWordPress = (operationMode === 'dewordpress');
+
+  if (currentActiveTab === 'file') {
+    if (!uploadedFileContent) { showMessage('Upload an HTML/TXT file before proceeding!', 'error'); return; }
+    userInput   = uploadedFileContent;
+    isRestyling = true;
+  } else {
+    userInput = document.getElementById('prompt').value.trim();
+    if (!userInput) { showMessage('Enter a description in the textarea!', 'error'); return; }
+    isRestyling = false;
+  }
+
+  const layoutStyle = document.querySelector('input[name="layoutStyle"]:checked');
+  if (!layoutStyle) { showMessage('⚠️ Select a Layout Style (required field)!', 'error'); return; }
+
+  document.getElementById("btnGenerate").disabled = true;
+  document.getElementById("btnExport").disabled   = true;
+  document.getElementById("contentDisplay").classList.remove('active');
+  document.getElementById("tokenInfo").style.display = 'none';
+  document.getElementById("preloader").classList.add('active');
+
+  const modeText = isDeWordPress ? 'DE-WORDPRESS' : (isRestyling ? 'RESTYLING' : 'GENERATION');
+  appendLog(`Workflow started — Mode: ${modeText}`);
+  updateCard("cardProcessor", `🔄 ${isRestyling ? 'Restyling page' : 'Generating page'}…`);
+  const timer = startProgress("cardProcessor");
+
+  try {
+    const result      = await callOpenAI(userInput, isRestyling, isDeWordPress);
+    const cleanedCode = cleanResponse(result.content);
+    lastGeneratedCode = cleanedCode;
+    lastTokenData     = result.tokens;
+
+    finishProgress("cardProcessor", timer);
+    document.getElementById("preloader").classList.remove('active');
+    updateCard("cardProcessor", `✅ Page ${isRestyling ? 'restyled' : 'generated'} successfully!`, result.tokens.total_tokens);
+    showMessage(`✅ Operation completed!`, 'success');
+
+    const pReq  = 0.15 / 1000000;
+    const pRes  = 0.60 / 1000000;
+    const pCost = (result.tokens.prompt_tokens     * pReq).toFixed(6);
+    const cCost = (result.tokens.completion_tokens * pRes).toFixed(6);
+    const tCost = (parseFloat(pCost) + parseFloat(cCost)).toFixed(6);
+
+    const tokenDiv = document.getElementById("tokenInfo");
+    tokenDiv.innerHTML = `
+      <h3>📊 Token Cost Report</h3>
+      <div class="token-details">
+        <div style="font-weight:700;margin-bottom:8px;">AI Web ${isRestyling ? 'Restyler' : 'Generator'}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+          <div><strong>Prompt Tokens:</strong><br>${result.tokens.prompt_tokens.toLocaleString()}<br><span style="color:#00f2a0;">$${pCost}</span></div>
+          <div><strong>Completion Tokens:</strong><br>${result.tokens.completion_tokens.toLocaleString()}<br><span style="color:#00f2a0;">$${cCost}</span></div>
+          <div><strong>Total:</strong><br>${result.tokens.total_tokens.toLocaleString()}<br><span style="color:#00f2a0;font-weight:700;">$${tCost}</span></div>
+        </div>
+      </div>
+      <div class="token-summary">${result.tokens.total_tokens.toLocaleString()} tokens &nbsp;·&nbsp; $${tCost} USD</div>
+    `;
+    tokenDiv.style.display = 'block';
+
+    showPreview(cleanedCode, cleanedCode);
+
+    document.getElementById("btnExport").disabled = false;
+    document.getElementById("btnExport").onclick = () => {
+      const ts       = new Date().toISOString().replace(/[:.-]/g, "_");
+      const filename = isRestyling ? `restyled_page_${ts}.html` : `generated_page_${ts}.html`;
+      saveToFile(cleanedCode, filename, "text/html");
+      appendLog("Code exported: " + filename);
+      showMessage("HTML file downloaded successfully!", "success");
+    };
+
+  } catch (error) {
+    finishProgress("cardProcessor", timer);
+    document.getElementById("preloader").classList.remove('active');
+    updateCard("cardProcessor", "❌ Error during processing");
+    showMessage("❌ Error: " + error.message, "error");
+    appendLog("ERROR: " + error.message);
+  } finally {
+    document.getElementById("btnGenerate").disabled = false;
+  }
+}
+
+document.getElementById("btnGenerate").addEventListener("click", startWorkflow);
+document.getElementById("btnClearLog").addEventListener("click", () => {
+  document.getElementById("logArea").textContent = "";
+  appendLog("Log cleared.");
+});
+document.getElementById("prompt").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.ctrlKey) startWorkflow();
+});
+
+appendLog("System ready. Upload a file or write a prompt, configure parameters and press START.");
+</script>
+</body>
+</html>
