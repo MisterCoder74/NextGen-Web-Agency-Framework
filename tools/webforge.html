@@ -201,11 +201,17 @@
         </div>
       </div>
       <div class="results-actions">
-        <button class="btn-primary btn-lg" id="preview-btn"><span>⊞</span> Preview Website</button>
-        <button class="btn-secondary btn-lg" id="download-btn"><span>↓</span> Download ZIP</button>
-        <button class="btn-doc" id="doc-btn">📄 Documentation</button>
-        <button class="btn-ghost btn-lg" id="reset-btn">↺ New Project</button>
+        <div class="button-group">
+          <button class="btn-primary btn-lg" id="preview-btn"><span>⊞</span> Preview Website</button>
+          <button class="btn-secondary btn-lg" id="download-btn"><span>↓</span> Download ZIP</button>
+          <button class="btn-secondary btn-lg" id="download-html-btn"><span>↓</span> HTML</button>
+          <button class="btn-secondary btn-lg" id="download-php-btn"><span>↓</span> PHP</button>
+          <button class="btn-success btn-lg" id="deploy-btn"><span>🚀</span> Deploy App</button>
+          <button class="btn-doc" id="doc-btn">📄 Documentation</button>
+          <button class="btn-ghost btn-lg" id="reset-btn">↺ New Project</button>
+        </div>
       </div>
+      <div id="deploy-feedback" class="deploy-feedback"></div>
     </section>
 
   </main>
@@ -316,6 +322,10 @@ const DOM = {
   previewTablet:      $('preview-tablet'),
   previewMobile:      $('preview-mobile'),
   previewWrapper:     $('preview-wrapper'),
+  deployBtn:          $('deploy-btn'),
+  deployFeedback:     $('deploy-feedback'),
+  downloadHtmlBtn:    $('download-html-btn'),
+  downloadPhpBtn:     $('download-php-btn'),
   docModal:           $('doc-modal'),
   docContent:         $('doc-content'),
   docModalClose:      $('doc-modal-close'),
@@ -437,6 +447,7 @@ function setStatusBadge(s, t) { DOM.statusBadge.className = `badge ${s}`; DOM.st
 
 function showResults() {
   DOM.resultsSection.style.display = 'flex';
+  DOM.deployFeedback.innerHTML = '';
   setStatusBadge('done', 'DONE');
 }
 
@@ -453,6 +464,39 @@ function resetCards() {
 // Event Listeners
 DOM.runPipelineBtn.onclick = startPipeline;
 DOM.downloadBtn.onclick = () => Core.downloadZip(STATE.outputs.bot4.files, STATE.projectName);
+
+DOM.downloadHtmlBtn.onclick = () => {
+    const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'));
+    if (file) Core.downloadFile(file.content, file.name);
+};
+
+DOM.downloadPhpBtn.onclick = () => {
+    const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php'));
+    if (file) Core.downloadFile(file.content, file.name, 'application/x-httpd-php');
+};
+
+DOM.deployBtn.onclick = async () => {
+    DOM.deployBtn.disabled = true;
+    DOM.deployFeedback.innerHTML = '<div class="preloader active">Deploying...</div>';
+    
+    const htmlFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html')) || { content: '' };
+    const phpFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php')) || { content: '<?php // Default backend' };
+    
+    const result = await Core.deployProject(htmlFile.content, phpFile.content);
+    
+    if (result.success) {
+        DOM.deployFeedback.innerHTML = `
+            <div class="success-message">
+                🚀 Deploy completato con successo!
+                <br>
+                <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+            </div>`;
+    } else {
+        DOM.deployFeedback.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
+    }
+    DOM.deployBtn.disabled = false;
+};
+
 DOM.previewBtn.onclick = () => {
     DOM.previewIframe.srcdoc = STATE.outputs.bot4.preview_html;
     DOM.previewModal.classList.add('open');

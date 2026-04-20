@@ -89,7 +89,7 @@
                     <div class="section-title">📂 Generated Code</div>
                     <div class="input-tabs">
                         <button class="tab-btn active" data-tab="html">index.html</button>
-                        <button class="tab-btn" data-tab="php">handler.php</button>
+                        <button class="tab-btn" data-tab="php">backend.php</button>
                     </div>
                     <div class="tab-content active" id="tabHtml">
                         <pre id="codeHtml" class="code-view" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; overflow: auto; max-height: 300px; color: #a5b4fc;"></pre>
@@ -99,9 +99,12 @@
                     </div>
                     
                     <div class="button-group" style="margin-top: 12px;">
-                        <button class="btn btn-success" id="btnDownloadZip">📦 Download Project (ZIP)</button>
-                        <button class="btn" id="btnDeploy">🌐 Deploy Microapp</button>
+                        <button class="btn btn-success" id="btnDownloadZip">📦 Download ZIP</button>
+                        <button class="btn btn-secondary" id="btnDownloadHtml">↓ HTML</button>
+                        <button class="btn btn-secondary" id="btnDownloadPhp">↓ PHP</button>
+                        <button class="btn btn-primary" id="btnDeploy" style="flex: 1;">🚀 Deploy App</button>
                     </div>
+                    <div id="deploy-feedback" class="deploy-feedback"></div>
                 </div>
 
                 <div class="card">
@@ -148,6 +151,7 @@
         btn.textContent = '⏳ Processing...';
         document.getElementById('logArea').innerHTML = '';
         document.getElementById('results').classList.remove('active');
+        document.getElementById('deploy-feedback').innerHTML = '';
         
         try {
             // Frontend Agent
@@ -162,10 +166,10 @@
             // Backend Agent
             document.getElementById('dotBE').classList.add('active');
             appendLog('Backend Agent started...', 'be');
-            const beSystem = 'You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete handler.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with <?php.';
+            const beSystem = 'You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete backend.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with <?php.';
             const beData = await Core.callAI([{ role: 'system', content: beSystem }, { role: 'user', content: `Feature: ${prompt}\n\nFrontend HTML:\n${generatedHtml.slice(0, 4000)}` }]);
             generatedPhp = Core.cleanResponse(beData.choices[0].message.content);
-            appendLog(`handler.php generated (${generatedPhp.length} chars)`, 'be');
+            appendLog(`backend.php generated (${generatedPhp.length} chars)`, 'be');
             document.getElementById('dotBE').classList.remove('active');
 
             // Finalize
@@ -189,23 +193,38 @@
     document.getElementById('btnDownloadZip').onclick = () => {
         Core.downloadZip([
             { name: 'index.html', content: generatedHtml },
-            { name: 'handler.php', content: generatedPhp }
+            { name: 'backend.php', content: generatedPhp }
         ], 'collabra_project');
+    };
+
+    document.getElementById('btnDownloadHtml').onclick = () => {
+        Core.downloadFile(generatedHtml, 'index.html');
+    };
+
+    document.getElementById('btnDownloadPhp').onclick = () => {
+        Core.downloadFile(generatedPhp, 'backend.php', 'application/x-httpd-php');
     };
 
     document.getElementById('btnDeploy').onclick = async () => {
         const btn = document.getElementById('btnDeploy');
+        const feedback = document.getElementById('deploy-feedback');
         btn.disabled = true;
-        btn.textContent = '🚀 Deploying...';
+        feedback.innerHTML = '<div class="preloader active">Deploying...</div>';
+        
         const result = await Core.deployProject(generatedHtml, generatedPhp);
         if (result.success) {
             appendLog(`Deploy successful: ${result.url}`, 'sys');
-            window.open(result.url, '_blank');
+            feedback.innerHTML = `
+                <div class="success-message" style="margin-top: 10px;">
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+                </div>
+            `;
         } else {
-            alert('Deploy failed: ' + result.message);
+            feedback.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
         }
         btn.disabled = false;
-        btn.textContent = '🌐 Deploy Microapp';
     };
 </script>
 </body>

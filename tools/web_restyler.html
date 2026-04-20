@@ -121,9 +121,12 @@
     <!-- BUTTONS -->
     <div class="button-group">
       <button class="btn" id="btnGenerate">🚀 Start Generation / Restyling</button>
-      <button class="btn" id="btnExport" disabled>⬇️ Download HTML</button>
+      <button class="btn btn-secondary" id="btnExport" disabled>⬇️ Download HTML</button>
+      <button class="btn btn-secondary" id="btnDownloadZip" disabled>📦 Download ZIP</button>
+      <button class="btn btn-primary" id="btnDeploy" disabled>🚀 Deploy App</button>
       <button class="btn" id="btnClearLog">🗑 Clear Log</button>
     </div>
+    <div id="deploy-feedback" class="deploy-feedback"></div>
 
     <!-- STATUS CARD -->
     <div class="status-card" id="cardProcessor">
@@ -401,12 +404,49 @@ async function startWorkflow() {
     showPreview(cleanedCode, cleanedCode);
 
     document.getElementById("btnExport").disabled = false;
+    document.getElementById("btnDownloadZip").disabled = false;
+    document.getElementById("btnDeploy").disabled = false;
+    document.getElementById("deploy-feedback").innerHTML = '';
+
     document.getElementById("btnExport").onclick = () => {
       const ts       = new Date().toISOString().replace(/[:.-]/g, "_");
       const filename = isRestyling ? `restyled_page_${ts}.html` : `generated_page_${ts}.html`;
       Core.downloadFile(cleanedCode, filename, "text/html");
       appendLog("Code exported: " + filename);
       showMessage("HTML file downloaded successfully!", "success");
+    };
+
+    document.getElementById("btnDownloadZip").onclick = () => {
+        const defaultPhp = "<?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+        Core.downloadZip([
+            { name: 'index.html', content: cleanedCode },
+            { name: 'backend.php', content: defaultPhp }
+        ], 'restyled_project');
+        appendLog("ZIP project exported");
+    };
+
+    document.getElementById("btnDeploy").onclick = async () => {
+        const btn = document.getElementById("btnDeploy");
+        const feedback = document.getElementById("deploy-feedback");
+        btn.disabled = true;
+        feedback.innerHTML = '<div class="preloader active">Deploying...</div>';
+        
+        const defaultPhp = "<?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+        const result = await Core.deployProject(cleanedCode, defaultPhp);
+        
+        if (result.success) {
+            feedback.innerHTML = `
+                <div class="success-message">
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+                </div>`;
+            appendLog("Project deployed: " + result.url);
+        } else {
+            feedback.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
+            appendLog("Deploy error: " + result.message);
+        }
+        btn.disabled = false;
     };
 
   } catch (error) {
