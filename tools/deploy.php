@@ -72,6 +72,21 @@ $baseUrl = $protocol . $host . dirname($_SERVER['PHP_SELF']);
 $baseUrl = rtrim($baseUrl, '/\\');
 $finalUrl = $baseUrl . "/microapps/" . $appId . "/index.html";
 
+// Registra l'app nel file JSON
+$jsonFile = __DIR__ . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . 'microapps.json';
+$apps = [];
+if (file_exists($jsonFile)) {
+    $apps = json_decode(file_get_contents($jsonFile), true) ?: [];
+}
+$newApp = [
+    'id' => $appId,
+    'name' => 'Micro App ' . $appId,
+    'url' => $finalUrl,
+    'date' => date('Y-m-d H:i:s')
+];
+array_unshift($apps, $newApp);
+file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
+
 echo json_encode(['success' => true, 'url' => $finalUrl]);
 exit;
 ?>

@@ -66,10 +66,21 @@
         <textarea id="user-request" rows="5" placeholder="e.g. A SaaS task management app with user authentication, project boards, real-time collaboration, and a freemium subscription model..."></textarea>
         <div class="request-actions">
           <span class="char-count" id="char-count">0 chars</span>
-          <button class="btn-primary" id="run-pipeline-btn">
-            <span class="btn-icon-left">▶</span>
-            Launch Pipeline
-          </button>
+          <div style="display: flex; gap: 10px;">
+            <input type="file" id="screenshot-upload" accept="image/*" style="display: none;">
+            <button class="btn-secondary" id="upload-btn" title="Upload Screenshot">
+              <span class="btn-icon-left">📷</span>
+              Upload Screenshot
+            </button>
+            <button class="btn-primary" id="run-pipeline-btn">
+              <span class="btn-icon-left">▶</span>
+              Launch Pipeline
+            </button>
+          </div>
+        </div>
+        <div id="screenshot-preview-container" style="display:none; margin-top: 15px; position: relative; width: fit-content;">
+            <img id="screenshot-preview" style="max-width: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <button id="remove-screenshot" style="position: absolute; top: -10px; right: -10px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✕</button>
         </div>
       </div>
     </section>
@@ -279,12 +290,10 @@
 'use strict';
 
 const PRESETS = [
-  { label: '🛒 E-commerce', text: `Build a complete e-commerce website for selling handmade products...` },
-  { label: '📝 Blog CMS', text: `Create a personal blog with a public frontend and a private admin panel...` },
-  { label: '📋 Project Manager', text: `Build a lightweight project & task manager for freelancers...` },
-  { label: '🏢 Agency Landing', text: `Design and build a high-impact landing page for a digital web agency...` },
-  { label: '📅 Booking System', text: `Build an appointment booking system for a professional service...` },
-  { label: '🎨 Portfolio', text: `Create a stunning portfolio website for a freelance designer/developer...` },
+  { label: '👤 Digital Identity', text: `Create a minimalist personal portfolio website for a digital professional. Include a hero section with a brief bio, a skills section, a simple projects gallery, and a functional contact form. Use a clean, modern aesthetic with plenty of white space.` },
+  { label: '🚀 Product Landing', text: `Develop a high-converting SaaS landing page. Features should include a compelling hero section with a call-to-action, a feature grid (with icons), a transparent pricing table (3 tiers), and an accordion-style FAQ section. Design should be sleek and tech-focused.` },
+  { label: '🏢 Corporate One-Pager', text: `Build a professional one-page website for a consultancy firm. It needs sections for: Services provided, 'About Us' company history, Client Case Studies (using a slider or grid), and a clear Contact section with a map placeholder and office details.` },
+  { label: '🎨 Minimal Portfolio', text: `Design a visual-first minimal portfolio for a creative artist or photographer. The main focus should be a large, masonry-style image grid for projects. Use minimal text, elegant typography, and a simple navigation menu. Include a simple 'About' and 'Contact' footer.` },
 ];
 
 const STATE = {
@@ -292,6 +301,7 @@ const STATE = {
   running: false,
   outputs: { bot1: null, bot2: null, bot3: null, bot4: null },
   projectName: 'Website',
+  screenshot: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -336,6 +346,11 @@ const DOM = {
   projectsPanelClose: $('projects-panel-close'),
   projectsList:       $('projects-list'),
   presetsBar:         $('presets-bar'),
+  screenshotUpload:   $('screenshot-upload'),
+  uploadBtn:          $('upload-btn'),
+  screenshotPreview:  $('screenshot-preview'),
+  screenshotPreviewContainer: $('screenshot-preview-container'),
+  removeScreenshot:   $('remove-screenshot'),
 };
 
 function showToast(msg) {
@@ -388,7 +403,20 @@ async function startPipeline() {
 async function runBot1() {
   setCardState(1, 'running', 'Planning...');
   const sys = `You are a web strategist. Plan the project architecture. Return JSON only.`;
-  const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: STATE.userRequest }]);
+  
+  let userContent = STATE.userRequest;
+  if (STATE.screenshot) {
+      userContent = [
+          { type: 'text', text: STATE.userRequest },
+          { type: 'image_url', image_url: { url: STATE.screenshot } }
+      ];
+  }
+
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userContent }
+  ]);
+  
   STATE.outputs.bot1 = parseJSON(raw, 'Bot 1');
   setCardState(1, 'done', 'Plan ready');
   activateConnector(1);
@@ -462,6 +490,27 @@ function resetCards() {
 }
 
 // Event Listeners
+DOM.uploadBtn.onclick = () => DOM.screenshotUpload.click();
+
+DOM.screenshotUpload.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            STATE.screenshot = event.target.result;
+            DOM.screenshotPreview.src = STATE.screenshot;
+            DOM.screenshotPreviewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+DOM.removeScreenshot.onclick = () => {
+    STATE.screenshot = null;
+    DOM.screenshotUpload.value = '';
+    DOM.screenshotPreviewContainer.style.display = 'none';
+};
+
 DOM.runPipelineBtn.onclick = startPipeline;
 DOM.downloadBtn.onclick = () => Core.downloadZip(STATE.outputs.bot4.files, STATE.projectName);
 
