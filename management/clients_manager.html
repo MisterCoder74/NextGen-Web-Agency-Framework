@@ -3,246 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Management</title>
+    <title>Client Management — Vivacity Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .form-section {
-            margin-bottom: 50px;
-        }
-        
-        .form-section h2 {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            position: relative;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-        
-        input, textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e1e1;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .table-section h2 {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-        
-        .table-container {
-            overflow-x: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        table {
+        .manager-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            font-size: 0.85rem;
         }
-        
-        th, td {
-            padding: 15px;
+        .manager-table th {
             text-align: left;
-            border-bottom: 1px solid #eee;
+            background: rgba(255,255,255,0.03);
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        
-        th {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
+        .manager-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        
-        tr:hover {
-            background-color: rgba(102, 126, 234, 0.1);
-            transform: scale(1.01);
-            transition: all 0.3s ease;
+        .manager-table tr:last-child td {
+            border-bottom: none;
         }
-        
-        .actions {
+        .actions-cell {
+            text-align: right;
             display: flex;
-            gap: 10px;
+            justify-content: flex-end;
+            gap: 8px;
         }
-        
         .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
             border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
-        
-        .btn-edit {
-            background: #4CAF50;
-            color: white;
+        .btn-edit-tool {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
-        
-        .btn-delete {
-            background: #f44336;
-            color: white;
+        .btn-edit-tool:hover {
+            background: #10b981;
+            color: #fff;
         }
-        
-        .btn-edit:hover, .btn-delete:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        .btn-delete-tool {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.2);
         }
-        
+        .btn-delete-tool:hover {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #fff;
+            padding: 10px 13px;
+            font-size: 0.86rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            border-color: var(--cyan);
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-size: 1.2em;
-        }
-        
-        .message {
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-        
-        .message.success {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4CAF50;
-            border: 1px solid rgba(76, 175, 80, 0.3);
-        }
-        
-        .message.error {
-            background: rgba(244, 67, 54, 0.1);
-            color: #f44336;
-            border: 1px solid rgba(244, 67, 54, 0.3);
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
+            padding: 40px;
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏢 Client Management</h1>
-            <p>Complete system to manage your clients</p><br>
-                <a href="dashboard.html" class="btn">Admin Dashboard</a>
+    <div class="noise"></div>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">👥</div>
+            <div class="page-header-text">
+                <h1>Vivacity <em>Client Manager</em></h1>
+                <p>Manage your client database for projects and quotes</p>
+            </div>
+            <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+                <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
         </div>
-        
-        <div class="content">
-            <!-- Form to add/edit clients -->
-            <div class="form-section">
-                <h2 id="form-title">➕ Add New Client</h2>
+
+        <hr class="divider">
+
+        <div class="scroll-area">
+            <div class="card">
+                <div class="section-title" id="form-title">➕ Add New Client</div>
                 <form id="clientForm">
                     <div class="form-grid">
                         <div class="form-group">
@@ -266,39 +146,37 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn" id="submit-btn">
-                        💾 Save Client
-                    </button>
-                    <button type="button" class="btn" id="cancel-btn" style="display: none; background: #6c757d; margin-left: 10px;">
-                        ❌ Cancel
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <span>💾</span> Save Client
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none;">
+                            <span>✕</span> Cancel
+                        </button>
+                    </div>
                 </form>
-                
                 <div id="message"></div>
             </div>
-            
-            <!-- Clients table -->
-            <div class="table-section">
-                <h2>📋 Client List</h2>
-                <div class="table-container">
-                    <div id="loading" class="loading" style="display: none;">
-                        🔄 Loading...
-                    </div>
-                    <table id="clientsTable" style="display: none;">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Address</th>
-                                <th>Notes</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clientsTableBody">
-                            <!-- Data will be inserted dynamically -->
-                        </tbody>
-                    </table>
+
+            <div class="section-title" style="margin-top: 20px;">📋 Client List</div>
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div id="loading" class="loading" style="display: none;">
+                    🔄 Syncing with database...
                 </div>
+                <table class="manager-table" id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Notes</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <!-- Data will be inserted dynamically -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -499,22 +377,21 @@
                 tbody.innerHTML = '';
                 
                 if (clients.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666; padding: 40px;">No clients found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.3); padding: 40px;">No clients found in database</td></tr>';
                 } else {
                     clients.forEach(client => {
                         const row = document.createElement('tr');
-                        row.className = 'fade-in';
                         row.innerHTML = `
-                            <td>${this.escapeHtml(client.nominativo)}</td>
-                            <td>${this.escapeHtml(client.email)}</td>
-                            <td>${this.escapeHtml(client.indirizzo || '-')}</td>
-                            <td>${this.escapeHtml(client.note || '-')}</td>
-                            <td class="actions">
-                                <button class="btn-small btn-edit" onclick="clientManager.editClient('${client.id}')">
-                                    ✏️ Edit
+                            <td><strong>${this.escapeHtml(client.nominativo)}</strong></td>
+                            <td><span style="color: rgba(255,255,255,0.6);">${this.escapeHtml(client.email)}</span></td>
+                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.indirizzo || '-')}</span></td>
+                            <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.note || '-')}</span></td>
+                            <td class="actions-cell">
+                                <button class="btn btn-small btn-edit-tool" onclick="clientManager.editClient('${client.id}')">
+                                    Edit
                                 </button>
-                                <button class="btn-small btn-delete" onclick="clientManager.deleteClient('${client.id}')">
-                                    🗑️ Delete
+                                <button class="btn btn-small btn-delete-tool" onclick="clientManager.deleteClient('${client.id}')">
+                                    Delete
                                 </button>
                             </td>
                         `;
@@ -571,11 +448,11 @@
                 
                 if (editing) {
                     title.textContent = '✏️ Edit Client';
-                    submitBtn.innerHTML = '💾 Save Changes';
-                    cancelBtn.style.display = 'inline-block';
+                    submitBtn.innerHTML = '<span>💾</span> Save Changes';
+                    cancelBtn.style.display = 'inline-flex';
                 } else {
                     title.textContent = '➕ Add New Client';
-                    submitBtn.innerHTML = '💾 Save Client';
+                    submitBtn.innerHTML = '<span>💾</span> Save Client';
                     cancelBtn.style.display = 'none';
                 }
             }
@@ -597,7 +474,8 @@
             
             showMessage(text, type) {
                 const messageDiv = document.getElementById('message');
-                messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+                const className = type === 'success' ? 'success-message' : 'error-message';
+                messageDiv.innerHTML = `<div class="${className}" style="margin-top: 15px;">${text}</div>`;
                 
                 setTimeout(() => {
                     messageDiv.innerHTML = '';
