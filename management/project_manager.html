@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Progetti</title>
+    <title>Project Management</title>
     <style>
         * {
             margin: 0;
@@ -117,6 +117,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+            text-decoration: none;
+            display: inline-block;
         }
         
         .btn:hover {
@@ -231,22 +233,22 @@
             text-transform: uppercase;
         }
         
-        .status-attivo {
+        .status-active {
             background: rgba(76, 175, 80, 0.2);
             color: #4CAF50;
         }
         
-        .status-completato {
+        .status-completed {
             background: rgba(33, 150, 243, 0.2);
             color: #2196F3;
         }
         
-        .status-sospeso {
+        .status-suspended {
             background: rgba(255, 152, 0, 0.2);
             color: #FF9800;
         }
         
-        .status-annullato {
+        .status-cancelled {
             background: rgba(244, 67, 54, 0.2);
             color: #f44336;
         }
@@ -303,68 +305,68 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Gestione Progetti</h1>
-            <p>Sistema completo per la gestione dei tuoi progetti</p><br>
-                <a href="../admin-dashboard.php" class="btn">Dashboard Admin</a>
+            <h1>📊 Project Management</h1>
+            <p>Complete system to manage your projects</p><br>
+                <a href="dashboard.html" class="btn">Admin Dashboard</a>
         </div>
         
         <div class="content">
-            <!-- Navigazione -->
+            <!-- Navigation -->
             <div class="navigation">
-                <a href="#" class="nav-link">📊 Progetti</a>
-                <a href="clients_manager.html" class="nav-link">👥 Clienti</a>
-                <a href="../admin-dashboard.php" class="nav-link">Dashboard Admin</a>    
+                <a href="#" class="nav-link">📊 Projects</a>
+                <a href="clients_manager.html" class="nav-link">👥 Clients</a>
+                <a href="dashboard.html" class="nav-link">Admin Dashboard</a>    
             </div>
             
-            <!-- Form per aggiungere/modificare progetti -->
+            <!-- Form to add/edit projects -->
             <div class="form-section">
-                <h2 id="form-title">➕ Aggiungi Nuovo Progetto</h2>
+                <h2 id="form-title">➕ Add New Project</h2>
                 <form id="projectForm">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="nome_progetto">Nome Progetto *</label>
-                            <input type="text" id="nome_progetto" name="nome_progetto" required placeholder="Es. Sito web aziendale">
+                            <label for="nome_progetto">Project Name *</label>
+                            <input type="text" id="nome_progetto" name="nome_progetto" required placeholder="e.g. Corporate Website">
                         </div>
                         
                         <div class="form-group">
-                            <label for="tipologia">Tipologia *</label>
+                            <label for="tipologia">Type *</label>
                             <select id="tipologia" name="tipologia" required>
-                                <option value="">Seleziona tipologia</option>
-                                <option value="Sviluppo Web">Sviluppo Web</option>
-                                <option value="Sviluppo Desktop">Sviluppo Desktop</option>
-                                <option value="Consulenza Generica">Consulenza Generica</option>
-                                <option value="Formazione">Formazione</option>
-                                <option value="Grafica/Design">Grafica/Design</option>
-                                <option value="Consulenza Specializzata">Consulenza Specializzata</option>
-                                <option value="Manutenzione">Chatbot e IA</option>
-                                <option value="Altro">Altro</option>
+                                <option value="">Select type</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Desktop Development">Desktop Development</option>
+                                <option value="General Consulting">General Consulting</option>
+                                <option value="Training">Training</option>
+                                <option value="Graphic Design">Graphic Design</option>
+                                <option value="Specialized Consulting">Specialized Consulting</option>
+                                <option value="AI and Chatbots">AI and Chatbots</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="cliente_id">Cliente *</label>
+                            <label for="cliente_id">Client *</label>
                             <select id="cliente_id" name="cliente_id" required>
-                                <option value="">Seleziona cliente</option>
+                                <option value="">Select client</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="stato">Stato</label>
+                            <label for="stato">Status</label>
                             <select id="stato" name="stato">
-                                <option value="attivo">Attivo</option>
-                                <option value="completato">Completato</option>
-                                <option value="sospeso">Sospeso</option>
-                                <option value="annullato">Annullato</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="suspended">Suspended</option>
+                                <option value="cancelled">Cancelled</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="data_inizio">Data Inizio</label>
+                            <label for="data_inizio">Start Date</label>
                             <input type="date" id="data_inizio" name="data_inizio">
                         </div>
                         
                         <div class="form-group">
-                            <label for="data_fine">Data Fine Prevista</label>
+                            <label for="data_fine">Expected End Date</label>
                             <input type="date" id="data_fine" name="data_fine">
                         </div>
                         
@@ -374,54 +376,54 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="priorita">Priorità</label>
+                            <label for="priorita">Priority</label>
                             <select id="priorita" name="priorita">
-                                <option value="bassa">Bassa</option>
-                                <option value="media" selected>Media</option>
-                                <option value="alta">Alta</option>
-                                <option value="urgente">Urgente</option>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
                             </select>
                         </div>
                         
                         <div class="form-group full-width">
-                            <label for="descrizione">Descrizione</label>
-                            <textarea id="descrizione" name="descrizione" rows="4" placeholder="Descrivi il progetto, obiettivi e specifiche..."></textarea>
+                            <label for="descrizione">Description</label>
+                            <textarea id="descrizione" name="descrizione" rows="4" placeholder="Describe the project, goals and specs..."></textarea>
                         </div>
                     </div>
                     
                     <button type="submit" class="btn" id="submit-btn">
-                        💾 Salva Progetto
+                        💾 Save Project
                     </button>
                     <button type="button" class="btn" id="cancel-btn" style="display: none; background: #6c757d; margin-left: 10px;">
-                        ❌ Annulla
+                        ❌ Cancel
                     </button>
                 </form>
                 
                 <div id="message"></div>
             </div>
             
-            <!-- Tabella progetti -->
+            <!-- Projects table -->
             <div class="table-section">
-                <h2>📋 Elenco Progetti</h2>
+                <h2>📋 Project List</h2>
                 <div class="table-container">
                     <div id="loading" class="loading" style="display: none;">
-                        🔄 Caricamento in corso...
+                        🔄 Loading...
                     </div>
                     <table id="projectsTable" style="display: none;">
                         <thead>
                             <tr>
-                                <th>Nome Progetto</th>
-                                <th>Cliente</th>
-                                <th>Tipologia</th>
-                                <th>Stato</th>
-                                <th>Priorità</th>
+                                <th>Project Name</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Priority</th>
                                 <th>Budget</th>
-                                <th>Date</th>
-                                <th>Azioni</th>
+                                <th>Dates</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="projectsTableBody">
-                            <!-- I dati verranno inseriti dinamicamente -->
+                            <!-- Data will be inserted dynamically -->
                         </tbody>
                     </table>
                 </div>
@@ -480,18 +482,18 @@
                         this.clients = result.data;
                         this.populateClientSelect();
                     } else {
-                        this.showMessage('Errore nel caricamento clienti: ' + result.message, 'error');
+                        this.showMessage('Error loading clients: ' + result.message, 'error');
                     }
                 })
                 .catch(error => {
-                    this.showMessage('Errore di connessione ai clienti', 'error');
+                    this.showMessage('Connection error to clients', 'error');
                     console.error('Error:', error);
                 });
             }
             
             populateClientSelect() {
                 const select = document.getElementById('cliente_id');
-                select.innerHTML = '<option value="">Seleziona cliente</option>';
+                select.innerHTML = '<option value="">Select client</option>';
                 
                 this.clients.forEach(client => {
                     const option = document.createElement('option');
@@ -531,22 +533,22 @@
             
             validateForm(data) {
                 if (!data.nome_progetto) {
-                    this.showMessage('Il nome del progetto è obbligatorio', 'error');
+                    this.showMessage('Project name is required', 'error');
                     return false;
                 }
                 
                 if (!data.tipologia) {
-                    this.showMessage('La tipologia è obbligatoria', 'error');
+                    this.showMessage('Type is required', 'error');
                     return false;
                 }
                 
                 if (!data.cliente_id) {
-                    this.showMessage('Seleziona un cliente', 'error');
+                    this.showMessage('Select a client', 'error');
                     return false;
                 }
                 
                 if (data.data_inizio && data.data_fine && data.data_inizio > data.data_fine) {
-                    this.showMessage('La data di fine non può essere precedente alla data di inizio', 'error');
+                    this.showMessage('End date cannot be earlier than start date', 'error');
                     return false;
                 }
                 
@@ -570,16 +572,16 @@
                 .then(result => {
                     this.showLoading(false);
                     if (result.success) {
-                        this.showMessage('Progetto aggiunto con successo! ✅', 'success');
+                        this.showMessage('Project added successfully! ✅', 'success');
                         this.resetForm();
                         this.loadProjects();
                     } else {
-                        this.showMessage('Errore: ' + result.message, 'error');
+                        this.showMessage('Error: ' + result.message, 'error');
                     }
                 })
                 .catch(error => {
                     this.showLoading(false);
-                    this.showMessage('Errore di connessione', 'error');
+                    this.showMessage('Connection error', 'error');
                     console.error('Error:', error);
                 });
             }
@@ -602,22 +604,22 @@
                 .then(result => {
                     this.showLoading(false);
                     if (result.success) {
-                        this.showMessage('Progetto modificato con successo! ✅', 'success');
+                        this.showMessage('Project updated successfully! ✅', 'success');
                         this.cancelEdit();
                         this.loadProjects();
                     } else {
-                        this.showMessage('Errore: ' + result.message, 'error');
+                        this.showMessage('Error: ' + result.message, 'error');
                     }
                 })
                 .catch(error => {
                     this.showLoading(false);
-                    this.showMessage('Errore di connessione', 'error');
+                    this.showMessage('Connection error', 'error');
                     console.error('Error:', error);
                 });
             }
             
             deleteProject(id) {
-                if (!confirm('Sei sicuro di voler eliminare questo progetto?')) {
+                if (!confirm('Are you sure you want to delete this project?')) {
                     return;
                 }
                 
@@ -637,15 +639,15 @@
                 .then(result => {
                     this.showLoading(false);
                     if (result.success) {
-                        this.showMessage('Progetto eliminato con successo! ✅', 'success');
+                        this.showMessage('Project deleted successfully! ✅', 'success');
                         this.loadProjects();
                     } else {
-                        this.showMessage('Errore: ' + result.message, 'error');
+                        this.showMessage('Error: ' + result.message, 'error');
                     }
                 })
                 .catch(error => {
                     this.showLoading(false);
-                    this.showMessage('Errore di connessione', 'error');
+                    this.showMessage('Connection error', 'error');
                     console.error('Error:', error);
                 });
             }
@@ -668,12 +670,12 @@
                     if (result.success) {
                         this.displayProjects(result.data);
                     } else {
-                        this.showMessage('Errore nel caricamento: ' + result.message, 'error');
+                        this.showMessage('Error loading: ' + result.message, 'error');
                     }
                 })
                 .catch(error => {
                     this.showLoading(false);
-                    this.showMessage('Errore di connessione', 'error');
+                    this.showMessage('Connection error', 'error');
                     console.error('Error:', error);
                 });
             }
@@ -685,7 +687,7 @@
                 tbody.innerHTML = '';
                 
                 if (projects.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666; padding: 40px;">Nessun progetto presente</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666; padding: 40px;">No projects found</td></tr>';
                 } else {
                     projects.forEach(project => {
                         const client = this.clients.find(c => c.id === project.cliente_id);
@@ -695,26 +697,26 @@
                             <td><strong>${this.escapeHtml(project.nome_progetto)}</strong></td>
                             <td>
                                 <div class="client-info">
-                                    <span class="client-name">${client ? this.escapeHtml(client.nominativo) : 'Cliente non trovato'}</span>
+                                    <span class="client-name">${client ? this.escapeHtml(client.nominativo) : 'Client not found'}</span>
                                     <span class="client-email">${client ? this.escapeHtml(client.email) : ''}</span>
                                 </div>
                             </td>
                             <td>${this.escapeHtml(project.tipologia)}</td>
                             <td><span class="status-badge status-${project.stato}">${this.capitalizeFirst(project.stato)}</span></td>
                             <td>${this.capitalizeFirst(project.priorita)}</td>
-                            <td>${project.budget > 0 ? '€' + project.budget.toLocaleString('it-IT', {minimumFractionDigits: 2}) : '-'}</td>
+                            <td>${project.budget > 0 ? '€' + project.budget.toLocaleString('en-US', {minimumFractionDigits: 2}) : '-'}</td>
                             <td>
                                 <small>
-                                    ${project.data_inizio ? 'Dal: ' + this.formatDate(project.data_inizio) : ''}<br>
-                                    ${project.data_fine ? 'Al: ' + this.formatDate(project.data_fine) : ''}
+                                    ${project.data_inizio ? 'From: ' + this.formatDate(project.data_inizio) : ''}<br>
+                                    ${project.data_fine ? 'To: ' + this.formatDate(project.data_fine) : ''}
                                 </small>
                             </td>
                             <td class="actions">
                                 <button class="btn-small btn-edit" onclick="projectManager.editProject('${project.id}')">
-                                    ✏️ Modifica
+                                    ✏️ Edit
                                 </button>
                                 <button class="btn-small btn-delete" onclick="projectManager.deleteProject('${project.id}')">
-                                    🗑️ Elimina
+                                    🗑️ Delete
                                 </button>
                             </td>
                         `;
@@ -747,12 +749,12 @@
                         this.setEditMode(true);
                         document.getElementById('nome_progetto').focus();
                     } else {
-                        this.showMessage('Progetto non trovato', 'error');
+                        this.showMessage('Project not found', 'error');
                     }
                 })
                 .catch(error => {
                     this.showLoading(false);
-                    this.showMessage('Errore di connessione', 'error');
+                    this.showMessage('Connection error', 'error');
                     console.error('Error:', error);
                 });
             }
@@ -761,11 +763,11 @@
                 document.getElementById('nome_progetto').value = project.nome_progetto || '';
                 document.getElementById('tipologia').value = project.tipologia || '';
                 document.getElementById('cliente_id').value = project.cliente_id || '';
-                document.getElementById('stato').value = project.stato || 'attivo';
+                document.getElementById('stato').value = project.stato || 'active';
                 document.getElementById('data_inizio').value = project.data_inizio || '';
                 document.getElementById('data_fine').value = project.data_fine || '';
                 document.getElementById('budget').value = project.budget || '';
-                document.getElementById('priorita').value = project.priorita || 'media';
+                document.getElementById('priorita').value = project.priorita || 'medium';
                 document.getElementById('descrizione').value = project.descrizione || '';
             }
             
@@ -775,12 +777,12 @@
                 const cancelBtn = document.getElementById('cancel-btn');
                 
                 if (editing) {
-                    title.textContent = '✏️ Modifica Progetto';
-                    submitBtn.innerHTML = '💾 Salva Modifiche';
+                    title.textContent = '✏️ Edit Project';
+                    submitBtn.innerHTML = '💾 Save Changes';
                     cancelBtn.style.display = 'inline-block';
                 } else {
-                    title.textContent = '➕ Aggiungi Nuovo Progetto';
-                    submitBtn.innerHTML = '💾 Salva Progetto';
+                    title.textContent = '➕ Add New Project';
+                    submitBtn.innerHTML = '💾 Save Project';
                     cancelBtn.style.display = 'none';
                 }
             }
@@ -794,8 +796,8 @@
             resetForm() {
                 document.getElementById('projectForm').reset();
                 this.setDefaultDates();
-                document.getElementById('stato').value = 'attivo';
-                document.getElementById('priorita').value = 'media';
+                document.getElementById('stato').value = 'active';
+                document.getElementById('priorita').value = 'medium';
             }
             
             showLoading(show) {
@@ -819,17 +821,18 @@
             }
             
             capitalizeFirst(str) {
+                if (!str) return '';
                 return str.charAt(0).toUpperCase() + str.slice(1);
             }
             
             formatDate(dateString) {
                 if (!dateString) return '';
                 const date = new Date(dateString);
-                return date.toLocaleDateString('it-IT');
+                return date.toLocaleDateString('en-US');
             }
         }
         
-        // Inizializza l'applicazione quando il DOM è pronto
+        // Initialize app
         const projectManager = new ProjectManager();
     </script>
 </body>

@@ -1,10 +1,10 @@
 [
     {
         "id": "client_676d4a2b8f1a3.15234567",
-        "nominativo": "Maria Rossi",
-        "email": "maria.rossi@email.com",
-        "indirizzo": "Via Roma 123, Milano",
-        "note": "Cliente storica, preferisce essere contattato via email",
+        "nominativo": "Jane Doe",
+        "email": "jane.doe@email.com",
+        "indirizzo": "123 Main St, New York",
+        "note": "Frequent client, prefers email contact",
         "created_at": "2024-12-25 10:30:00",
         "updated_at": "2025-08-14 06:53:04"
     }
