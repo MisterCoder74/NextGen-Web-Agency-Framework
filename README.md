@@ -1,7 +1,7 @@
 # NextGen WebAgency Framework
-The repository "MisterCoder74/NextGen-Web-Agency-Framework" appears to be a web development framework designed to facilitate the creation and management of web applications, likely for agencies or developers looking to streamline their workflow.
+**Vivacity NextGen Web Agency Framework** is a web development framework designed to facilitate the creation and management of web applications, likely for agencies or developers looking to streamline their workflow.
 
-The project structure includes a variety of files and directories that suggest a comprehensive framework with multiple functionalities:
+The project structure includes a variety of files and directories that make up a comprehensive framework with multiple functionalities:
 
 1. **Core Files**: The presence of `index.php` and `login.php` indicates that the framework likely includes user authentication and serves as the entry point for web applications.
 
