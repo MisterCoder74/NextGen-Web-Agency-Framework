@@ -468,7 +468,7 @@ The frontend likely expects certain API endpoints or data formats.
 Return ONLY a valid JSON object:
 {
   "files": [
-    { "name": "api.php", "content": "<?php ..." },
+    { "name": "api.php", "content": "<" + "?php ..." },
     { "name": "data.json", "content": "{...}" }
   ]
 }`;
@@ -515,11 +515,17 @@ Return ONLY a valid JSON object:
   
   STATE.outputs.bot4 = parseJSON(raw, 'Bot 4');
   
-  // Build preview
-  const htmlFile = STATE.outputs.bot4.files.find(f => f.name.toLowerCase() === 'index.html') || 
-                   STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'));
+  // Build preview safely
+  let previewContent = "<h1>Error: No HTML found in final output</h1>";
+  if (STATE.outputs.bot4 && Array.isArray(STATE.outputs.bot4.files)) {
+      const htmlFile = STATE.outputs.bot4.files.find(f => f && f.name && f.name.toLowerCase() === 'index.html') || 
+                       STATE.outputs.bot4.files.find(f => f && f.name && f.name.endsWith('.html'));
+      if (htmlFile && htmlFile.content) {
+          previewContent = htmlFile.content;
+      }
+  }
                    
-  STATE.outputs.bot4.preview_html = htmlFile ? htmlFile.content : "<h1>Error: No HTML found in final output</h1>";
+  STATE.outputs.bot4.preview_html = previewContent;
   if (STATE.outputs.bot4.project_name) STATE.projectName = STATE.outputs.bot4.project_name;
 
   setCardState(4, 'done', 'Ready!');
@@ -683,10 +689,10 @@ const showOutput = (title, files) => {
             btn.onclick = () => {
                 DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                DOM.outputModalContent.textContent = file.content;
+                DOM.outputModalContent.textContent = file.content || '';
             };
             DOM.outputModalTabs.appendChild(btn);
-            if (idx === 0) DOM.outputModalContent.textContent = file.content;
+            if (idx === 0) DOM.outputModalContent.textContent = file.content || '';
         });
     } else if (files && typeof files === 'object') {
         const keys = Object.keys(files);
@@ -698,10 +704,14 @@ const showOutput = (title, files) => {
             btn.onclick = () => {
                 DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                DOM.outputModalContent.textContent = typeof files[key] === 'string' ? files[key] : JSON.stringify(files[key], null, 2);
+                const content = files[key];
+                DOM.outputModalContent.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
             };
             DOM.outputModalTabs.appendChild(btn);
-            if (idx === 0) DOM.outputModalContent.textContent = typeof files[key] === 'string' ? files[key] : JSON.stringify(files[key], null, 2);
+            if (idx === 0) {
+                const content = files[key];
+                DOM.outputModalContent.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+            }
         });
     }
     DOM.outputModal.classList.add('open');
