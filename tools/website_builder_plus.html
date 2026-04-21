@@ -134,7 +134,7 @@
         <div class="right-column">
             <div id="chathistory">
                 <div class="message-card ai-message">
-                    <div class="message-header">VivacityGPT</div>
+                    <div class="message-header">NextGen Bot</div>
                     <p>Hello! Describe the website you'd like me to build, choose a style, and I'll generate a complete project with HTML, CSS, and PHP backend for you.</p>
                 </div>
             </div>
@@ -196,7 +196,10 @@ ${urlWithoutFile}placeholder_profile_man.png,
 ${urlWithoutFile}placeholder_team.png,
 ${urlWithoutFile}placeholder_horizontal.png,
 ${urlWithoutFile}placeholder_vertical.png,
-${urlWithoutFile}placeholder_hero_image.png.
+${urlWithoutFile}placeholder_hero_image.png,
+${urlWithoutFile}horizontal_image.jpg,
+${urlWithoutFile}vertical_image.jpg,
+${urlWithoutFile}user_image.jpg.
 
 STYLE:
 You will create the page strictly according to the ${style} style.
@@ -220,7 +223,7 @@ NEVER use markdown in your responses.`;
             currentFrontend = frontendMatch ? frontendMatch[1].trim() : Core.cleanResponse(response);
             currentBackend = backendMatch ? backendMatch[1].trim() : "<" + "?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
 
-            appendMessage('VivacityGPT', currentFrontend, true);
+            appendMessage('NextGen Bot', currentFrontend, true);
             chatMemory.push({ role: 'assistant', content: response });
 
             document.getElementById('actionButtons').style.display = 'flex';
