@@ -23,12 +23,12 @@
 
         .hero-section {
             text-align: center;
-            padding: 60px 20px;
-            max-width: 900px;
+            padding: 30px 16px;
+            max-width: 980px;
         }
 
         .hero-section h1 {
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             font-weight: 800;
             margin-bottom: 20px;
             background: linear-gradient(90deg, #14b8a6, #a78bfa);
@@ -45,17 +45,31 @@
             font-family: 'Instrument Serif', serif;
             font-style: italic;
         }
-
+            
+		.middle-container {
+                display: flex;
+            justify-content: center;
+        gap: 0 20px;
+        align-items: center;
+            }
+		.middle-container img {
+            width: 400px;
+                height: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);    
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;    
+            }     
+            
         .login-card {
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
+            width: 400px;
+            padding: 48px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             backdrop-filter: blur(12px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .login-card h2 {
@@ -160,9 +174,9 @@
 <body>
 
     <div class="hero-section">
-        <h1>Vivacity NextGen<br>Web Agency Framework</h1>
+        <h1>Vivacity NextGen<br><small>Web Agency Framework</small></h1>
         <p>Potenzia il tuo workflow con l'intelligenza artificiale generativa di nuova generazione.</p>
-        
+		<div class="middle-container">        
         <div class="login-card">
             <h2>Accedi alla Suite</h2>
             
@@ -190,7 +204,9 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-login">Entra nel Futuro</button>
             </form>
-        </div>
+         </div>       
+            <img src="NextGen_WAF.jpg"> 
+         </div>
     </div>
 
     <footer>
@@ -202,9 +218,9 @@
             </div>
             <div class="footer-details">
                 &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. Tutti i diritti riservati.<br>
-                La proprietà intellettuale di questo framework e di tutti i contenuti generati rimane di esclusiva pertinenza di Vivacity Design.<br>
+                La proprietà intellettuale di questo framework e di tutto il codice che lo costituisce rimane di esclusiva pertinenza di Vivacity Design.<br>
                 <strong>Titolare del Trattamento:</strong> Alessandro Demontis | <strong>Contatto:</strong> info@vivacitydesign.net<br>
-                Conformità GDPR per l'Italia e l'Unione Europea.
+                Il framework non usa sessioni né cookie di alcun tipo, pertanto è esente da GDPR Compliance.
             </div>
         </div>
     </footer>
