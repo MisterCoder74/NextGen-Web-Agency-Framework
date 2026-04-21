@@ -182,11 +182,11 @@
             <form action="login.php" method="POST">
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required autocomplete="username">
+                    <input type="text" id="username" name="username" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                    <input type="password" id="password" name="password" required autocomplete="new-password">
                 </div>
                 <button type="submit" class="btn btn-primary btn-login">Entra nel Futuro</button>
             </form>
