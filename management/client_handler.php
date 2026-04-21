@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Gestisce le richieste OPTIONS per CORS
+// Handle OPTIONS requests for CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
@@ -13,7 +13,7 @@ class ClientManager {
     private $filename = 'clients.json';
     
     public function __construct() {
-        // Crea il file se non esiste
+        // Create file if it doesn't exist
         if (!file_exists($this->filename)) {
             file_put_contents($this->filename, json_encode([]));
         }
@@ -21,14 +21,14 @@ class ClientManager {
     
     public function handleRequest() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return $this->error('Metodo non supportato');
+            return $this->error('Method not supported');
         }
         
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         
         if (!$data || !isset($data['action'])) {
-            return $this->error('Dati non validi');
+            return $this->error('Invalid data');
         }
         
         switch ($data['action']) {
@@ -43,20 +43,20 @@ class ClientManager {
             case 'get':
                 return $this->getClient($data['id'] ?? '');
             default:
-                return $this->error('Azione non riconosciuta');
+                return $this->error('Action not recognized');
         }
     }
     
     private function addClient($data) {
         if (!$this->validateClientData($data)) {
-            return $this->error('Dati cliente non validi');
+            return $this->error('Invalid client data');
         }
         
-        // Controlla se l'email esiste già
+        // Check if email already exists
         $clients = $this->loadClients();
         foreach ($clients as $client) {
             if (strtolower($client['email']) === strtolower($data['email'])) {
-                return $this->error('Email già esistente');
+                return $this->error('Email already exists');
             }
         }
         
@@ -73,15 +73,15 @@ class ClientManager {
         $clients[] = $client;
         
         if ($this->saveClients($clients)) {
-            return $this->success('Cliente aggiunto con successo', $client);
+            return $this->success('Client added successfully', $client);
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function updateClient($id, $data) {
         if (empty($id) || !$this->validateClientData($data)) {
-            return $this->error('Dati non validi');
+            return $this->error('Invalid data');
         }
         
         $clients = $this->loadClients();
@@ -89,11 +89,11 @@ class ClientManager {
         
         for ($i = 0; $i < count($clients); $i++) {
             if ($clients[$i]['id'] === $id) {
-                // Controlla se l'email esiste già (escludendo il cliente corrente)
+                // Check if email already exists (excluding current client)
                 foreach ($clients as $client) {
                     if ($client['id'] !== $id && 
                         strtolower($client['email']) === strtolower($data['email'])) {
-                        return $this->error('Email già esistente');
+                        return $this->error('Email already exists');
                     }
                 }
                 
@@ -108,19 +108,19 @@ class ClientManager {
         }
         
         if (!$found) {
-            return $this->error('Cliente non trovato');
+            return $this->error('Client not found');
         }
         
         if ($this->saveClients($clients)) {
-            return $this->success('Cliente aggiornato con successo');
+            return $this->success('Client updated successfully');
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function deleteClient($id) {
         if (empty($id)) {
-            return $this->error('ID cliente non valido');
+            return $this->error('Invalid client ID');
         }
         
         $clients = $this->loadClients();
@@ -130,44 +130,44 @@ class ClientManager {
             return $client['id'] !== $id;
         });
         
-        $clients = array_values($clients); // Riordina gli indici
+        $clients = array_values($clients); // Reindex
         
         if (count($clients) === $initialCount) {
-            return $this->error('Cliente non trovato');
+            return $this->error('Client not found');
         }
         
         if ($this->saveClients($clients)) {
-            return $this->success('Cliente eliminato con successo');
+            return $this->success('Client deleted successfully');
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function listClients() {
         $clients = $this->loadClients();
         
-        // Ordina per nome
+        // Sort by name
         usort($clients, function($a, $b) {
             return strcmp(strtolower($a['nominativo']), strtolower($b['nominativo']));
         });
         
-        return $this->success('Lista clienti caricata', $clients);
+        return $this->success('Client list loaded', $clients);
     }
     
     private function getClient($id) {
         if (empty($id)) {
-            return $this->error('ID cliente non valido');
+            return $this->error('Invalid client ID');
         }
         
         $clients = $this->loadClients();
         
         foreach ($clients as $client) {
             if ($client['id'] === $id) {
-                return $this->success('Cliente trovato', $client);
+                return $this->success('Client found', $client);
             }
         }
         
-        return $this->error('Cliente non trovato');
+        return $this->error('Client not found');
     }
     
     private function loadClients() {
@@ -191,12 +191,12 @@ class ClientManager {
             return false;
         }
         
-        // Nominativo obbligatorio
+        // Name is required
         if (empty(trim($data['nominativo'] ?? ''))) {
             return false;
         }
         
-        // Email obbligatoria e valida
+        // Email is required and valid
         $email = trim($data['email'] ?? '');
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -230,7 +230,7 @@ class ClientManager {
     }
 }
 
-// Gestisce gli errori in modo elegante
+// Handle errors gracefully
 try {
     $manager = new ClientManager();
     $response = $manager->handleRequest();
@@ -238,7 +238,7 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore interno del server'
+        'message' => 'Internal server error'
     ]);
     error_log('Client Manager Error: ' . $e->getMessage());
 }

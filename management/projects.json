@@ -1,15 +1,15 @@
 [
     {
         "id": "project_676d4a2b8f1d6.47567890",
-        "nome_progetto": "Restyling Brand Identity",
-        "tipologia": "Consulenza Specializzata",
+        "nome_progetto": "Brand Identity Restyling",
+        "tipologia": "Specialized Consulting",
         "cliente_id": "client_676d4a2b8f1a3.15234567",
-        "stato": "attivo",
+        "stato": "active",
         "data_inizio": "2025-07-25",
         "data_fine": "2025-11-30",
         "budget": 2500,
-        "priorita": "bassa",
-        "descrizione": "Completo restyling dell'identità visiva aziendale: nuovo logo, palette colori, e guidelines brand.\nMini landing page per visitatori, con modulo di iscrizione.",
+        "priorita": "low",
+        "descrizione": "Complete restyling of corporate visual identity: new logo, color palette, and brand guidelines.\nMini landing page for visitors with signup form.",
         "created_at": "2025-07-25 16:45:00",
         "updated_at": "2025-08-14 07:14:01"
     }

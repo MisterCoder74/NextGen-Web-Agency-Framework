@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vivacity NextGen Web Agency Framework - Login</title>
+    <title>NextGen Web Agency Framework - Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -46,20 +46,21 @@
             font-style: italic;
         }
             
-		.middle-container {
-                display: flex;
+        .middle-container {
+            display: flex;
             justify-content: center;
-        gap: 0 20px;
-        align-items: center;
-            }
-		.middle-container img {
+            gap: 0 20px;
+            align-items: center;
+        }
+
+        .middle-container img {
             width: 400px;
-                height: auto;
+            height: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);    
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
             margin-bottom: 40px;    
-            }     
+        }     
             
         .login-card {
             width: 400px;
@@ -174,20 +175,20 @@
 <body>
 
     <div class="hero-section">
-        <h1>Vivacity NextGen<br><small>Web Agency Framework</small></h1>
-        <p>Potenzia il tuo workflow con l'intelligenza artificiale generativa di nuova generazione.</p>
-		<div class="middle-container">        
+        <h1>NextGen Web Agency<br><small>Framework</small></h1>
+        <p>Empower your workflow with next-generation generative artificial intelligence.</p>
+        <div class="middle-container">        
         <div class="login-card">
-            <h2>Accedi alla Suite</h2>
+            <h2>Access the Suite</h2>
             
             <?php if (isset($_GET['error'])): ?>
                 <div class="error-msg">
                     <?php
                         switch($_GET['error']) {
-                            case '1': echo "Credenziali non valide. Riprova."; break;
-                            case '2': echo "Errore di sistema: Archivio utenti non trovato."; break;
-                            case '3': echo "Per favore, compila tutti i campi."; break;
-                            default: echo "Si è verificato un errore durante l'accesso.";
+                            case '1': echo "Invalid credentials. Please try again."; break;
+                            case '2': echo "System error: User archive not found."; break;
+                            case '3': echo "Please fill in all fields."; break;
+                            default: echo "An error occurred during login.";
                         }
                     ?>
                 </div>
@@ -202,7 +203,7 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required autocomplete="new-password">
                 </div>
-                <button type="submit" class="btn btn-primary btn-login">Entra nel Futuro</button>
+                <button type="submit" class="btn btn-primary btn-login">Enter the Future</button>
             </form>
          </div>       
             <img src="NextGen_WAF.jpg"> 
@@ -212,15 +213,15 @@
     <footer>
         <div class="footer-content">
             <div class="footer-links">
-                <a href="#">Termini di Servizio</a>
+                <a href="#">Terms of Service</a>
                 <a href="#">Privacy Policy</a>
                 <a href="#">Cookie Policy</a>
             </div>
             <div class="footer-details">
-                &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. Tutti i diritti riservati.<br>
-                La proprietà intellettuale di questo framework e di tutto il codice che lo costituisce rimane di esclusiva pertinenza di Vivacity Design.<br>
-                <strong>Titolare del Trattamento:</strong> Alessandro Demontis | <strong>Contatto:</strong> info@vivacitydesign.net<br>
-                Il framework non usa sessioni né cookie di alcun tipo, pertanto è esente da GDPR Compliance.
+                &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. All rights reserved.<br>
+                The intellectual property of this framework and all the code that constitutes it remains the exclusive property of Vivacity Design.<br>
+                <strong>Data Controller:</strong> Alessandro Demontis | <strong>Contact:</strong> info@vivacitydesign.net<br>
+                The framework does not use sessions or cookies of any kind, therefore it is exempt from GDPR Compliance.
             </div>
         </div>
     </footer>

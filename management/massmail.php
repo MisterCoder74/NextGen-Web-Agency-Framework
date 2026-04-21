@@ -1,5 +1,5 @@
 <?php
-// Gestione dell'invio email tramite PHP
+// Handle email sending via PHP
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'send_email') {
     header('Content-Type: application/json');
     
@@ -9,37 +9,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     $response = ['success' => false, 'message' => ''];
     
-    // Validazione
+    // Validation
     if (empty($subject)) {
-        $response['message'] = 'Oggetto obbligatorio';
+        $response['message'] = 'Subject is required';
         echo json_encode($response);
         exit;
     }
     
     if (empty($message)) {
-        $response['message'] = 'Messaggio obbligatorio';
+        $response['message'] = 'Message is required';
         echo json_encode($response);
         exit;
     }
     
     if (empty($recipients) || !is_array($recipients)) {
-        $response['message'] = 'Seleziona almeno un destinatario';
+        $response['message'] = 'Select at least one recipient';
         echo json_encode($response);
         exit;
     }
     
-    // Configurazione email
-    $from_name = "Vivacity Design";
-    $from_email = "info@vivacitydesign.net";
-    $reply_to = "info@vivacitydesign.net";
+    // Email configuration
+    $from_name = "NextGen Web Agency";
+    $from_email = "info@nextgen-webagency.com";
+    $reply_to = "info@nextgen-webagency.com";
     
-    // Prepara il messaggio con firma
+    // Prepare message with signature
     $email_body = $message . "\n\n---\n";
-    $email_body .= "Vivacity Design\n";
-    $email_body .= "Email: info@vivacitydesign.net\n";
-    $email_body .= "Sito web: https://www.vivacitydesign.net/index.php";
+    $email_body .= "NextGen Web Agency\n";
+    $email_body .= "Email: info@nextgen-webagency.com\n";
+    $email_body .= "Website: https://www.nextgen-webagency.com";
     
-    // Headers per l'email
+    // Headers for email
     $headers = [];
     $headers[] = "MIME-Version: 1.0";
     $headers[] = "Content-type: text/plain; charset=UTF-8";
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $headers[] = "Reply-To: {$reply_to}";
     $headers[] = "X-Mailer: PHP/" . phpversion();
     
-    // Aggiungi tutti i destinatari in BCC
+    // Add all recipients in BCC
     $bcc_list = [];
     foreach ($recipients as $email) {
         $email = trim($email);
@@ -57,16 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     
     if (empty($bcc_list)) {
-        $response['message'] = 'Nessun indirizzo email valido trovato';
+        $response['message'] = 'No valid email addresses found';
         echo json_encode($response);
         exit;
     }
     
     $headers[] = "Bcc: " . implode(', ', $bcc_list);
     
-    // Invia l'email
+    // Send email
     $mail_sent = mail(
-        $from_email, // TO (invia a se stesso)
+        $from_email, // TO (send to self)
         $subject,
         $email_body,
         implode("\r\n", $headers)
@@ -74,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     if ($mail_sent) {
         $response['success'] = true;
-        $response['message'] = "Email inviata con successo a " . count($bcc_list) . " destinatari";
+        $response['message'] = "Email sent successfully to " . count($bcc_list) . " recipients";
     } else {
-        $response['message'] = 'Errore durante l\'invio dell\'email';
+        $response['message'] = 'Error while sending email';
     }
     
     echo json_encode($response);
@@ -84,11 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 ?>
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Marketing - Vivacity Design</title>
+    <title>Email Marketing - NextGen Web Agency</title>
     <style>
         * {
             margin: 0;
@@ -376,6 +376,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             color: #2c3e50;
         }
 
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -395,92 +404,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div class="container">
         <div class="header">
             <h1>📧 Email Marketing</h1>
-            <p>Gestisci le tue campagne email con Vivacity Design</p>
+            <p>Manage your email campaigns with NextGen Web Agency</p>
         </div>
 
         <div class="content">
-            <!-- Sezione Upload -->
+            <!-- Upload Section -->
             <div class="upload-section" id="uploadSection">
-                <h3>📁 Carica il file JSON dei clienti</h3>
-                <p style="margin: 15px 0; color: #666;">Trascina il file qui o clicca per selezionarlo</p>
+                <h3>📁 Upload client JSON file</h3>
+                <p style="margin: 15px 0; color: #666;">Drag the file here or click to select</p>
                 <input type="file" id="fileInput" class="upload-input" accept=".json">
                 <button class="upload-button" onclick="document.getElementById('fileInput').click()">
-                    Seleziona File JSON
+                    Select JSON File
                 </button>
                 <div class="file-info" id="fileInfo"></div>
             </div>
 
-            <!-- Statistiche -->
+            <!-- Stats -->
             <div class="stats" id="stats">
                 <div class="stat-card">
                     <div class="stat-number" id="totalClients">0</div>
-                    <div class="stat-label">Clienti Totali</div>
+                    <div class="stat-label">Total Clients</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="validEmails">0</div>
-                    <div class="stat-label">Email Valide</div>
+                    <div class="stat-label">Valid Emails</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="selectedClients">0</div>
-                    <div class="stat-label">Selezionati</div>
+                    <div class="stat-label">Selected</div>
                 </div>
             </div>
 
-            <!-- Lista Clienti -->
+            <!-- Client List -->
             <div class="client-list" id="clientList">
-                <h3>👥 Seleziona i destinatari</h3>
+                <h3>👥 Select recipients</h3>
                 <div style="margin: 15px 0;">
                     <label>
-                        <input type="checkbox" id="selectAll"> Seleziona tutti i clienti con email valida
+                        <input type="checkbox" id="selectAll"> Select all clients with valid email
                     </label>
                 </div>
                 <div id="clientItems"></div>
             </div>
 
-            <!-- Form Email -->
+            <!-- Email Form -->
             <div id="emailForm" style="display: none;">
-                <h3>✉️ Componi la tua email</h3>
+                <h3>✉️ Compose your email</h3>
                 
                 <div class="form-group">
-                    <label for="subject">Oggetto *</label>
-                    <input type="text" id="subject" class="form-control" placeholder="Inserisci l'oggetto dell'email" required>
+                    <label for="subject">Subject *</label>
+                    <input type="text" id="subject" class="form-control" placeholder="Enter email subject" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="message">Messaggio *</label>
-                    <textarea id="message" class="form-control" placeholder="Scrivi il tuo messaggio..." required></textarea>
+                    <label for="message">Message *</label>
+                    <textarea id="message" class="form-control" placeholder="Write your message..." required></textarea>
                 </div>
 
-                <!-- Anteprima Email -->
+                <!-- Email Preview -->
                 <div class="email-preview" id="emailPreview">
-                    <h4>📋 Anteprima Email</h4>
+                    <h4>📋 Email Preview</h4>
                     <div class="email-header">
-                        <div class="email-field"><strong>Da:</strong> Vivacity Design &lt;info@vivacitydesign.net&gt;</div>
-                        <div class="email-field"><strong>A:</strong> <span id="previewRecipients">I destinatari saranno in BCC</span></div>
-                        <div class="email-field"><strong>Oggetto:</strong> <span id="previewSubject">-</span></div>
+                        <div class="email-field"><strong>From:</strong> NextGen Web Agency &lt;info@nextgen-webagency.com&gt;</div>
+                        <div class="email-field"><strong>To:</strong> <span id="previewRecipients">Recipients will be in BCC</span></div>
+                        <div class="email-field"><strong>Subject:</strong> <span id="previewSubject">-</span></div>
                     </div>
                     <div id="previewMessage">-</div>
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6; font-size: 0.9em; color: #666;">
-                        <strong>Vivacity Design</strong><br>
-                        Email: info@vivacitydesign.net<br>
-                        Sito web: <a href="https://www.vivacitydesign.net/index.php" target="_blank">https://www.vivacitydesign.net/index.php</a>
+                        <strong>NextGen Web Agency</strong><br>
+                        Email: info@nextgen-webagency.com<br>
+                        Website: <a href="https://www.nextgen-webagency.com" target="_blank">https://www.nextgen-webagency.com</a>
                     </div>
                 </div>
 
                 <button class="send-button" id="sendButton" onclick="sendEmails()">
-                    🚀 Invia Email
+                    🚀 Send Email
                 </button>
             </div>
 
             <div class="status-message" id="statusMessage"></div>
         </div>
     </div>
+    <a href="dashboard.html" class="back-link">Back to Dashboard</a>
 
     <script>
         let clientsData = [];
         let selectedClients = [];
 
-        // Gestione upload file
+        // File upload handling
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         
         // Drag & Drop
@@ -522,7 +532,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         function processFile(file) {
             if (!file.name.endsWith('.json')) {
-                showStatus('Errore: Il file deve essere in formato JSON', 'error');
+                showStatus('Error: File must be in JSON format', 'error');
                 return;
             }
 
@@ -534,7 +544,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     displayClients();
                     updateStats();
                 } catch (error) {
-                    showStatus('Errore: File JSON non valido', 'error');
+                    showStatus('Error: Invalid JSON file', 'error');
                 }
             };
             reader.readAsText(file);
@@ -543,10 +553,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         function displayFileInfo(file, clientCount) {
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.innerHTML = `
-                <strong>✅ File caricato con successo!</strong><br>
-                Nome: ${file.name}<br>
-                Dimensione: ${(file.size / 1024).toFixed(2)} KB<br>
-                Clienti trovati: ${clientCount}
+                <strong>✅ File uploaded successfully!</strong><br>
+                Name: ${file.name}<br>
+                Size: ${(file.size / 1024).toFixed(2)} KB<br>
+                Clients found: ${clientCount}
             `;
             fileInfo.style.display = 'block';
         }
@@ -559,7 +569,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <div class="client-item">
                     <input type="checkbox" class="client-checkbox" data-client-id="${client.id}" onchange="updateSelection()">
                     <div class="client-info">
-                        <div class="client-name">${client.nome}</div>
+                        <div class="client-name">${client.nome || client.name}</div>
                         <div class="client-email">${client.email}</div>
                     </div>
                 </div>
@@ -616,11 +626,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             if (selectedClients.length > 0) {
                 document.getElementById('previewRecipients').textContent = 
-                    `${selectedClients.length} destinatari selezionati (in BCC)`;
+                    `${selectedClients.length} recipients selected (in BCC)`;
             }
         }
 
-        // Event listeners per l'anteprima
+        // Preview event listeners
         document.getElementById('subject').addEventListener('input', updatePreview);
         document.getElementById('message').addEventListener('input', updatePreview);
 
@@ -629,28 +639,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             const message = document.getElementById('message').value.trim();
 
             if (!subject || !message) {
-                showStatus('Errore: Oggetto e messaggio sono obbligatori', 'error');
+                showStatus('Error: Subject and message are required', 'error');
                 return;
             }
 
             if (selectedClients.length === 0) {
-                showStatus('Errore: Seleziona almeno un cliente', 'error');
+                showStatus('Error: Select at least one client', 'error');
                 return;
             }
 
             const sendButton = document.getElementById('sendButton');
             sendButton.disabled = true;
             sendButton.classList.add('loading');
-            sendButton.textContent = 'Invio in corso...';
+            sendButton.textContent = 'Sending...';
 
             try {
-                // Prepara i dati per l'invio
+                // Prepare data for sending
                 const formData = new FormData();
                 formData.append('action', 'send_email');
                 formData.append('subject', subject);
                 formData.append('message', message);
                 
-                // Aggiungi tutti gli indirizzi email
+                // Add all email addresses
                 selectedClients.forEach(client => {
                     formData.append('recipients[]', client.email);
                 });
@@ -673,12 +683,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
 
             } catch (error) {
-                showStatus('Errore di connessione. Riprova più tardi.', 'error');
-                console.error('Errore:', error);
+                showStatus('Connection error. Please try again later.', 'error');
+                console.error('Error:', error);
             } finally {
                 sendButton.disabled = false;
                 sendButton.classList.remove('loading');
-                sendButton.textContent = '🚀 Invia Email';
+                sendButton.textContent = '🚀 Send Email';
             }
         }
 

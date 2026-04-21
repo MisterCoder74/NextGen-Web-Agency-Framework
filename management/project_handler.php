@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Gestisce le richieste OPTIONS per CORS
+// Handle OPTIONS requests for CORS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
@@ -14,7 +14,7 @@ class ProjectManager {
     private $clientsFilename = 'clients.json';
     
     public function __construct() {
-        // Crea il file se non esiste
+        // Create file if it doesn't exist
         if (!file_exists($this->filename)) {
             file_put_contents($this->filename, json_encode([]));
         }
@@ -22,14 +22,14 @@ class ProjectManager {
     
     public function handleRequest() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return $this->error('Metodo non supportato');
+            return $this->error('Method not supported');
         }
         
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         
         if (!$data || !isset($data['action'])) {
-            return $this->error('Dati non validi');
+            return $this->error('Invalid data');
         }
         
         switch ($data['action']) {
@@ -44,26 +44,26 @@ class ProjectManager {
             case 'get':
                 return $this->getProject($data['id'] ?? '');
             default:
-                return $this->error('Azione non riconosciuta');
+                return $this->error('Action not recognized');
         }
     }
     
     private function addProject($data) {
         if (!$this->validateProjectData($data)) {
-            return $this->error('Dati progetto non validi');
+            return $this->error('Invalid project data');
         }
         
-        // Verifica che il cliente esista
+        // Verify that client exists
         if (!$this->clientExists($data['cliente_id'])) {
-            return $this->error('Cliente selezionato non valido');
+            return $this->error('Invalid client selected');
         }
         
-        // Controlla se esiste già un progetto con lo stesso nome per lo stesso cliente
+        // Check if project with same name already exists for same client
         $projects = $this->loadProjects();
         foreach ($projects as $project) {
             if (strtolower($project['nome_progetto']) === strtolower($data['nome_progetto']) && 
                 $project['cliente_id'] === $data['cliente_id']) {
-                return $this->error('Esiste già un progetto con questo nome per il cliente selezionato');
+                return $this->error('A project with this name already exists for the selected client');
             }
         }
         
@@ -72,11 +72,11 @@ class ProjectManager {
             'nome_progetto' => trim($data['nome_progetto']),
             'tipologia' => trim($data['tipologia']),
             'cliente_id' => trim($data['cliente_id']),
-            'stato' => $data['stato'] ?? 'attivo',
+            'stato' => $data['stato'] ?? 'active',
             'data_inizio' => $data['data_inizio'] ?? null,
             'data_fine' => $data['data_fine'] ?? null,
             'budget' => floatval($data['budget'] ?? 0),
-            'priorita' => $data['priorita'] ?? 'media',
+            'priorita' => $data['priorita'] ?? 'medium',
             'descrizione' => trim($data['descrizione'] ?? ''),
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
@@ -85,20 +85,20 @@ class ProjectManager {
         $projects[] = $project;
         
         if ($this->saveProjects($projects)) {
-            return $this->success('Progetto aggiunto con successo', $project);
+            return $this->success('Project added successfully', $project);
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function updateProject($id, $data) {
         if (empty($id) || !$this->validateProjectData($data)) {
-            return $this->error('Dati non validi');
+            return $this->error('Invalid data');
         }
         
-        // Verifica che il cliente esista
+        // Verify that client exists
         if (!$this->clientExists($data['cliente_id'])) {
-            return $this->error('Cliente selezionato non valido');
+            return $this->error('Invalid client selected');
         }
         
         $projects = $this->loadProjects();
@@ -106,23 +106,23 @@ class ProjectManager {
         
         for ($i = 0; $i < count($projects); $i++) {
             if ($projects[$i]['id'] === $id) {
-                // Controlla se esiste già un progetto con lo stesso nome (escludendo quello corrente)
+                // Check if project with same name already exists (excluding current one)
                 foreach ($projects as $project) {
                     if ($project['id'] !== $id && 
                         strtolower($project['nome_progetto']) === strtolower($data['nome_progetto']) && 
                         $project['cliente_id'] === $data['cliente_id']) {
-                        return $this->error('Esiste già un progetto con questo nome per il cliente selezionato');
+                        return $this->error('A project with this name already exists for the selected client');
                     }
                 }
                 
                 $projects[$i]['nome_progetto'] = trim($data['nome_progetto']);
                 $projects[$i]['tipologia'] = trim($data['tipologia']);
                 $projects[$i]['cliente_id'] = trim($data['cliente_id']);
-                $projects[$i]['stato'] = $data['stato'] ?? 'attivo';
+                $projects[$i]['stato'] = $data['stato'] ?? 'active';
                 $projects[$i]['data_inizio'] = $data['data_inizio'] ?? null;
                 $projects[$i]['data_fine'] = $data['data_fine'] ?? null;
                 $projects[$i]['budget'] = floatval($data['budget'] ?? 0);
-                $projects[$i]['priorita'] = $data['priorita'] ?? 'media';
+                $projects[$i]['priorita'] = $data['priorita'] ?? 'medium';
                 $projects[$i]['descrizione'] = trim($data['descrizione'] ?? '');
                 $projects[$i]['updated_at'] = date('Y-m-d H:i:s');
                 $found = true;
@@ -131,19 +131,19 @@ class ProjectManager {
         }
         
         if (!$found) {
-            return $this->error('Progetto non trovato');
+            return $this->error('Project not found');
         }
         
         if ($this->saveProjects($projects)) {
-            return $this->success('Progetto aggiornato con successo');
+            return $this->success('Project updated successfully');
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function deleteProject($id) {
         if (empty($id)) {
-            return $this->error('ID progetto non valido');
+            return $this->error('Invalid project ID');
         }
         
         $projects = $this->loadProjects();
@@ -153,52 +153,52 @@ class ProjectManager {
             return $project['id'] !== $id;
         });
         
-        $projects = array_values($projects); // Riordina gli indici
+        $projects = array_values($projects); // Reindex
         
         if (count($projects) === $initialCount) {
-            return $this->error('Progetto non trovato');
+            return $this->error('Project not found');
         }
         
         if ($this->saveProjects($projects)) {
-            return $this->success('Progetto eliminato con successo');
+            return $this->success('Project deleted successfully');
         } else {
-            return $this->error('Errore nel salvataggio');
+            return $this->error('Error saving');
         }
     }
     
     private function listProjects() {
         $projects = $this->loadProjects();
         
-        // Ordina per priorità e data di creazione
+        // Sort by priority and creation date
         usort($projects, function($a, $b) {
-            $priorityOrder = ['urgente' => 4, 'alta' => 3, 'media' => 2, 'bassa' => 1];
+            $priorityOrder = ['urgent' => 4, 'high' => 3, 'medium' => 2, 'low' => 1];
             $aPriority = $priorityOrder[$a['priorita']] ?? 2;
             $bPriority = $priorityOrder[$b['priorita']] ?? 2;
             
             if ($aPriority !== $bPriority) {
-                return $bPriority - $aPriority; // Ordine decrescente per priorità
+                return $bPriority - $aPriority; // Descending priority
             }
             
             return strcmp($a['created_at'], $b['created_at']);
         });
         
-        return $this->success('Lista progetti caricata', $projects);
+        return $this->success('Project list loaded', $projects);
     }
     
     private function getProject($id) {
         if (empty($id)) {
-            return $this->error('ID progetto non valido');
+            return $this->error('Invalid project ID');
         }
         
         $projects = $this->loadProjects();
         
         foreach ($projects as $project) {
             if ($project['id'] === $id) {
-                return $this->success('Progetto trovato', $project);
+                return $this->success('Project found', $project);
             }
         }
         
-        return $this->error('Progetto non trovato');
+        return $this->error('Project not found');
     }
     
     private function loadProjects() {
@@ -243,22 +243,22 @@ class ProjectManager {
             return false;
         }
         
-        // Nome progetto obbligatorio
+        // Project name is required
         if (empty(trim($data['nome_progetto'] ?? ''))) {
             return false;
         }
         
-        // Tipologia obbligatoria
+        // Type is required
         if (empty(trim($data['tipologia'] ?? ''))) {
             return false;
         }
         
-        // Cliente obbligatorio
+        // Client is required
         if (empty(trim($data['cliente_id'] ?? ''))) {
             return false;
         }
         
-        // Validazione date se presenti
+        // Date validation if present
         if (!empty($data['data_inizio']) && !$this->isValidDate($data['data_inizio'])) {
             return false;
         }
@@ -267,18 +267,18 @@ class ProjectManager {
             return false;
         }
         
-        // Validazione valori enum
-        $validStati = ['attivo', 'completato', 'sospeso', 'annullato'];
+        // Enum validation
+        $validStati = ['active', 'completed', 'suspended', 'cancelled'];
         if (!empty($data['stato']) && !in_array($data['stato'], $validStati)) {
             return false;
         }
         
-        $validPriorita = ['bassa', 'media', 'alta', 'urgente'];
+        $validPriorita = ['low', 'medium', 'high', 'urgent'];
         if (!empty($data['priorita']) && !in_array($data['priorita'], $validPriorita)) {
             return false;
         }
         
-        // Validazione budget
+        // Budget validation
         if (isset($data['budget']) && !is_numeric($data['budget'])) {
             return false;
         }
@@ -316,7 +316,7 @@ class ProjectManager {
     }
 }
 
-// Gestisce gli errori in modo elegante
+// Handle errors gracefully
 try {
     $manager = new ProjectManager();
     $response = $manager->handleRequest();
@@ -324,7 +324,7 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore interno del server'
+        'message' => 'Internal server error'
     ]);
     error_log('Project Manager Error: ' . $e->getMessage());
 }
