@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>" />
+  <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>" />
   <style>
     /* Specific overrides for WebForge style integration */
     .btn-back-dashboard { margin-right: 10px; }
@@ -427,7 +427,7 @@ Return ONLY a valid JSON object with this structure:
   const raw = await callAI([
       { role:'system', content: sys }, 
       { role:'user', content: userContent }
-  ]);
+   ], { max_tokens: 4000 });
   
   STATE.outputs.bot1 = parseJSON(raw, 'Bot 1');
   setCardState(1, 'done', 'Plan ready');
@@ -465,7 +465,7 @@ Return ONLY a valid JSON object:
   const raw = await callAI([
       { role:'system', content: sys }, 
       { role:'user', content: userContent }
-  ], { max_tokens: 8000 });
+  ], { max_tokens: 10000 });
   
   STATE.outputs.bot2 = parseJSON(raw, 'Bot 2');
   setCardState(2, 'done', 'Frontend ready');
@@ -491,7 +491,7 @@ Return ONLY a valid JSON object:
   const raw = await callAI([
       { role:'system', content: sys }, 
       { role:'user', content: userPrompt }
-  ]);
+  ], { max_tokens: 12000 });
   
   STATE.outputs.bot3 = parseJSON(raw, 'Bot 3');
   setCardState(3, 'done', 'Backend ready');
@@ -525,7 +525,7 @@ Return ONLY a valid JSON object:
   const raw = await callAI([
       { role:'system', content: sys }, 
       { role:'user', content: userPrompt }
-  ], { max_tokens: 12000 }); // Increase tokens for final output
+  ], { max_tokens: 15000 }); // Increase tokens for final output
   
   STATE.outputs.bot4 = parseJSON(raw, 'Bot 4');
   
