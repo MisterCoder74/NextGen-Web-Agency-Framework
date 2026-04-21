@@ -46,7 +46,10 @@ const Core = {
     // UTILITIES
     cleanResponse: (text) => {
         if (!text) return "";
-        let clean = text.replace(/(```html|```css|```javascript|```php|```python|```json|```)/gs, '');
+        // Remove markdown code blocks with language identifiers
+        let clean = text.replace(/```[a-zA-Z]*\n?/g, '');
+        // Remove trailing code block markers
+        clean = clean.replace(/```/g, '');
         return clean.trim();
     },
 

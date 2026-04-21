@@ -348,11 +348,25 @@ async function callAI(messages, options = {}) {
 }
 
 function parseJSON(raw, botName) {
-  const text = Core.cleanResponse(raw);
-  try { return JSON.parse(text); } catch (e) {
-    const s = text.indexOf('{'), e2 = text.lastIndexOf('}');
-    if (s !== -1 && e2 > s) { try { return JSON.parse(text.slice(s, e2+1)); } catch {} }
-    throw new Error(`${botName} invalid JSON`);
+  let text = Core.cleanResponse(raw);
+  // Remove any leading/trailing non-JSON characters like markdown labels
+  text = text.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+  
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // Try to find the first { and last }
+    const s = raw.indexOf('{');
+    const e2 = raw.lastIndexOf('}');
+    if (s !== -1 && e2 > s) {
+      const candidate = raw.slice(s, e2 + 1);
+      try {
+        return JSON.parse(candidate);
+      } catch (innerE) {
+        console.error("JSON Parse Error details:", innerE, "Attempted to parse:", candidate);
+      }
+    }
+    throw new Error(`${botName} returned invalid JSON format. Please try again.`);
   }
 }
 
@@ -368,12 +382,13 @@ async function startPipeline() {
   resetCards();
 
   try {
-    await runBot1();
-    await runBot2();
-    await runBot3();
-    await runBot4();
+    const bot1Output = await runBot1();
+    const bot2Output = await runBot2(bot1Output);
+    const bot3Output = await runBot3(bot1Output, bot2Output);
+    await runBot4(bot1Output, bot2Output, bot3Output);
     showResults();
   } catch (err) {
+    console.error("Pipeline Error:", err);
     showToast(err.message);
     setStatusBadge('error', 'ERROR');
   } finally {
@@ -384,12 +399,24 @@ async function startPipeline() {
 
 async function runBot1() {
   setCardState(1, 'running', 'Planning...');
-  const sys = `You are a web strategist. Plan the project architecture. Frontend has internal CSS and JS, no external files. Return JSON only.`;
+  const sys = `You are the Idea Strategist for a web agency.
+Your task is to analyze the user's request and create a detailed strategic plan.
+Focus on: project name, core features, UX flow, and design aesthetic.
+All frontend code will be single-file (internal CSS/JS).
+
+Return ONLY a valid JSON object with this structure:
+{
+  "project_name": "Name",
+  "summary": "Brief description",
+  "features": ["feature 1", "feature 2"],
+  "design_guidelines": { "colors": [], "typography": "", "style": "" },
+  "backend_needs": "Description of data/PHP needs"
+}`;
   
   let userContent = STATE.userRequest;
   if (STATE.screenshot) {
       userContent = [
-          { type: 'text', text: STATE.userRequest },
+          { type: 'text', text: `Project Request: ${STATE.userRequest}` },
           { type: 'image_url', image_url: { url: STATE.screenshot } }
       ];
   }
@@ -402,35 +429,98 @@ async function runBot1() {
   STATE.outputs.bot1 = parseJSON(raw, 'Bot 1');
   setCardState(1, 'done', 'Plan ready');
   activateConnector(1);
+  return STATE.outputs.bot1;
 }
 
-async function runBot2() {
+async function runBot2(plan) {
   setCardState(2, 'running', 'Designing...');
-  const sys = `You are a frontend dev receiving a strategic plan. Create production HTML with internal CSS and JS, NO external files. Return JSON: {"html":""}`;
-  const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: JSON.stringify(STATE.outputs.bot1) }]);
+  const sys = `You are the Frontend DevBot. 
+Based on the Strategic Plan, create a production-ready, single-file HTML5 application.
+Requirements:
+- Use internal <style> and <script> tags.
+- Use Google Fonts and Font Awesome if needed.
+- Ensure it is responsive and matches the design guidelines.
+- Include all UI components defined in the features.
+
+Return ONLY a valid JSON object:
+{
+  "html": "<!DOCTYPE html>...full code..."
+}`;
+
+  const userPrompt = `Strategic Plan: ${JSON.stringify(plan)}\n\nOriginal Request: ${STATE.userRequest}`;
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userPrompt }
+  ]);
+  
   STATE.outputs.bot2 = parseJSON(raw, 'Bot 2');
   setCardState(2, 'done', 'Frontend ready');
   activateConnector(2);
+  return STATE.outputs.bot2;
 }
 
-async function runBot3() {
+async function runBot3(plan, frontend) {
   setCardState(3, 'running', 'Building Backend...');
-  const sys = `You are a PHP dev receiving a frontend code. Create backend files. Return JSON: {"files":[{"name":"","content":""}]}`;
-  const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: JSON.stringify(STATE.outputs.bot2) }]);
+  const sys = `You are the Backend DevBot.
+Based on the Strategic Plan and the Frontend code, create necessary PHP files and data schemas.
+The frontend likely expects certain API endpoints or data formats.
+
+Return ONLY a valid JSON object:
+{
+  "files": [
+    { "name": "api.php", "content": "<?php ..." },
+    { "name": "data.json", "content": "{...}" }
+  ]
+}`;
+
+  const userPrompt = `Strategic Plan: ${JSON.stringify(plan)}\n\nFrontend Code: ${frontend.html}\n\nOriginal Request: ${STATE.userRequest}`;
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userPrompt }
+  ]);
+  
   STATE.outputs.bot3 = parseJSON(raw, 'Bot 3');
   setCardState(3, 'done', 'Backend ready');
   activateConnector(3);
+  return STATE.outputs.bot3;
 }
 
-async function runBot4() {
+async function runBot4(plan, frontend, backend) {
   setCardState(4, 'running', 'Validating...');
-  const sys = `You are a validator. Integrate everything. Return JSON: {"files":[], "summary":""}`;
-  const raw = await callAI([{ role:'system', content: sys }, { role:'user', content: JSON.stringify(STATE.outputs.bot3) }]);
+  const sys = `You are the Final Validator & Integrator. 
+Your goal is to package the final codebase. 
+You must ensure the 'index.html' is present and correctly links/interacts with the backend files.
+
+Requirements:
+1. Review the Frontend and Backend work.
+2. Integrate them into a coherent project.
+3. Ensure the main HTML file is named 'index.html'.
+4. Provide a summary of the work.
+
+Return ONLY a valid JSON object:
+{
+  "files": [
+    { "name": "index.html", "content": "..." },
+    { "name": "...", "content": "..." }
+  ],
+  "summary": "Project overview and instructions",
+  "project_name": "Clean Name"
+}`;
+
+  const userPrompt = `Original Request: ${STATE.userRequest}\n\nStrategic Plan: ${JSON.stringify(plan)}\n\nFrontend HTML: ${frontend.html}\n\nBackend Files: ${JSON.stringify(backend.files)}`;
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userPrompt }
+  ], { max_tokens: 12000 }); // Increase tokens for final output
+  
   STATE.outputs.bot4 = parseJSON(raw, 'Bot 4');
   
   // Build preview
-  const html = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'))?.content;
-  STATE.outputs.bot4.preview_html = html;
+  const htmlFile = STATE.outputs.bot4.files.find(f => f.name.toLowerCase() === 'index.html') || 
+                   STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'));
+                   
+  STATE.outputs.bot4.preview_html = htmlFile ? htmlFile.content : "<h1>Error: No HTML found in final output</h1>";
+  if (STATE.outputs.bot4.project_name) STATE.projectName = STATE.outputs.bot4.project_name;
 
   setCardState(4, 'done', 'Ready!');
   setPipelineProgress(100);
@@ -499,13 +589,29 @@ DOM.runPipelineBtn.onclick = startPipeline;
 DOM.downloadBtn.onclick = () => Core.downloadZip(STATE.outputs.bot4.files, STATE.projectName);
 
 DOM.downloadHtmlBtn.onclick = () => {
+    if (!STATE.outputs.bot4 || !STATE.outputs.bot4.files) {
+        showToast('No project files generated yet.');
+        return;
+    }
     const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'));
-    if (file) Core.downloadFile(file.content, file.name);
+    if (file) {
+        Core.downloadFile(file.content, file.name);
+    } else {
+        showToast('No HTML file found in the output.');
+    }
 };
 
 DOM.downloadPhpBtn.onclick = () => {
+    if (!STATE.outputs.bot4 || !STATE.outputs.bot4.files) {
+        showToast('No project files generated yet.');
+        return;
+    }
     const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php'));
-    if (file) Core.downloadFile(file.content, file.name, 'application/x-httpd-php');
+    if (file) {
+        Core.downloadFile(file.content, file.name, 'application/x-httpd-php');
+    } else {
+        showToast('No PHP file found in the output.');
+    }
 };
 
 DOM.deployBtn.onclick = async () => {
