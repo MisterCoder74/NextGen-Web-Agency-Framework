@@ -1,4 +1,7 @@
 # NextGen WebAgency Framework
+
+WORK IN PROGRESS - NOT TO BE DISTRIBUTED
+
 **Vivacity NextGen Web Agency Framework** is a web development framework designed to facilitate the creation and management of web applications, likely for agencies or developers looking to streamline their workflow.
 
 The project structure includes a variety of files and directories that make up a comprehensive framework with multiple functionalities:
