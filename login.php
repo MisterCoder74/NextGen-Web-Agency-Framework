@@ -14,16 +14,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = json_decode(file_get_contents($usersFile), true);
             
             $authenticated = false;
+            $role = 'technician'; // Default role if not found
             foreach ($users as $user) {
                 if ($user['username'] === $username && $user['password'] === $password) {
                     $authenticated = true;
+                    if (isset($user['role'])) {
+                        $role = $user['role'];
+                    }
                     break;
                 }
             }
 
             if ($authenticated) {
-                // Successful login - Redirect to dashboard
-                header('Location: tools/dashboard.html');
+                // Successful login - Redirect based on role
+                if ($role === 'management') {
+                    header('Location: ./management/dashboard.html');
+                } else {
+                    // Default to technician path
+                    header('Location: ./tools/dashboard.html');
+                }
                 exit;
             } else {
                 // Invalid credentials
