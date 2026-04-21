@@ -310,7 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         function displayFileInfo(file, count) {
             const info = document.getElementById('fileInfo');
-            info.innerHTML = `<strong>✅ \${file.name}</strong> — \${count} clients detected`;
+            info.innerHTML = `<strong>✅ ${file.name}</strong> — ${count} clients detected`;
             info.style.display = 'block';
         }
 
@@ -320,10 +320,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             container.innerHTML = valid.map(c => `
                 <div class="client-item">
-                    <input type="checkbox" class="client-checkbox" style="accent-color: var(--cyan);" data-client-id="\${c.id}" onchange="updateSelection()">
+                    <input type="checkbox" class="client-checkbox" style="accent-color: var(--cyan);" data-client-id="${c.id}" onchange="updateSelection()">
                     <div class="client-info">
-                        <div class="client-name">\${c.nome || c.name || c.nominativo}</div>
-                        <div class="client-email">\${c.email}</div>
+                        <div class="client-name">${c.nome || c.name || c.nominativo}</div>
+                        <div class="client-email">${c.email}</div>
                     </div>
                 </div>
             `).join('');
@@ -362,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             const message = document.getElementById('message').value || '...';
             document.getElementById('previewSubject').textContent = subject;
             document.getElementById('previewMessage').textContent = message;
-            document.getElementById('previewRecipients').textContent = selectedClients.length > 0 ? `\${selectedClients.length} recipients selected` : 'None selected';
+            document.getElementById('previewRecipients').textContent = selectedClients.length > 0 ? `${selectedClients.length} recipients selected` : 'None selected';
         }
 
         document.getElementById('subject').addEventListener('input', updatePreview);
@@ -406,7 +406,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         function showStatus(msg, type) {
             const div = document.getElementById('statusMessage');
             const className = type === 'success' ? 'success-message' : 'error-message';
-            div.innerHTML = `<div class="\${className}">\${msg}</div>`;
+            div.innerHTML = `<div class="${className}">${msg}</div>`;
             div.style.display = 'block';
             setTimeout(() => div.style.display = 'none', 6000);
         }

@@ -300,22 +300,22 @@
             w.document.write(\`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contract</title><style>body{font-family:Arial;margin:40px;line-height:1.6}h1{text-align:center;text-transform:uppercase}h2{margin-top:20px;border-bottom:2px solid #333;padding-bottom:5px}.field{margin:8px 0}.label{font-weight:bold;min-width:150px;display:inline-block}p{margin:10px 0}.firma{margin-top:60px;display:flex;justify-content:space-between}.firma div{width:45%;text-align:center}.firma-line{border-top:1px solid #000;margin-top:40px;padding-top:10px}@media print{body{margin:20mm}}</style></head><body>
             <h1>Freelance Work Contract</h1>
             <h2>BETWEEN - CLIENT</h2>
-            <div class="field"><span class="label">First Name:</span> \${d.c_nome||''}</div>
-            <div class="field"><span class="label">Last Name:</span> \${d.c_cognome||''}</div>
-            <div class="field"><span class="label">Date of Birth:</span> \${formatDate(d.c_data)}</div>
-            <div class="field"><span class="label">Place of Birth:</span> \${d.c_luogo||''}</div>
-            <div class="field"><span class="label">Residence:</span> \${d.c_res||''}</div>
-            <div class="field"><span class="label">Tax ID:</span> \${d.c_cf||''}</div>
-            <div class="field"><span class="label">Phone:</span> \${d.c_tel||''}</div>
+            <div class="field"><span class="label">First Name:</span> ${d.c_nome||''}</div>
+            <div class="field"><span class="label">Last Name:</span> ${d.c_cognome||''}</div>
+            <div class="field"><span class="label">Date of Birth:</span> ${formatDate(d.c_data)}</div>
+            <div class="field"><span class="label">Place of Birth:</span> ${d.c_luogo||''}</div>
+            <div class="field"><span class="label">Residence:</span> ${d.c_res||''}</div>
+            <div class="field"><span class="label">Tax ID:</span> ${d.c_cf||''}</div>
+            <div class="field"><span class="label">Phone:</span> ${d.c_tel||''}</div>
             
             <h2>AND - SERVICE PROVIDER</h2>
-            <div class="field"><span class="label">First Name:</span> \${d.p_nome||''}</div>
-            <div class="field"><span class="label">Last Name:</span> \${d.p_cognome||''}</div>
-            <div class="field"><span class="label">Date of Birth:</span> \${formatDate(d.p_data)}</div>
-            <div class="field"><span class="label">Place of Birth:</span> \${d.p_luogo||''}</div>
-            <div class="field"><span class="label">Residence:</span> \${d.p_res||''}</div>
-            <div class="field"><span class="label">Tax ID:</span> \${d.p_cf||''}</div>
-            <div class="field"><span class="label">Phone:</span> \${d.p_tel||''}</div>
+            <div class="field"><span class="label">First Name:</span> ${d.p_nome||''}</div>
+            <div class="field"><span class="label">Last Name:</span> ${d.p_cognome||''}</div>
+            <div class="field"><span class="label">Date of Birth:</span> ${formatDate(d.p_data)}</div>
+            <div class="field"><span class="label">Place of Birth:</span> ${d.p_luogo||''}</div>
+            <div class="field"><span class="label">Residence:</span> ${d.p_res||''}</div>
+            <div class="field"><span class="label">Tax ID:</span> ${d.p_cf||''}</div>
+            <div class="field"><span class="label">Phone:</span> ${d.p_tel||''}</div>
             
             <h2>Preamble</h2>
             <p>• The client requires a freelance work performance from the service provider;</p>
@@ -325,17 +325,17 @@
             <h2>The parties agree as follows:</h2>
             
             <h2>Article 1 – Subject of the contract</h2>
-            <div class="field"><span class="label">Activity Description:</span> \${d.a_desc||''}</div>
-            <div class="field"><span class="label">Place of Execution:</span> \${d.a_luogo||''}</div>
-            <div class="field"><span class="label">Start Date:</span> \${formatDate(d.a_inizio)}</div>
-            <div class="field"><span class="label">End Date:</span> \${formatDate(d.a_fine)}</div>
-            <div class="field"><span class="label">Total Duration:</span> \${d.a_durata||''} \${d.a_unita||'hours'}</div>
-            <div class="field"><span class="label">Work Schedule:</span> \${d.a_orari||'To be agreed'}</div>
+            <div class="field"><span class="label">Activity Description:</span> ${d.a_desc||''}</div>
+            <div class="field"><span class="label">Place of Execution:</span> ${d.a_luogo||''}</div>
+            <div class="field"><span class="label">Start Date:</span> ${formatDate(d.a_inizio)}</div>
+            <div class="field"><span class="label">End Date:</span> ${formatDate(d.a_fine)}</div>
+            <div class="field"><span class="label">Total Duration:</span> ${d.a_durata||''} ${d.a_unita||'hours'}</div>
+            <div class="field"><span class="label">Work Schedule:</span> ${d.a_orari||'To be agreed'}</div>
             
             <h2>Article 2 – Compensation</h2>
-            <p>The client agrees to pay the service provider a total compensation of € \${d.comp_importo||''}, which will be paid via \${d.comp_mod||'bank transfer'}.</p>
-            \${d.comp_mod==='bank transfer'?\`<div class="field"><span class="label">Bank:</span> \${d.comp_banca||''}</div><div class="field"><span class="label">IBAN:</span> \${d.comp_iban||''}</div>\`:''}
-            <p>Payment will be made within \${d.comp_gg||30} days from the date of completion of the performance.</p>
+            <p>The client agrees to pay the service provider a total compensation of € ${d.comp_importo||''}, which will be paid via ${d.comp_mod||'bank transfer'}.</p>
+            ${d.comp_mod==='bank transfer'?\`<div class="field"><span class="label">Bank:</span> ${d.comp_banca||''}</div><div class="field"><span class="label">IBAN:</span> ${d.comp_iban||''}</div>\`:''}
+            <p>Payment will be made within ${d.comp_gg||30} days from the date of completion of the performance.</p>
             
             <h2>Article 3 – Method of execution</h2>
             <p>The performance must be carried out by the service provider in full autonomy and without subordination constraints.</p>
@@ -350,7 +350,7 @@
             <p>The compensation is subject to a 20% withholding tax, as provided by current tax regulations.</p>
             
             <h2>Article 7 – Early Termination</h2>
-            <p>Both parties may terminate the contract with \${d.o_preav||7} days' notice.</p>
+            <p>Both parties may terminate the contract with ${d.o_preav||7} days' notice.</p>
             
             <h2>Article 8 – Insurance</h2>
             <p>No insurance coverage is provided. The service provider assumes responsibility for any damage.</p>
@@ -359,8 +359,8 @@
             <p>The contract is governed by Italian law.</p>
             
             <h2>Signature of the parties</h2>
-            <div class="field"><span class="label">Date:</span> \${formatDate(d.o_data)}</div>
-            <div class="field"><span class="label">Location:</span> \${d.o_luogo||''}</div>
+            <div class="field"><span class="label">Date:</span> ${formatDate(d.o_data)}</div>
+            <div class="field"><span class="label">Location:</span> ${d.o_luogo||''}</div>
             
             <div class="firma">
                 <div><div class="firma-line">Client's Signature</div></div>
