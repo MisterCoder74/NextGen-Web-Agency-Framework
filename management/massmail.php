@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Marketing — Vivacity Admin</title>
+    <title>NextGen Email Campaigner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -186,11 +186,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <div class="page-header">
             <div class="icon-badge">📧</div>
             <div class="page-header-text">
-                <h1>Vivacity <em>Email Marketing</em></h1>
+                <h1>NextGen <em>Email Campaigner</em></h1>
                 <p>Send bulk updates and marketing emails to your client base</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-                <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="dashboard.html" class="btn btn-secondary">Dashboard</a>
             </div>
         </div>
 
@@ -272,6 +272,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script>
         let clientsData = [];
         let selectedClients = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('clients.json');
+                if (response.ok) {
+                    clientsData = await response.json();
+                    if (clientsData.length > 0) {
+                        const info = document.getElementById('fileInfo');
+                        info.innerHTML = `<strong>✅ clients.json</strong> — ${clientsData.length} clients loaded from server`;
+                        info.style.display = 'block';
+                        displayClients();
+                        updateStats();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading clients.json:', error);
+            }
+        });
 
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         

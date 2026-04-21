@@ -46,7 +46,7 @@ $job_prices = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Generator — Vivacity Admin</title>
+    <title>NextGen Quotes Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -148,11 +148,11 @@ $job_prices = [
         <div class="page-header">
             <div class="icon-badge">💶</div>
             <div class="page-header-text">
-                <h1>Vivacity <em>Quote Generator</em></h1>
+                <h1>NextGen <em>Quotes Generator</em></h1>
                 <p>Create professional PDF quotes for your clients</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-                <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="dashboard.html" class="btn btn-secondary">Dashboard</a>
             </div>
         </div>
 
