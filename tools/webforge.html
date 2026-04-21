@@ -403,12 +403,14 @@ async function runBot1() {
   const sys = `You are the Idea Strategist for a web agency.
 Your task is to analyze the user's request and create a detailed strategic plan.
 Focus on: project name, core features, UX flow, and design aesthetic.
+If a screenshot is provided, perform a deep-dive visual analysis of the layout, hierarchy, and design system.
 All frontend code will be single-file (internal CSS/JS).
 
 Return ONLY a valid JSON object with this structure:
 {
   "project_name": "Name",
   "summary": "Brief description",
+  "visual_analysis": "Detailed breakdown of UI/UX, layout, and components from the screenshot (if provided)",
   "features": ["feature 1", "feature 2"],
   "design_guidelines": { "colors": [], "typography": "", "style": "" },
   "backend_needs": "Description of data/PHP needs"
@@ -436,23 +438,34 @@ Return ONLY a valid JSON object with this structure:
 async function runBot2(plan) {
   setCardState(2, 'running', 'Designing...');
   const sys = `You are the Frontend DevBot. 
-Based on the Strategic Plan, create a production-ready, single-file HTML5 application.
+Based on the Strategic Plan and its Visual Analysis, create a production-ready, single-file HTML5 application.
+
 Requirements:
 - Use internal <style> and <script> tags.
 - Use Google Fonts and Font Awesome if needed.
-- Ensure it is responsive and matches the design guidelines.
+- Ensure it is responsive and matches the design guidelines and visual analysis.
 - Include all UI components defined in the features.
+- IMPORTANT: Your JavaScript must be fully functional and complete. 
+- NEVER use 'TODO', 'placeholder', or 'logic goes here' comments. Write the actual production-ready logic.
+- All scripts must be internal and fully working for immediate deployment.
 
 Return ONLY a valid JSON object:
 {
   "html": "<!DOCTYPE html>...full code..."
 }`;
 
-  const userPrompt = `Strategic Plan: ${JSON.stringify(plan)}\n\nOriginal Request: ${STATE.userRequest}`;
+  let userContent = `Strategic Plan: ${JSON.stringify(plan)}\n\nOriginal Request: ${STATE.userRequest}`;
+  if (STATE.screenshot) {
+      userContent = [
+          { type: 'text', text: userContent },
+          { type: 'image_url', image_url: { url: STATE.screenshot } }
+      ];
+  }
+
   const raw = await callAI([
       { role:'system', content: sys }, 
-      { role:'user', content: userPrompt }
-  ]);
+      { role:'user', content: userContent }
+  ], { max_tokens: 8000 });
   
   STATE.outputs.bot2 = parseJSON(raw, 'Bot 2');
   setCardState(2, 'done', 'Frontend ready');
