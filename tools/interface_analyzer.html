@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Interface Analyzer — VivacityGPT</title>
+<title>Vivacity NextGen AI Interface Analyzer</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
 <link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/style.css">
 <style>
     .main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
     .col-left  { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -46,7 +51,7 @@
     <div class="page-header">
         <div class="icon-badge">🔍</div>
         <div class="page-header-text">
-            <h1>AI Interface Analyzer</h1>
+            <h1>Vivacity <em>NextGen Web Agency Interface Analyzer</em></h1>
             <p>Professional UX/UI review of your web or mobile designs</p>
         </div>
     </div>
@@ -125,7 +130,7 @@
             const messages = [
                 { role: 'system', content: 'You are a senior Web Designer and UX Specialist. Analyze the provided image and provide a professional review.' },
                 { role: 'user', content: [
-                    { type: 'text', text: `Analyze this ${type} layout. You must provide a professional, in-depth review. Focus on 5 specific aspects: Structure, Colors, Typography, Navigation, and UX. STRICT REQUIREMENT: For EACH of these 5 aspects, you must write a minimum of 80 words. Do not provide brief summaries. Provide a rating (1-10) for each aspect and an overall score. Format your response using clean HTML tags (h3 for titles, p for paragraphs, ul/li for lists). Do not use markdown.` },
+                    { type: 'text', text: `Analyze this ${type} layout. You must provide a professional, in-depth review. Focus on 5 specific aspects: Structure, Colors, Typography, Navigation, and UX. STRICT REQUIREMENTS: 1) DON'T ANALYZE aspects that cannot be rendered in static images, like transitions, animations, hover effects, and such; 2) For EACH of these 5 aspects, you must write a minimum of 80 words. Do not provide brief summaries. Provide a rating (1-10) for each aspect and an overall summary (30-50 words maximum) and score (1-10). Format your response using clean HTML tags (h3 for titles, p for paragraphs, ul/li for lists). Do not use markdown.` },
                     { type: 'image_url', image_url: { url: currentImageData } }
                 ]}
             ];
