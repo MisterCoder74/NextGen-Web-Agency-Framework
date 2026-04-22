@@ -426,7 +426,8 @@ Return ONLY the strategic profile text (maximum 150 words).`;
                                 { role: 'system', content: 'You are a strategic business analyst for Vivacity, a web agency. You provide concise client intelligence.' },
                                 { role: 'user', content: promptText }
                             ],
-                            model: 'gpt-4o-mini'
+                            model: 'gpt-4.1-nano',
+                            max_tokens: 2000
                         })
                     });
                     
