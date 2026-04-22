@@ -26,6 +26,7 @@ $quote_to_save = [
     'total' => $input['total'] ?? '0',
     'breakdown' => $input['breakdown'] ?? [],
     'company' => $input['company'] ?? [],
+    'client' => $input['client'] ?? null,
     'discountRate' => $input['discountRate'] ?? 0,
     'ivaRate' => $input['ivaRate'] ?? 0,
     'ivaAmount' => $input['ivaAmount'] ?? 0,

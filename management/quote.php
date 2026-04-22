@@ -8,6 +8,15 @@ function load_company_data() {
     return $content ? json_decode($content, true) : null;
 }
 
+function load_clients_data() {
+    $file = 'clients.json';
+    if (!file_exists($file)) {
+        return [];
+    }
+    $content = file_get_contents($file);
+    return $content ? json_decode($content, true) : [];
+}
+
 $company_data = load_company_data() ?: [
     'company' => [
         'name' => 'NextGen Web Agency',
@@ -16,6 +25,8 @@ $company_data = load_company_data() ?: [
         'iva' => 'US123456789'
     ]
 ];
+
+$clients = load_clients_data();
 
 // Customizable default parameters
 $default_params = [
@@ -139,6 +150,7 @@ $job_prices = [
         const params = <?=json_encode($default_params)?>;
         const jobPrices = <?=json_encode($job_prices)?>;
         const companyData = <?=json_encode($company_data['company'])?>;
+        const clients = <?=json_encode($clients)?>;
     </script>
 </head>
 <body>
@@ -162,22 +174,35 @@ $job_prices = [
             <div class="card">
                 <div class="section-title">Enter Quote Parameters</div>
                 <form id="quoteForm">
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label for="jobtype">Job Type *</label>
-                        <select name="jobtype" id="jobtype" required onchange="updatePricesBasedOnJobType()">
-                            <option value="">--Select job type--</option>
-                            <option value="landing page">Landing Page (€40/h)</option>
-                            <option value="website">Website (€35/h)</option>
-                            <option value="basic chatbot">Basic Chatbot (€45/h)</option>
-                            <option value="advanced chatbot">Advanced Chatbot (€65/h)</option>
-                            <option value="third-party chatbot">Third-party Chatbot (€55/h)</option>
-                            <option value="desktop app">Desktop App (€60/h)</option>
-                            <option value="mail campaign">Mail Campaign (€35/h)</option>
-                            <option value="consulting">Consulting (€50/h)</option>
-                            <option value="maintenance">Maintenance (€40/h)</option>
-                            <option value="other">Other (€35/h)</option>
-                        </select>
-                        <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Hourly rate updates automatically based on job type</p>
+                    <div class="form-grid" style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="jobtype">Job Type *</label>
+                            <select name="jobtype" id="jobtype" required onchange="updatePricesBasedOnJobType()">
+                                <option value="">--Select job type--</option>
+                                <option value="landing page">Landing Page (€40/h)</option>
+                                <option value="website">Website (€35/h)</option>
+                                <option value="basic chatbot">Basic Chatbot (€45/h)</option>
+                                <option value="advanced chatbot">Advanced Chatbot (€65/h)</option>
+                                <option value="third-party chatbot">Third-party Chatbot (€55/h)</option>
+                                <option value="desktop app">Desktop App (€60/h)</option>
+                                <option value="mail campaign">Mail Campaign (€35/h)</option>
+                                <option value="consulting">Consulting (€50/h)</option>
+                                <option value="maintenance">Maintenance (€40/h)</option>
+                                <option value="other">Other (€35/h)</option>
+                            </select>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Hourly rate updates automatically based on job type</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="client_id">Client (Optional)</label>
+                            <select name="client_id" id="client_id">
+                                <option value="">--Select a client--</option>
+                                <?php foreach ($clients as $client): ?>
+                                    <option value="<?= htmlspecialchars($client['id']) ?>"><?= htmlspecialchars($client['nominativo']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Select a client to include their details in the quote</p>
+                        </div>
                     </div>
 
                     <div id="paramsContainer" class="form-grid">
@@ -354,7 +379,13 @@ $job_prices = [
             const result = document.getElementById('result');
             const quoteDetails = document.getElementById('quoteDetails');
             
+            const clientId = formData.get('client_id');
+            const selectedClient = clients.find(c => c.id === clientId) || null;
+            
             let detailsHtml = `<p style="font-size: 0.9rem; margin-bottom: 15px;">Job type: <strong style="color: #fff; text-transform: capitalize;">${jobtype}</strong></p>`;
+            if (selectedClient) {
+                detailsHtml += `<p style="font-size: 0.9rem; margin-bottom: 15px;">Client: <strong style="color: #fff;">${selectedClient.nominativo}</strong></p>`;
+            }
             detailsHtml += `<div class="section-title">Service Details</div><ul>`;
             breakdown.forEach(item => {
                 const quantityDisplay = item.unit_price !== null ? `<span style="color: rgba(255,255,255,0.4);">${item.quantity} ${item.unit} x €${item.unit_price}</span>` : '';
@@ -377,6 +408,7 @@ $job_prices = [
                 subtotal: total.toFixed(2),
                 breakdown,
                 company: companyData,
+                client: selectedClient,
                 discountRate: 0,
                 discountLabel: '',
                 discountAmount: '0.00',
@@ -464,6 +496,15 @@ $job_prices = [
             doc.text(`VAT: ${quote.company.iva}`, 10, 84);
             doc.text(`EMAIL: ${quote.company.email}`, 10, 90);    
             
+            if (quote.client) {
+                doc.setFontSize(10);
+                doc.text('TO:', 110, 60);
+                doc.setFontSize(11);
+                doc.text(`${quote.client.nominativo}`, 110, 66);
+                doc.text(`${quote.client.indirizzo || ''}`, 110, 72);
+                doc.text(`${quote.client.email || ''}`, 110, 78);
+            }
+
             doc.line(10, 98, 200, 98);
             doc.setFontSize(12);
             doc.text('SERVICE DETAILS', 10, 110);
