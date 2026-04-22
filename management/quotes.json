@@ -421,5 +421,21 @@
         "ivaRate": 22,
         "ivaAmount": "190.85",
         "subtotal": "867.50"
+    },
+    {
+        "date": "2026-04-22T06:00:00Z",
+        "jobtype": "website",
+        "total": "1000",
+        "breakdown": [],
+        "company": [],
+        "client": {
+            "nominativo": "Test Client",
+            "indirizzo": "Test Address",
+            "email": "test@client.com"
+        },
+        "discountRate": 0,
+        "ivaRate": 22,
+        "ivaAmount": "180.33",
+        "subtotal": "819.67"
     }
 ]
