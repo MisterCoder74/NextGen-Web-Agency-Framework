@@ -66,6 +66,7 @@ class ClientManager {
             'email' => trim(strtolower($data['email'])),
             'indirizzo' => trim($data['indirizzo'] ?? ''),
             'note' => trim($data['note'] ?? ''),
+            'intelligence' => trim($data['intelligence'] ?? ''),
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
@@ -101,6 +102,12 @@ class ClientManager {
                 $clients[$i]['email'] = trim(strtolower($data['email']));
                 $clients[$i]['indirizzo'] = trim($data['indirizzo'] ?? '');
                 $clients[$i]['note'] = trim($data['note'] ?? '');
+                
+                // Preserve intelligence if not provided in the update
+                if (isset($data['intelligence'])) {
+                    $clients[$i]['intelligence'] = trim($data['intelligence']);
+                }
+                
                 $clients[$i]['updated_at'] = date('Y-m-d H:i:s');
                 $found = true;
                 break;
