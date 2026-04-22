@@ -76,6 +76,22 @@
         background: #ff6b6b;
         color: #fff;
     }
+    /* Client Select Styles */
+    .client-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        outline: none;
+        width: 100%;
+        max-width: 180px;
+    }
+    .client-select option {
+        background: #1a1a1a;
+        color: #fff;
+    }
 </style>
 </head>
 <body>
@@ -164,12 +180,13 @@
                         <th>Name</th>
                         <th>URL</th>
                         <th>Created</th>
+                        <th>Client</th>
                         <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="appsList">
                     <tr>
-                        <td colspan="4" style="padding: 40px; text-align: center; color: rgba(255,255,255,0.4);">
+                        <td colspan="5" style="padding: 40px; text-align: center; color: rgba(255,255,255,0.4);">
                             Loading deployed applications...
                         </td>
                     </tr>
@@ -212,6 +229,16 @@
 
         // --- Micro-App Manager Logic ---
         const appsList = document.getElementById('appsList');
+        let allClients = [];
+
+        async function fetchClients() {
+            try {
+                const response = await fetch('../management/clients.json');
+                allClients = await response.json();
+            } catch (error) {
+                console.error('Error fetching clients:', error);
+            }
+        }
 
         async function fetchApps() {
             try {
@@ -220,28 +247,56 @@
                 renderApps(apps);
             } catch (error) {
                 console.error('Error fetching apps:', error);
-                appsList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ff6b6b;">Error loading apps</td></tr>';
+                appsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">Error loading apps</td></tr>';
             }
         }
 
         function renderApps(apps) {
             if (!apps || apps.length === 0) {
-                appsList.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:rgba(255,255,255,0.4);">No micro-apps deployed yet.</td></tr>';
+                appsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:rgba(255,255,255,0.4);">No micro-apps deployed yet.</td></tr>';
                 return;
             }
 
-            appsList.innerHTML = apps.map(app => `
-                <tr id="app-row-${app.id}">
-                    <td><strong id="app-name-${app.id}">${app.name}</strong></td>
-                    <td><a href="${app.url}" target="_blank" class="app-url">${app.id} ↗</a></td>
-                    <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${app.date}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+            appsList.innerHTML = apps.map(app => {
+                const clientOptions = allClients.map(c => `
+                    <option value="${c.id}" ${app.client_id === c.id ? 'selected' : ''}>${c.nominativo}</option>
+                `).join('');
+
+                return `
+                    <tr id="app-row-${app.id}">
+                        <td><strong id="app-name-${app.id}">${app.name}</strong></td>
+                        <td><a href="${app.url}" target="_blank" class="app-url">${app.id} ↗</a></td>
+                        <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${app.date}</td>
+                        <td>
+                            <select class="client-select" onchange="assignClient('${app.id}', this.value)">
+                                <option value="">Unassigned</option>
+                                ${clientOptions}
+                            </select>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
+
+        window.assignClient = async (id, clientId) => {
+            try {
+                const res = await fetch('api/microapps.php?action=assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, client_id: clientId })
+                });
+                const result = await res.json();
+                if (!result.success) {
+                    alert('Error: ' + result.message);
+                }
+            } catch (e) {
+                alert('Assignment failed');
+            }
+        };
 
         window.renameApp = async (id) => {
             const oldName = document.getElementById(`app-name-${id}`).textContent;
@@ -284,7 +339,12 @@
             }
         };
 
-        fetchApps();
+        async function init() {
+            await fetchClients();
+            await fetchApps();
+        }
+
+        init();
     });
 </script>
 </body>
