@@ -1,3 +1,7 @@
+<?php
+$setupData = file_exists('../management/setup.json') ? file_get_contents('../management/setup.json') : '{}';
+$clientsData = file_exists('../management/clients.json') ? file_get_contents('../management/clients.json') : '[]';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -123,6 +127,13 @@
 
 <script src="js/core.js"></script>
 <script>
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+    const urlWithoutFile = origin + folderPath;
+    const agencyData = <?php echo $setupData; ?>;
+    const clientsData = <?php echo $clientsData; ?>;
+
     let generatedHtml = '';
     let generatedPhp = '';
 
@@ -162,7 +173,22 @@
             // Frontend Agent
             document.getElementById('dotFE').classList.add('active');
             appendLog('Frontend Agent started...', 'fe');
-            const feSystem = 'You are an expert frontend developer. Given a feature request, output ONLY a complete, self-contained index.html file with embedded CSS and vanilla JavaScript. No frameworks. No markdown fences. No explanation. Output raw HTML only, starting with <!DOCTYPE html>.';
+            const feSystem = `You are an expert frontend developer. Given a feature request, output ONLY a complete, self-contained index.html file with embedded CSS and vanilla JavaScript. No frameworks. No markdown fences. No explanation. Output raw HTML only, starting with <!DOCTYPE html>.
+
+IMAGES:
+You have the following image definitions to work with:
+${urlWithoutFile}placeholder_profile_woman.png,
+${urlWithoutFile}placeholder_profile_man.png,
+${urlWithoutFile}placeholder_team.png,
+${urlWithoutFile}placeholder_horizontal.png,
+${urlWithoutFile}placeholder_vertical.png,
+${urlWithoutFile}placeholder_hero_image.png.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}`;
             const feData = await Core.callAI([{ role: 'system', content: feSystem }, { role: 'user', content: prompt }]);
             generatedHtml = Core.cleanResponse(feData.choices[0].message.content);
             appendLog(`index.html generated (${generatedHtml.length} chars)`, 'fe');
@@ -171,7 +197,13 @@
             // Backend Agent
             document.getElementById('dotBE').classList.add('active');
             appendLog('Backend Agent started...', 'be');
-            const beSystem = 'You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete backend.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with ' + '<' + '?php.';
+            const beSystem = `You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete backend.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with ${'<' + '?php'}.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}`;
             const beData = await Core.callAI([{ role: 'system', content: beSystem }, { role: 'user', content: `Feature: ${prompt}\n\nFrontend HTML:\n${generatedHtml.slice(0, 4000)}` }]);
             generatedPhp = Core.cleanResponse(beData.choices[0].message.content);
             appendLog(`backend.php generated (${generatedPhp.length} chars)`, 'be');

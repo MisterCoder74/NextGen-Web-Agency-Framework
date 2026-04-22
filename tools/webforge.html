@@ -1,3 +1,7 @@
+<?php
+$setupData = file_exists('../management/setup.json') ? file_get_contents('../management/setup.json') : '{}';
+$clientsData = file_exists('../management/clients.json') ? file_get_contents('../management/clients.json') : '[]';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -280,6 +284,13 @@ const PRESETS = [
   { label: '🎨 Minimal Portfolio', text: `Design a visual-first minimal portfolio for a creative artist or photographer. The main focus should be a large, masonry-style image grid for projects. Use minimal text, elegant typography, and a simple navigation menu. Include a simple 'About' and 'Contact' footer.` },
 ];
 
+const origin = window.location.origin;
+const pathname = window.location.pathname;
+const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+const urlWithoutFile = origin + folderPath;
+const agencyData = <?php echo $setupData; ?>;
+const clientsData = <?php echo $clientsData; ?>;
+
 const STATE = {
   userRequest: '',
   running: false,
@@ -406,6 +417,12 @@ Focus on: project name, core features, UX flow, and design aesthetic.
 If a screenshot is provided, perform a deep-dive visual analysis of the layout, hierarchy, and design system.
 All frontend code will be single-file (internal CSS/JS).
 
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
+
 Return ONLY a valid JSON object with this structure:
 {
   "project_name": "Name",
@@ -448,6 +465,21 @@ Requirements:
 - IMPORTANT: Your JavaScript must be fully functional and complete. 
 - NEVER use 'TODO', 'placeholder', or 'logic goes here' comments. Write the actual production-ready logic.
 - All scripts must be internal and fully working for immediate deployment.
+
+IMAGES:
+You have the following image definitions to work with:
+${urlWithoutFile}placeholder_profile_woman.png,
+${urlWithoutFile}placeholder_profile_man.png,
+${urlWithoutFile}placeholder_team.png,
+${urlWithoutFile}placeholder_horizontal.png,
+${urlWithoutFile}placeholder_vertical.png,
+${urlWithoutFile}placeholder_hero_image.png.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
 
 Return ONLY a valid JSON object:
 {
@@ -510,6 +542,12 @@ Requirements:
 2. Integrate them into a coherent project.
 3. Ensure the main HTML file is named 'index.html'.
 4. Provide a summary of the work.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
 
 Return ONLY a valid JSON object:
 {
