@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen Client Portfolio | Vivacity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .portfolio-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 24px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 10px;
+        }
+        .profile-info h2 {
+            color: var(--cyan);
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+        .profile-info p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .data-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .data-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 18px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .data-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .data-card h4 {
+            font-size: 0.95rem;
+            color: #5eead4;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .data-card .date {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            font-family: var(--font-mono);
+        }
+        .data-card .desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+        .data-card .amount {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #10b981;
+            margin-top: 12px;
+            display: block;
+            font-size: 1rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.25);
+            font-style: italic;
+            font-size: 0.85rem;
+            background: rgba(255,255,255,0.01);
+            border-radius: 12px;
+            border: 1px dashed rgba(255,255,255,0.08);
+        }
+        .micro-app-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(167,139,250,0.1);
+            color: #a78bfa;
+            border: 1px solid rgba(167,139,250,0.2);
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: var(--cyan);
+        }
+        .info-badge {
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border: 1px solid var(--cyan-glow);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        @media (max-width: 900px) {
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">💼</div>
+            <div class="page-header-text">
+                <h1>Vivacity <em>NextGen Client Portfolio</em></h1>
+                <p>Comprehensive view of client relationship, assets, and history</p>
+            </div>
+            <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+                <a href="clients_manager.html" class="btn btn-secondary">Back to Manager</a>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="scroll-area" id="portfolioContent">
+            <div style="text-align: center; padding: 100px 0;">
+                <div class="preloader active">Initializing Portfolio Engine...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ClientPortfolio {
+            constructor() {
+                this.clientId = new URLSearchParams(window.location.search).get('id');
+                this.clientData = null;
+                this.quotes = [];
+                this.microApps = [];
+                this.init();
+            }
+
+            async init() {
+                if (!this.clientId) {
+                    this.showError('Missing Client Identifier. Please return to the Manager and select a client.');
+                    return;
+                }
+
+                try {
+                    await this.fetchData();
+                    this.render();
+                } catch (error) {
+                    console.error('Portfolio Error:', error);
+                    this.showError('The requested portfolio could not be retrieved. Error: ' + error.message);
+                }
+            }
+
+            async fetchData() {
+                // Fetch client details
+                const clientRes = await fetch('client_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get', id: this.clientId })
+                });
+                const clientJson = await clientRes.json();
+                if (!clientJson.success || !clientJson.data) throw new Error('Client not found');
+                this.clientData = clientJson.data;
+
+                // Fetch micro-apps
+                try {
+                    const appsRes = await fetch('../tools/api/microapps.php?action=list');
+                    const appsJson = await appsRes.json();
+                    this.microApps = Array.isArray(appsJson) ? appsJson.filter(app => app.client_id === this.clientId) : [];
+                } catch (e) {
+                    console.warn('Micro-apps fetch failed', e);
+                    this.microApps = [];
+                }
+
+                // Fetch quotes
+                try {
+                    const quotesRes = await fetch('quotes.json');
+                    const quotesJson = await quotesRes.json();
+                    this.quotes = quotesJson.filter(quote => {
+                        const clientEmail = quote.client?.email || '';
+                        return clientEmail.toLowerCase() === this.clientData.email.toLowerCase();
+                    });
+                } catch (e) {
+                    console.warn('Quotes fetch failed', e);
+                    this.quotes = [];
+                }
+            }
+
+            render() {
+                const container = document.getElementById('portfolioContent');
+                
+                let html = `
+                    <div class="portfolio-grid">
+                        <div class="portfolio-header">
+                            <div class="profile-info">
+                                <h2>${this.escapeHtml(this.clientData.nominativo)}</h2>
+                                <p><span>📧</span> ${this.escapeHtml(this.clientData.email)}</p>
+                                <p><span>📍</span> ${this.escapeHtml(this.clientData.indirizzo || 'No physical address recorded')}</p>
+                            </div>
+                            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                                <div class="section-title">Record Established</div>
+                                <div class="info-badge">${this.clientData.created_at?.split(' ')[0] || 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <div class="data-section">
+                            <div class="section-title">🏢 Deployed Micro-Apps</div>
+                            <div id="microAppsList">
+                                ${this.renderMicroApps()}
+                            </div>
+                        </div>
+
+                        <div class="data-section">
+                            <div class="section-title">📜 Generated Quotes</div>
+                            <div id="quotesList">
+                                ${this.renderQuotes()}
+                            </div>
+                        </div>
+
+                        <div class="card full-width" style="grid-column: 1 / -1; margin-top: 10px;">
+                            <div class="section-title">📝 Client Intelligence & Notes</div>
+                            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7); line-height: 1.7; white-space: pre-wrap;">${this.escapeHtml(this.clientData.note || 'No intelligence data or notes available for this client.')}</p>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            renderMicroApps() {
+                if (this.microApps.length === 0) {
+                    return `<div class="empty-state">No micro-apps have been assigned to this client profile.</div>`;
+                }
+
+                return this.microApps.map(app => `
+                    <div class="data-card" style="margin-bottom: 12px;">
+                        <h4>
+                            <span>${this.escapeHtml(app.name)}</span>
+                            <span class="date">UID: ${app.id}</span>
+                        </h4>
+                        <div class="desc">Active micro-application instance linked to this account.</div>
+                        <div class="micro-app-badge">System Asset</div>
+                    </div>
+                `).join('');
+            }
+
+            renderQuotes() {
+                if (this.quotes.length === 0) {
+                    return `<div class="empty-state">No historical quotes found for this client identity.</div>`;
+                }
+
+                // Sort quotes by date descending
+                const sortedQuotes = [...this.quotes].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                return sortedQuotes.map(quote => `
+                    <div class="data-card" style="margin-bottom: 12px;">
+                        <h4>
+                            <span>${this.escapeHtml(quote.jobtype || 'Standard Project')}</span>
+                            <span class="date">${this.formatDate(quote.date)}</span>
+                        </h4>
+                        <div class="desc">
+                            ${quote.breakdown ? quote.breakdown.length + ' line items included in the proposal' : 'Project cost estimation'}
+                        </div>
+                        <span class="amount">€ ${parseFloat(quote.total).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                `).join('');
+            }
+
+            formatDate(dateStr) {
+                try {
+                    const d = new Date(dateStr);
+                    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                } catch (e) {
+                    return dateStr;
+                }
+            }
+
+            showError(message) {
+                document.getElementById('portfolioContent').innerHTML = `
+                    <div class="card" style="text-align: center; padding: 60px 40px; max-width: 600px; margin: 40px auto;">
+                        <div style="font-size: 4rem; margin-bottom: 24px;">📡</div>
+                        <h2 style="color: #ef4444; margin-bottom: 16px; font-family: var(--font-serif); font-size: 2rem;">System Error</h2>
+                        <p style="color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 30px;">${message}</p>
+                        <a href="clients_manager.html" class="btn btn-secondary">Return to Client Manager</a>
+                    </div>
+                `;
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.clientPortfolio = new ClientPortfolio();
+        });
+    </script>
+</body>
+</html>
