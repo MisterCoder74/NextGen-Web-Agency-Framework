@@ -50,6 +50,16 @@
             background: #10b981;
             color: #fff;
         }
+        .btn-portfolio-tool {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            text-decoration: none;
+        }
+        .btn-portfolio-tool:hover {
+            background: #00d4ff;
+            color: #000;
+        }
         .btn-delete-tool {
             background: rgba(255, 107, 107, 0.1);
             color: #ff6b6b;
@@ -387,6 +397,9 @@
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.indirizzo || '-')}</span></td>
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.note || '-')}</span></td>
                             <td class="actions-cell">
+                                <a href="client_portfolio.html?id=${client.id}" class="btn btn-small btn-portfolio-tool">
+                                    Portfolio
+                                </a>
                                 <button class="btn btn-small btn-edit-tool" onclick="clientManager.editClient('${client.id}')">
                                     Edit
                                 </button>
