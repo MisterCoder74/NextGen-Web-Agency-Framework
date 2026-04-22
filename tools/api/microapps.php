@@ -48,6 +48,39 @@ switch ($action) {
         }
         break;
 
+    case 'assign':
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? '';
+        $clientId = $data['client_id'] ?? '';
+
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'App ID is required']);
+            exit;
+        }
+
+        if (!file_exists($jsonFile)) {
+            echo json_encode(['success' => false, 'message' => 'Database not found']);
+            exit;
+        }
+
+        $apps = json_decode(file_get_contents($jsonFile), true);
+        $found = false;
+        foreach ($apps as &$app) {
+            if ($app['id'] === $id) {
+                $app['client_id'] = $clientId;
+                $found = true;
+                break;
+            }
+        }
+
+        if ($found) {
+            file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'App not found']);
+        }
+        break;
+
     case 'delete':
         $id = $_GET['id'] ?? '';
         if (!$id) {
