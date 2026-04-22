@@ -612,7 +612,7 @@ const payload = {
 api_key: STATE.apiKey,
 model: 'gpt-4.1-nano',
 messages: messages,
-max_tokens: 28000,
+max_tokens: 16384,
 temperature: 0.3,
 };
 

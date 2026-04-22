@@ -33,7 +33,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
 $apiKey   = isset($body['api_key'])    ? trim($body['api_key'])    : '';
 $model    = isset($body['model'])      ? trim($body['model'])      : 'gpt-4.1-nano';
 $messages = isset($body['messages'])   ? $body['messages']         : [];
-$maxTok   = isset($body['max_tokens']) ? (int)$body['max_tokens']  : 28000;
+$maxTok   = isset($body['max_tokens']) ? (int)$body['max_tokens']  : 16384;
 $temp     = isset($body['temperature'])? (float)$body['temperature']: 0.3;
 
 if (empty($apiKey)) {
@@ -63,7 +63,7 @@ if (!in_array($model, $allowedModels, true)) {
 $payload = json_encode([
     'model'       => $model,
     'messages'    => $messages,
-    'max_tokens'  => min($maxTok, 28000),
+    'max_tokens'  => min($maxTok, 16384),
     'temperature' => max(0.0, min(2.0, $temp)),
 ]);
 
