@@ -46,7 +46,7 @@ $job_prices = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextGen Quotes Generator</title>
+    <title>Vivacity NextGen Quotes Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -148,7 +148,7 @@ $job_prices = [
         <div class="page-header">
             <div class="icon-badge">💶</div>
             <div class="page-header-text">
-                <h1>NextGen <em>Quotes Generator</em></h1>
+                <h1>Vivacity <em>NextGen Quotes Generator</em></h1>
                 <p>Create professional PDF quotes for your clients</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
@@ -423,7 +423,7 @@ $job_prices = [
             calculationHtml += `<div style="display: flex; justify-content: space-between;"><span>Subtotal:</span> <span>€${baseTotal.toFixed(2)}</span></div>`;
             
             if (discountRate > 0) {
-                calculationHtml += `<div style="display: flex; justify-content: space-between; color: var(--red);"><span>Discount ${discountLabel} (-${discountRate}%):</span> <span>-€${discountAmount.toFixed(2)}</span></div>`;
+                calculationHtml += `<div style="display: flex; justify-content: space-between; color: var(--red);"><span><small>Discount ${discountLabel} (-${discountRate}%):</span> <span>-€${discountAmount.toFixed(2)}</small></span></div>`;
                 calculationHtml += `<div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;"><span>Total after discount:</span> <span>€${totalAfterDiscount.toFixed(2)}</span></div>`;
             }
             
@@ -449,26 +449,27 @@ $job_prices = [
             const doc = new jsPDF();
             
             doc.setFontSize(20);
-            doc.text('QUOTE', 105, 20, { align: 'center' });
+            doc.text('JOB QUOTE', 105, 20, { align: 'center' });
             
             doc.setFontSize(10);
             doc.text(`Date: ${new Date(quote.date).toLocaleDateString('en-US')}`, 10, 40);
             doc.text(`Job Type: ${quote.jobtype.toUpperCase()}`, 10, 48);
             
-            doc.setFontSize(12);
-            doc.text('FROM:', 10, 60);
             doc.setFontSize(10);
-            doc.text(`${quote.company.name}`, 10, 66);
+            doc.text('FROM:', 10, 60);
+            doc.setFontSize(11);
+            doc.text(`${quote.company.name} - ${quote.company.alias} `, 10, 66);
             doc.text(`${quote.company.address}`, 10, 72);
             doc.text(`Phone: ${quote.company.phone}`, 10, 78);
             doc.text(`VAT: ${quote.company.iva}`, 10, 84);
+            doc.text(`EMAIL: ${quote.company.email}`, 10, 90);    
             
-            doc.line(10, 90, 200, 90);
+            doc.line(10, 98, 200, 98);
             doc.setFontSize(12);
-            doc.text('SERVICE DETAILS', 10, 100);
+            doc.text('SERVICE DETAILS', 10, 110);
             
             doc.setFontSize(10);
-            let y = 110;
+            let y = 124;
             quote.breakdown.forEach(item => {
                 const quantityText = item.unit_price !== null ? `${item.quantity} ${item.unit} x €${item.unit_price}` : '';
                 doc.text(item.label, 12, y);
@@ -485,7 +486,7 @@ $job_prices = [
             
             if (quote.discountRate > 0) {
                 y += 8;
-                doc.text(`Discount (${quote.discountLabel} ${quote.discountRate}%):`, 130, y);
+                doc.text(`Discount (${quote.discountRate}%):`, 130, y);
                 doc.text(`-€${parseFloat(quote.discountAmount).toFixed(2)}`, 180, y, { align: 'right' });
             }
             
@@ -493,7 +494,9 @@ $job_prices = [
             doc.text(`VAT (${quote.ivaRate}%):`, 130, y);
             doc.text(`€${parseFloat(quote.ivaAmount).toFixed(2)}`, 180, y, { align: 'right' });
             
-            y += 12;
+            y += 10;
+            doc.line(130, y, 200, y);
+            y += 10;                
             doc.setFontSize(14);
             doc.text('TOTAL:', 130, y);
             doc.text(`€${parseFloat(quote.total).toFixed(2)}`, 180, y, { align: 'right' });

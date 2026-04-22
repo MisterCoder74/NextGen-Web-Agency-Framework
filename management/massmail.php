@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     
     // Email configuration
-    $from_name = "NextGen Web Agency";
+    $from_name = "Vivacity NextGen Mail Campaigner";
     $from_email = "info@nextgen-webagency.com";
     $reply_to = "info@nextgen-webagency.com";
     
