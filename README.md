@@ -1,75 +1,79 @@
 # Vivacity NextGen WebAgency Framework
 
-Vivacity NextGen is a comprehensive, AI-powered ecosystem designed for modern web agencies. It bridges the gap between business management and technical development through two integrated suites: the **Management Suite** for operations and the **AI-Powered Tech Suite** for rapid, intelligent development.
+Vivacity NextGen is a sophisticated, AI-powered ecosystem engineered for modern web agencies. It seamlessly integrates business management with advanced technical development through two specialized suites: the **Management Suite** for high-level operations and the **AI-Powered Tech Suite** for rapid, intelligent application development.
 
-Built with a modular, database-less architecture using JSON for storage, it offers a lightweight yet powerful solution for managing clients, projects, and AI-driven workflows without the overhead of traditional database systems.
-
----
-
-## 🚀 Management Suite
-The Management Suite provides agency administrators with a centralized hub for business operations, focusing on efficiency and client relationship management.
-
-### Management Dashboard & Analytics
-*   **Live Dashboard Stats**: Real-time visualization of recent client acquisitions and the latest project/micro-app deployments, providing an immediate overview of agency activity.
-*   **Centralized Control**: A unified entry point for all administrative tools, ensuring a streamlined workflow for managers.
-
-### Internal Messaging System
-*   **Role-Based Communication**: A persistent, real-time internal chat system integrated across the entire framework.
-*   **Collaboration Engine**: Facilitates seamless communication between 'Manager' and 'Tech' roles with automatic role detection based on the current workspace.
-*   **Smart Notifications**: Integrated badge system that tracks unanswered messages and ensures critical communications are never missed.
-
-### Client & Project Operations
-*   **NextGen Client Portfolio**: A sophisticated profile view for every client, featuring **AI Strategic Intelligence**. This tool analyzes client history, quotes, and deployed apps to generate automated strategic profiles and business insights.
-*   **Client Manager**: Robust database management for client identities, contact information, and acquisition history.
-*   **Project Manager**: Dedicated system for tracking project milestones, statuses, and client assignments.
-*   **Quotes Generator**: Dynamic generation of professional PDF-ready quotes with automated VAT calculations, discounts, and itemized breakdowns.
-*   **Contracts Manager**: Automated creation and archival of freelance work contracts, supporting digital workflows from generation to review.
-*   **Email Campaigner**: Integrated mass-mailing utility that synchronizes directly with the client database for targeted updates and marketing.
+Designed with a modular, database-less architecture, NextGen utilizes high-performance JSON storage to provide a lightweight, portable, and secure solution for managing clients, projects, and AI-driven workflows.
 
 ---
 
-## 🤖 AI-Powered Tech Suite
-The Tech Suite leverages state-of-the-art multi-agent AI pipelines to automate and accelerate the end-to-end development lifecycle.
+## 🚀 Management Suite (Business Operations)
+The Management Suite serves as the central command center for agency administrators, focusing on operational efficiency and client relationship management.
 
-### Flagship AI Agents
-*   **WebForge AI**: The flagship multi-agent pipeline. It orchestrates four specialized agents—**Idea Strategist**, **Frontend DevBot**, **Backend DevBot**, and **Final Validator**—to transform simple requirements into complex, production-ready web applications.
-*   **Collabra**: A specialized development environment designed for high-speed generation of dual-component apps (Frontend & Backend) through a synchronized agent workflow.
+### Strategic Workflow & Analytics
+*   **NextGen Kanban Board**: A dynamic, drag-and-drop task management system featuring four strategic columns (**To Do**, **Doing**, **Done**, **On Hold**). It includes priority-level tagging and real-time state persistence.
+*   **Live Dashboard & Insights**: Real-time visualization of agency performance, featuring recent client acquisitions and the latest project deployments.
+*   **Live Audit Log**: Integrated security monitoring that tracks all administrative actions, system backups, and operational changes in a centralized audit trail.
+
+### Advanced Communication & Client Relations
+*   **Enhanced Messaging System**: A real-time internal chat system featuring **Project-Specific Context**. Teams can communicate in general threads or switch to dedicated project-level contexts for focused collaboration.
+*   **NextGen Client Portfolio**: AI-enhanced client profiles featuring **Strategic Intelligence**—an automated system that analyzes client history and quotes to generate business insights.
+*   **Professional Branded Quotes**: Dynamic generation of PDF-ready quotes with automated VAT calculations, discounts, and itemized service breakdowns.
+*   **Project & Contract Management**: Dedicated tools for tracking project milestones and automating the creation of freelance work contracts.
+
+---
+
+## 🤖 AI-Powered Tech Suite (Development)
+The Tech Suite leverages state-of-the-art multi-agent AI pipelines to automate the end-to-end development lifecycle, from concept to deployment.
+
+### Flagship Multi-Agent Pipelines
+*   **WebForge AI**: Our premier pipeline orchestrating four specialized agents—**Idea Strategist**, **Frontend DevBot**, **Backend DevBot**, and **Final Validator**—to build complex, production-ready web applications from simple prompts.
+*   **Collabra**: A specialized high-speed environment for generating dual-component applications (Frontend & Backend) through a synchronized agent workflow.
 
 ### Intelligent Development Utilities
-*   **Website Builder Plus**: Rapidly generate complete, multi-page websites with four distinct design presets: *Professional*, *Minimal*, *High-Tech*, and *Creative*.
-*   **Web Restyler**: Instantly modernize existing codebases. It can restyle raw HTML/CSS, generate new designs from natural language prompts, or even assist in converting legacy platforms to modern, clean code.
-*   **Interface Analyzer**: An AI-driven UI/UX audit tool. Upload screenshots or provide URLs to receive deep-dive analysis on design patterns, accessibility compliance, and user experience improvements.
-*   **Image Rebuilder**: Advanced AI manipulation suite for regenerating, enhancing, or completely reimagining web assets and project imagery.
+*   **Website Builder Plus**: Rapidly generate multi-page websites using four distinct design archetypes: *Professional*, *Minimal*, *High-Tech*, and *Creative*.
+*   **Web Restyler**: Instantly modernize legacy codebases or restyle existing HTML/CSS components using natural language instructions.
+*   **Interface Analyzer**: AI-driven UI/UX audit tool that evaluates screenshots or live URLs for design patterns, accessibility, and user experience.
+*   **Image Rebuilder**: Advanced AI manipulation suite for enhancing, regenerating, or reimagining project imagery and web assets.
 
-### Deployment & Analysis
-*   **Micro-App Manager**: A dedicated technical dashboard for managing, renaming, and assigning AI-generated micro-applications to specific clients.
-*   **Repo Analyzer**: Technical insight tool that analyzes GitHub repositories to provide architectural summaries, technology stack detection, and improvement recommendations.
-*   **Markdown Converter**: Specialized tool for bidirectional conversion between `README.md` files and professionally styled HTML documentation.
+### Deployment & Technical Analysis
+*   **Micro-App Deployment**: Automated system for managing, renaming, and assigning AI-generated micro-applications to clients.
+*   **Repo Analyzer**: Architectural insight tool that scans GitHub repositories to detect technology stacks and provide improvement recommendations.
+*   **Markdown Converter**: Specialized utility for bidirectional conversion between `README.md` documentation and professionally styled HTML.
+
+---
+
+## 🛡️ System Maintenance & Security
+NextGen is built for reliability and ease of maintenance:
+*   **Automated ZIP Backups**: One-click system-wide backups that package all JSON databases, configurations, and logs into a portable archive.
+*   **Smart Cache Busting**: PHP-driven versioning for all CSS and JS assets, ensuring that clients always receive the latest updates without manual cache clearing.
+*   **Role-Based Access Control**: Secure login portal with granular permissions for 'Manager' and 'Tech' roles.
 
 ---
 
 ## 🛠️ Technical Stack
-*   **Frontend**: Modern HTML5, CSS3 (utilizing custom CSS variables and responsive design principles), and Vanilla JavaScript (ES6+).
-*   **Backend**: PHP 7.4+ (handling API proxying, file system operations, and real-time message handling).
-*   **AI Integration**: Powered by OpenAI's **GPT-4o-mini** and **GPT-4o-nano** models for high-performance reasoning and generation.
-*   **Data Layer**: High-performance, portable **JSON-based storage**. No complex database setup (MySQL/PostgreSQL) is required.
-*   **Design System**: Consistent dark-mode aesthetic featuring **Syne**, **Instrument Serif**, and **JetBrains Mono** typography.
+*   **Frontend**: HTML5, CSS3 (Custom Variables, Fluid Typography), Vanilla JavaScript (ES6+).
+*   **Backend**: PHP 7.4+ (API Proxying, File System Ops, ZIP Generation).
+*   **AI Integration**: OpenAI **GPT-4o** series for high-performance reasoning and code generation.
+*   **Data Layer**: Portable **JSON-based storage** (No SQL database required).
+*   **Design System**: High-contrast dark-mode aesthetic featuring **Syne**, **Instrument Serif**, and **JetBrains Mono**.
 
 ---
 
 ## 📂 Project Structure
 ```
 ├── management/        # Business operations & client management suite
-│   ├── js/            # Dashboard analytics and messaging logic
+│   ├── js/            # Dashboard analytics, messaging & Kanban logic
 │   ├── css/           # Management-specific design system
-│   └── *.php/*.html   # Administrative tools (Quotes, Portfolio, etc.)
+│   └── *.php/*.html   # Administrative tools (Quotes, Portfolio, Kanban, etc.)
 ├── tools/             # AI development & technical suite
-│   ├── api/           # OpenAI proxy, micro-app deployment & storage
+│   ├── api/           # OpenAI proxy, micro-app storage, & Backup system
 │   ├── js/            # Multi-agent orchestration (WebForge, Collabra)
 │   └── *.html         # Technical AI-powered tools
 ├── index.php          # Main framework gateway
 ├── login.php          # Secure authentication portal
-└── users.json         # Role-based access control and credentials
+├── users.json         # User credentials & role definitions
+├── audit_log.json     # System-wide activity logs
+└── README.md          # Framework documentation
 ```
 
 ---
