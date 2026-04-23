@@ -480,69 +480,154 @@ $job_prices = [
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            doc.setFontSize(20);
-            doc.text('JOB QUOTE', 105, 20, { align: 'center' });
+            // --- Header & Branding ---
+            // Branded top bar
+            doc.setFillColor(20, 184, 166); // Cyan-ish color
+            doc.rect(0, 0, 210, 40, 'F');
             
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text('JOB QUOTE', 105, 25, { align: 'center' });
+            
+            // --- Company Info & Client Info (Two Columns) ---
+            doc.setTextColor(0, 0, 0);
             doc.setFontSize(10);
-            doc.text(`Date: ${new Date(quote.date).toLocaleDateString('en-US')}`, 10, 40);
-            doc.text(`Job Type: ${quote.jobtype.toUpperCase()}`, 10, 48);
             
-            doc.setFontSize(10);
-            doc.text('FROM:', 10, 60);
-            doc.setFontSize(11);
-            doc.text(`${quote.company.name} - ${quote.company.alias} `, 10, 66);
-            doc.text(`${quote.company.address}`, 10, 72);
-            doc.text(`Phone: ${quote.company.phone}`, 10, 78);
-            doc.text(`VAT: ${quote.company.iva}`, 10, 84);
-            doc.text(`EMAIL: ${quote.company.email}`, 10, 90);    
+            let y = 55;
             
-            if (quote.client) {
-                doc.setFontSize(10);
-                doc.text('TO:', 110, 60);
-                doc.setFontSize(11);
-                doc.text(`${quote.client.nominativo}`, 110, 66);
-                doc.text(`${quote.client.indirizzo || ''}`, 110, 72);
-                doc.text(`${quote.client.email || ''}`, 110, 78);
-            }
-
-            doc.line(10, 98, 200, 98);
+            // Left Column: FROM
+            doc.setFont('helvetica', 'bold');
+            doc.text('FROM:', 15, y);
+            doc.setFont('helvetica', 'normal');
+            y += 6;
             doc.setFontSize(12);
-            doc.text('SERVICE DETAILS', 10, 110);
-            
+            doc.setFont('helvetica', 'bold');
+            doc.text(quote.company.name, 15, y);
             doc.setFontSize(10);
-            let y = 124;
+            doc.setFont('helvetica', 'normal');
+            if (quote.company.alias) {
+                y += 5;
+                doc.text(quote.company.alias, 15, y);
+            }
+            y += 5;
+            doc.text(quote.company.address, 15, y);
+            y += 5;
+            doc.text(`Phone: ${quote.company.phone}`, 15, y);
+            y += 5;
+            doc.text(`Email: ${quote.company.email}`, 15, y);
+            y += 5;
+            doc.text(`VAT: ${quote.company.iva}`, 15, y);
+            
+            // Right Column: TO & META
+            let yRight = 55;
+            doc.setFont('helvetica', 'bold');
+            doc.text('TO:', 120, yRight);
+            doc.setFont('helvetica', 'normal');
+            yRight += 6;
+            if (quote.client) {
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'bold');
+                doc.text(quote.client.nominativo, 120, yRight);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                yRight += 5;
+                if (quote.client.indirizzo) {
+                    doc.text(quote.client.indirizzo, 120, yRight);
+                    yRight += 5;
+                }
+                if (quote.client.email) {
+                    doc.text(quote.client.email, 120, yRight);
+                    yRight += 5;
+                }
+            } else {
+                doc.text('Valued Client', 120, yRight);
+                yRight += 5;
+            }
+            
+            yRight += 10;
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Quote Date: ${new Date(quote.date).toLocaleDateString('en-US')}`, 120, yRight);
+            yRight += 5;
+            doc.text(`Job Type: ${quote.jobtype.toUpperCase()}`, 120, yRight);
+            
+            y = Math.max(y, yRight) + 15;
+            
+            // --- Service Details Table ---
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, y, 180, 8, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text('SERVICE DESCRIPTION', 20, y + 5);
+            doc.text('QTY / UNIT', 110, y + 5);
+            doc.text('UNIT PRICE', 145, y + 5);
+            doc.text('TOTAL', 190, y + 5, { align: 'right' });
+            
+            y += 12;
+            doc.setFont('helvetica', 'normal');
             quote.breakdown.forEach(item => {
-                const quantityText = item.unit_price !== null ? `${item.quantity} ${item.unit} x €${item.unit_price}` : '';
-                doc.text(item.label, 12, y);
-                doc.text(quantityText, 100, y);
-                doc.text(`€${item.cost.toFixed(2)}`, 180, y, { align: 'right' });
+                doc.text(item.label, 20, y);
+                if (item.unit_price !== null) {
+                    doc.text(`${item.quantity} ${item.unit}`, 110, y);
+                    doc.text(`€${item.unit_price.toFixed(2)}`, 145, y);
+                } else {
+                    doc.text('-', 110, y);
+                    doc.text('-', 145, y);
+                }
+                doc.text(`€${item.cost.toFixed(2)}`, 190, y, { align: 'right' });
                 y += 8;
+                
+                // Add a faint line
+                doc.setDrawColor(230, 230, 230);
+                doc.line(15, y - 2, 195, y - 2);
             });
             
             y += 10;
-            doc.line(130, y, 200, y);
-            y += 10;
-            doc.text('Subtotal:', 130, y);
-            doc.text(`€${parseFloat(quote.subtotal).toFixed(2)}`, 180, y, { align: 'right' });
+            
+            // --- Totals Summary ---
+            const summaryX = 130;
+            doc.setFont('helvetica', 'normal');
+            doc.text('Subtotal:', summaryX, y);
+            doc.text(`€${parseFloat(quote.subtotal).toFixed(2)}`, 190, y, { align: 'right' });
             
             if (quote.discountRate > 0) {
-                y += 8;
-                doc.text(`Discount (${quote.discountRate}%):`, 130, y);
-                doc.text(`-€${parseFloat(quote.discountAmount).toFixed(2)}`, 180, y, { align: 'right' });
+                y += 7;
+                doc.setTextColor(200, 0, 0);
+                doc.text(`Discount (${quote.discountLabel} - ${quote.discountRate}%):`, summaryX, y);
+                doc.text(`-€${parseFloat(quote.discountAmount).toFixed(2)}`, 190, y, { align: 'right' });
+                doc.setTextColor(0, 0, 0);
             }
             
+            y += 7;
+            doc.text(`VAT (${quote.ivaRate}%):`, summaryX, y);
+            doc.text(`€${parseFloat(quote.ivaAmount).toFixed(2)}`, 190, y, { align: 'right' });
+            
+            y += 5;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.5);
+            doc.line(summaryX, y, 195, y);
+            
             y += 8;
-            doc.text(`VAT (${quote.ivaRate}%):`, 130, y);
-            doc.text(`€${parseFloat(quote.ivaAmount).toFixed(2)}`, 180, y, { align: 'right' });
-            
-            y += 10;
-            doc.line(130, y, 200, y);
-            y += 10;                
             doc.setFontSize(14);
-            doc.text('TOTAL:', 130, y);
-            doc.text(`€${parseFloat(quote.total).toFixed(2)}`, 180, y, { align: 'right' });
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL AMOUNT:', summaryX, y);
+            doc.text(`€${parseFloat(quote.total).toFixed(2)}`, 190, y, { align: 'right' });
             
-            doc.save(`Quote_${quote.company.name}_${new Date().toISOString().slice(0,10)}.pdf`);
+            // --- Footer ---
+            y = 250;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(100, 100, 100);
+            doc.text('Terms & Conditions:', 15, y);
+            y += 4;
+            doc.text('1. This quote is valid for 30 days from the date of issue.', 15, y);
+            y += 4;
+            doc.text('2. Payment is due within 15 days of project completion.', 15, y);
+            
+            doc.setDrawColor(150, 150, 150);
+            doc.setLineWidth(0.2);
+            doc.line(130, 265, 190, 265);
+            doc.text('Authorized Signature', 145, 270);
+            
+            doc.save(`Quote_${quote.company.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
         }
 
         function saveQuote() {
