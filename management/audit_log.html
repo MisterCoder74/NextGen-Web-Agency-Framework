@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen System Audit Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+        .audit-table th {
+            text-align: left;
+            background: rgba(255,255,255,0.03);
+            padding: 12px 15px;
+            color: rgba(20,184,166,0.85);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .audit-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+        }
+        .audit-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .timestamp { color: #a78bfa; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+        .action { font-weight: 600; color: #5eead4; }
+        .ip { color: rgba(255,255,255,0.4); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">📋</div>
+            <div class="page-header-text">
+                <h1>System <em>Audit Log</em></h1>
+                <p>Track all critical system actions and backups</p>
+            </div>
+            <div style="margin-left: auto;">
+                <a href="dashboard.html" class="btn">← Back to Dashboard</a>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="scroll-area">
+            <div class="card">
+                <div class="section-title">Log Entries</div>
+                <div id="logContainer">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Action</th>
+                                <th>IP Address</th>
+                                <th>User Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 40px; opacity: 0.5;">Loading logs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadLogs() {
+            try {
+                const response = await fetch('../audit_log.json');
+                if (!response.ok) throw new Error('Could not load logs');
+                const logs = await response.json();
+                
+                const logBody = document.getElementById('logBody');
+                if (!logs || logs.length === 0) {
+                    logBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; opacity: 0.5;">No log entries found.</td></tr>';
+                    return;
+                }
+
+                // Sort newest first
+                logs.reverse();
+
+                logBody.innerHTML = logs.map(log => `
+                    <tr>
+                        <td class="timestamp">${log.timestamp}</td>
+                        <td class="action">${log.action}</td>
+                        <td class="ip">${log.ip}</td>
+                        <td style="font-size: 0.7rem; opacity: 0.6; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${log.user_agent}">
+                            ${log.user_agent}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('logBody').innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ff6b6b;">${error.message}</td></tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadLogs);
+    </script>
+</body>
+</html>

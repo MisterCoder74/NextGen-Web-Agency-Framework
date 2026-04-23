@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetchStats();
+
+    const btnBackup = document.getElementById('btnBackup');
+    if (btnBackup) {
+        btnBackup.addEventListener('click', () => {
+            window.location.href = '../tools/api/backup.php';
+        });
+    }
 });
 
 async function fetchStats() {
