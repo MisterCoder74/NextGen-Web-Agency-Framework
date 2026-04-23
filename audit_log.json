@@ -1,0 +1,14 @@
+[
+    {
+        "timestamp": "2026-04-23 08:42:37",
+        "action": "System Backup Requested",
+        "ip": "CLI",
+        "user_agent": "None"
+    },
+    {
+        "timestamp": "2026-04-23 08:42:37",
+        "action": "System Backup Successful",
+        "ip": "CLI",
+        "user_agent": "None"
+    }
+]
