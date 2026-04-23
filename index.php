@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGen Web Agency Framework - Login</title>
+    <?php $version = time(); ?>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="tools/css/global.css">
+    <link rel="stylesheet" href="tools/css/global.css?v=<?php echo $version; ?>">
     <style>
         body {
             display: flex;
@@ -206,7 +207,7 @@
                 <button type="submit" class="btn btn-primary btn-login">Enter the Future</button>
             </form>
          </div>       
-            <img src="NextGen_WAF.jpg"> 
+            <img src="NextGen_WAF.jpg?v=<?php echo $version; ?>"> 
          </div>
     </div>
 

@@ -79,8 +79,8 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.success && Array.isArray(data.projects)) {
-                projects = data.projects;
+            if (data.success && Array.isArray(data.data)) {
+                projects = data.data;
                 updateProjectSelector();
             }
         })
@@ -93,7 +93,7 @@
         projects.forEach(project => {
             const option = document.createElement('option');
             option.value = project.id;
-            option.textContent = project.name || project.title || `Project ${project.id}`;
+            option.textContent = project.nome_progetto || project.name || `Project ${project.id}`;
             projectSelector.appendChild(option);
         });
         projectSelector.value = selectedProjectId;
