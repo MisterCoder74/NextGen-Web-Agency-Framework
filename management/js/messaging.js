@@ -5,9 +5,12 @@
     // If we are in /management/, it's ./message_handler.php
     // If we are in /tools/, it's ../management/message_handler.php
     const apiEndpoint = isManagement ? 'message_handler.php' : '../management/message_handler.php';
+    const projectApiEndpoint = isManagement ? 'project_handler.php' : '../management/project_handler.php';
     
     let lastMessageCount = 0;
     let isOpen = false;
+    let selectedProjectId = 'general';
+    let projects = [];
 
     // Create UI elements
     const container = document.createElement('div');
@@ -15,8 +18,13 @@
     container.innerHTML = `
         <div class="msg-window" id="msgWindow">
             <div class="msg-header">
-                <h3>Internal Chat (${role.charAt(0).toUpperCase() + role.slice(1)})</h3>
-                <button id="closeChat" style="background:none; border:none; color:white; cursor:pointer; font-size:1.2rem;">&times;</button>
+                <div class="msg-header-top">
+                    <h3>Internal Chat (${role.charAt(0).toUpperCase() + role.slice(1)})</h3>
+                    <button id="closeChat" style="background:none; border:none; color:white; cursor:pointer; font-size:1.2rem;">&times;</button>
+                </div>
+                <select id="msgProjectSelector" class="msg-project-selector">
+                    <option value="general">General Chat</option>
+                </select>
             </div>
             <div class="msg-body" id="msgBody"></div>
             <div class="msg-footer">
@@ -38,6 +46,12 @@
     const sendMsg = document.getElementById('sendMsg');
     const msgBody = document.getElementById('msgBody');
     const msgBadge = document.getElementById('msgBadge');
+    const projectSelector = document.getElementById('msgProjectSelector');
+
+    projectSelector.onchange = (e) => {
+        selectedProjectId = e.target.value;
+        fetchMessages();
+    };
 
     msgBubble.onclick = () => {
         isOpen = !isOpen;
@@ -57,6 +71,34 @@
     sendMsg.onclick = sendMessage;
     msgInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
 
+    function fetchProjects() {
+        fetch(projectApiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'list' })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && Array.isArray(data.projects)) {
+                projects = data.projects;
+                updateProjectSelector();
+            }
+        })
+        .catch(err => console.error('Error fetching projects:', err));
+    }
+
+    function updateProjectSelector() {
+        // Keep General Chat
+        projectSelector.innerHTML = '<option value="general">General Chat</option>';
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.id;
+            option.textContent = project.name || project.title || `Project ${project.id}`;
+            projectSelector.appendChild(option);
+        });
+        projectSelector.value = selectedProjectId;
+    }
+
     function sendMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
@@ -64,7 +106,7 @@
         fetch(apiEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, role })
+            body: JSON.stringify({ text, role, project_id: selectedProjectId })
         })
         .then(res => res.json())
         .then(() => {
@@ -78,14 +120,25 @@
         .then(res => res.json())
         .then(messages => {
             if (!Array.isArray(messages)) messages = [];
-            renderMessages(messages);
-            updateBadge(messages);
+            
+            // Filter messages based on selected project
+            const filteredMessages = messages.filter(msg => {
+                const msgProjectId = msg.project_id || 'general';
+                return msgProjectId === selectedProjectId;
+            });
+
+            renderMessages(filteredMessages);
+            updateBadge(messages); // Use all messages for badge? Or just filtered?
+            // Usually badges are for all unread messages.
         })
         .catch(err => console.error('Error fetching messages:', err));
     }
 
     function renderMessages(messages) {
         msgBody.innerHTML = '';
+        if (messages.length === 0) {
+            msgBody.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.3); margin-top:20px; font-size:0.8rem;">No messages yet.</div>';
+        }
         messages.forEach(msg => {
             const div = document.createElement('div');
             div.className = `msg-item ${msg.role}`;
@@ -114,8 +167,6 @@
             unreadCount = messages.filter(m => m.role === 'manager' && m.status === 'unanswered').length;
         } else {
             // Manager sees tech messages that arrived after their last message?
-            // Or just any tech message if the last one is from tech?
-            // Let's say if the last message is from tech and we haven't seen it.
             if (messages.length > 0 && messages[messages.length - 1].role === 'tech' && messages.length > lastMessageCount) {
                 unreadCount = messages.length - lastMessageCount;
             }
@@ -132,6 +183,7 @@
     }
 
     // Initial fetch and poll
+    fetchProjects();
     fetchMessages();
-    setInterval(fetchMessages, 60000);
+    setInterval(fetchMessages, 10000); // Reduced polling interval for better experience
 })();
