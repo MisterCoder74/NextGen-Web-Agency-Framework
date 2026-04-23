@@ -1,3 +1,4 @@
+<?php $version = time(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
          
-<link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="../management/css/messaging.css">
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="../management/css/messaging.css?v=<?php echo $version; ?>">
 <style>
     .api-key-card {
         margin-bottom: 20px;
@@ -120,18 +121,7 @@
             <div id="apiKeyStatus" style="margin-top: 10px; font-size: 0.75rem;"></div>
         </div>
 
-        <!-- SYSTEM UTILITIES -->
-        <div class="card" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px;">
-            <div>
-                <div class="section-title" style="margin-bottom: 5px;">📦 System Maintenance</div>
-                <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Download a complete ZIP backup of all JSON data files and audit logs.</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="btn btn-primary" id="btnBackup" style="background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #fcd34d; white-space: nowrap;">Download Backup</button>
-                <a href="../management/audit_log.html" style="font-size: 0.75rem; color: #5eead4; text-decoration: none; opacity: 0.7; font-weight: 600; white-space: nowrap;">📋 View Audit Log</a>
-            </div>
-        </div>
-
+        <!-- AVAILABLE TOOLS -->
         <div class="section-title">🛠 Available Tools</div>
         
         <div class="dashboard-grid">
@@ -209,8 +199,8 @@
     </div>
 </div>
 
-<script src="js/core.js"></script>
-<script src="../management/js/messaging.js"></script>
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script src="../management/js/messaging.js?v=<?php echo $version; ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const keyInput = document.getElementById('globalApiKey');
@@ -240,14 +230,6 @@
                 status.style.color = '#ff6b6b';
             }
         });
-
-        // Backup button logic
-        const btnBackup = document.getElementById('btnBackup');
-        if (btnBackup) {
-            btnBackup.addEventListener('click', () => {
-                window.location.href = 'api/backup.php';
-            });
-        }
 
         // --- Micro-App Manager Logic ---
         const appsList = document.getElementById('appsList');
