@@ -65,13 +65,14 @@
                             <tr>
                                 <th>Timestamp</th>
                                 <th>Action</th>
+                                <th>User</th>
                                 <th>IP Address</th>
                                 <th>User Agent</th>
                             </tr>
                         </thead>
                         <tbody id="logBody">
                             <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; opacity: 0.5;">Loading logs...</td>
+                                <td colspan="5" style="text-align: center; padding: 40px; opacity: 0.5;">Loading logs...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -89,7 +90,7 @@
                 
                 const logBody = document.getElementById('logBody');
                 if (!logs || logs.length === 0) {
-                    logBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; opacity: 0.5;">No log entries found.</td></tr>';
+                    logBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; opacity: 0.5;">No log entries found.</td></tr>';
                     return;
                 }
 
@@ -100,6 +101,7 @@
                     <tr>
                         <td class="timestamp">${log.timestamp}</td>
                         <td class="action">${log.action}</td>
+                        <td class="user" style="color: #fcd34d; font-weight: 500;">${log.user || 'Anonymous'}</td>
                         <td class="ip">${log.ip}</td>
                         <td style="font-size: 0.7rem; opacity: 0.6; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${log.user_agent}">
                             ${log.user_agent}
@@ -107,7 +109,7 @@
                     </tr>
                 `).join('');
             } catch (error) {
-                document.getElementById('logBody').innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ff6b6b;">${error.message}</td></tr>`;
+                document.getElementById('logBody').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px; color: #ff6b6b;">${error.message}</td></tr>`;
             }
         }
 

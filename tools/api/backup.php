@@ -9,11 +9,12 @@ header('Access-Control-Allow-Origin: *');
 /**
  * Log an event to the audit log.
  */
-function logEvent($action) {
+function logEvent($action, $username = 'Anonymous') {
     $logFile = __DIR__ . '/../../audit_log.json';
     $entry = [
         'timestamp' => date('Y-m-d H:i:s'),
         'action'    => $action,
+        'user'      => $username,
         'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
         'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
     ];
@@ -39,14 +40,15 @@ $filesToBackup = [
     'tools/api/microapps.json' => 'tools/api/microapps.json'
 ];
 
-logEvent('System Backup Requested');
+$username = $_GET['u'] ?? 'Anonymous';
+logEvent('System Backup Requested', $username);
 
 if (class_exists('ZipArchive')) {
     $tmpFile = tempnam(sys_get_temp_dir(), 'backup_') . '.zip';
     $zip     = new ZipArchive();
 
     if ($zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        logEvent('System Backup Failed: Could not create ZIP');
+        logEvent('System Backup Failed: Could not create ZIP', $username);
         http_response_code(500);
         echo json_encode(['error' => 'Failed to create ZIP archive.']);
         exit;
@@ -62,13 +64,13 @@ if (class_exists('ZipArchive')) {
     $zip->close();
 
     if (!file_exists($tmpFile) || filesize($tmpFile) === 0) {
-        logEvent('System Backup Failed: ZIP file is empty or missing');
+        logEvent('System Backup Failed: ZIP file is empty or missing', $username);
         http_response_code(500);
         echo json_encode(['error' => 'ZIP file creation failed.']);
         exit;
     }
 
-    logEvent('System Backup Successful');
+    logEvent('System Backup Successful', $username);
 
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="system_backup_' . date('Ymd_His') . '.zip"');

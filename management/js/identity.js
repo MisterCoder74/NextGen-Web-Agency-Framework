@@ -1,0 +1,53 @@
+/**
+ * Identity Layer for Vivacity NextGen SYNC
+ * Handles user persistence across sessions
+ */
+
+(function() {
+    // Parse username from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUser = urlParams.get('u');
+
+    if (urlUser) {
+        localStorage.setItem('sync_username', urlUser);
+        // Clean up the URL without reloading the page
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+
+    // Initialize UI elements when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
+        
+        // Update "Welcome" message if element exists
+        const welcomeElement = document.getElementById('welcome-user');
+        if (welcomeElement) {
+            welcomeElement.textContent = `Welcome, ${username}`;
+        }
+
+        // Add Logout functionality to logout buttons
+        const logoutButtons = document.querySelectorAll('.logout-btn');
+        logoutButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        });
+    });
+
+    /**
+     * Clear local storage and redirect to login
+     */
+    function logout() {
+        localStorage.removeItem('sync_username');
+        // Determine redirect path based on current location
+        if (window.location.pathname.includes('/management/') || window.location.pathname.includes('/tools/')) {
+            window.location.href = '../index.php';
+        } else {
+            window.location.href = 'index.php';
+        }
+    }
+
+    // Export logout to window object
+    window.syncLogout = logout;
+})();
