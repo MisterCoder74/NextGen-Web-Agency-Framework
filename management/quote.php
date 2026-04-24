@@ -75,6 +75,9 @@ $job_prices = [
             flex-direction: column;
             gap: 8px;
         }
+        select[multiple] {
+            height: 120px;
+        }
         .form-group label {
             font-size: 0.75rem;
             font-weight: 700;
@@ -176,9 +179,8 @@ $job_prices = [
                 <form id="quoteForm">
                     <div class="form-grid" style="margin-bottom: 20px;">
                         <div class="form-group">
-                            <label for="jobtype">Job Type *</label>
-                            <select name="jobtype" id="jobtype" required onchange="updatePricesBasedOnJobType()">
-                                <option value="">--Select job type--</option>
+                            <label for="jobtype">Job Type(s) *</label>
+                            <select name="jobtype[]" id="jobtype" required multiple onchange="updatePricesBasedOnJobType()">
                                 <option value="landing page">Landing Page (€40/h)</option>
                                 <option value="website">Website (€35/h)</option>
                                 <option value="basic chatbot">Basic Chatbot (€45/h)</option>
@@ -190,7 +192,7 @@ $job_prices = [
                                 <option value="maintenance">Maintenance (€40/h)</option>
                                 <option value="other">Other (€35/h)</option>
                             </select>
-                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Hourly rate updates automatically based on job type</p>
+                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Hold Ctrl (or Cmd) to select multiple. Hourly rate updates based on selections.</p>
                         </div>
 
                         <div class="form-group">
@@ -271,30 +273,42 @@ $job_prices = [
             document.head.appendChild(script);
         }
 
+        let currentParams = [...params];
+
         // Function to update prices based on job type
         function updatePricesBasedOnJobType() {
-            const jobtype = document.getElementById('jobtype').value;
+            const select = document.getElementById('jobtype');
+            const selectedOptions = Array.from(select.selectedOptions).map(opt => opt.value);
             
-            if (jobtype && jobPrices[jobtype]) {
-                const hourlyRate = jobPrices[jobtype];
-                
-                // Update prices in parameters
-                params.forEach(param => {
-                    if (param.key === 'work_hours') {
-                        param.unit_price = hourlyRate;
-                    }
-                });
-                
-                // Regenerate fields with new prices
-                regenerateParamFields();
-            }
+            // Rebuild currentParams
+            // Keep non-work_hours params from the original params array
+            const staticParams = params.filter(p => p.key !== 'work_hours');
+            currentParams = [...staticParams];
+            
+            selectedOptions.forEach(job => {
+                if (jobPrices[job]) {
+                    currentParams.push({
+                        label: `Work Hours: ${job.charAt(0).toUpperCase() + job.slice(1)}`,
+                        key: `work_hours_${job.replace(/\s+/g, '_')}`,
+                        unit: 'h',
+                        unit_price: jobPrices[job],
+                        jobtype: job
+                    });
+                }
+            });
+            
+            // Sort currentParams to keep a consistent order (optional)
+            // currentParams.sort((a, b) => a.label.localeCompare(b.label));
+
+            // Regenerate fields with new prices
+            regenerateParamFields();
         }
 
         function regenerateParamFields() {
             const container = document.getElementById('paramsContainer');
             if (!container) return;
             
-            // Save current values
+            // Save current values from the DOM
             const currentValues = {};
             container.querySelectorAll('input').forEach(input => {
                 currentValues[input.name] = input.value;
@@ -302,7 +316,7 @@ $job_prices = [
             
             container.innerHTML = '';
             
-            params.forEach(p => {
+            currentParams.forEach(p => {
                 const div = document.createElement('div');
                 div.className = 'form-group param-box';
                 
@@ -323,16 +337,15 @@ $job_prices = [
 
         // Function to filter and sanitize job type
         function sanitizeJobType(jobtype) {
-            if (!jobtype) return '';
+            if (!jobtype) return [];
             const allowedJobTypes = Object.keys(jobPrices);
-            const cleanJobType = jobtype.toString().toLowerCase().trim();
-            if (allowedJobTypes.includes(cleanJobType)) {
-                return cleanJobType;
-            }
-            return '';
+            const jobTypesArray = Array.isArray(jobtype) ? jobtype : [jobtype];
+            return jobTypesArray.filter(jt => allowedJobTypes.includes(jt.toLowerCase().trim()));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize currentParams by removing generic work_hours
+            currentParams = params.filter(p => p.key !== 'work_hours');
             regenerateParamFields();
         });
 
@@ -343,16 +356,16 @@ $job_prices = [
             if (!form) return;
             
             const formData = new FormData(form);
-            const jobtype = sanitizeJobType(formData.get('jobtype'));
-            if (!jobtype) {
-                alert('Please select a job type.');
+            const jobtypes = sanitizeJobType(formData.getAll('jobtype[]'));
+            if (jobtypes.length === 0) {
+                alert('Please select at least one job type.');
                 return;
             }
             
             let total = 0;
             let breakdown = [];
             
-            params.forEach(p => {
+            currentParams.forEach(p => {
                 let val = parseFloat(formData.get(p.key)) || 0;
                 if (val < 0) val = 0;
                 
@@ -382,7 +395,8 @@ $job_prices = [
             const clientId = formData.get('client_id');
             const selectedClient = clients.find(c => c.id === clientId) || null;
             
-            let detailsHtml = `<p style="font-size: 0.9rem; margin-bottom: 15px;">Job type: <strong style="color: #fff; text-transform: capitalize;">${jobtype}</strong></p>`;
+            const jobTypeDisplay = jobtypes.join(', ');
+            let detailsHtml = `<p style="font-size: 0.9rem; margin-bottom: 15px;">Job type(s): <strong style="color: #fff; text-transform: capitalize;">${jobTypeDisplay}</strong></p>`;
             if (selectedClient) {
                 detailsHtml += `<p style="font-size: 0.9rem; margin-bottom: 15px;">Client: <strong style="color: #fff;">${selectedClient.nominativo}</strong></p>`;
             }
@@ -404,7 +418,7 @@ $job_prices = [
             
             window.currentQuote = {
                 date: new Date().toISOString(),
-                jobtype: jobtype,
+                jobtype: jobTypeDisplay,
                 subtotal: total.toFixed(2),
                 breakdown,
                 company: companyData,
@@ -548,7 +562,10 @@ $job_prices = [
             doc.setFont('helvetica', 'bold');
             doc.text(`Quote Date: ${new Date(quote.date).toLocaleDateString('en-US')}`, 120, yRight);
             yRight += 5;
-            doc.text(`Job Type: ${quote.jobtype.toUpperCase()}`, 120, yRight);
+            const jobTypeLabel = `Job Type: ${quote.jobtype.toUpperCase()}`;
+            const splitJobType = doc.splitTextToSize(jobTypeLabel, 80);
+            doc.text(splitJobType, 120, yRight);
+            yRight += (splitJobType.length * 5);
             
             y = Math.max(y, yRight) + 15;
             
