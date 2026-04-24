@@ -10,8 +10,10 @@
 
     if (urlUser) {
         localStorage.setItem('sync_username', urlUser);
-        // Clean up the URL without reloading the page
-        const newUrl = window.location.pathname;
+        // Clean up the URL without reloading the page while preserving other params
+        urlParams.delete('u');
+        const paramsString = urlParams.toString();
+        const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
         window.history.replaceState({}, document.title, newUrl);
     }
 

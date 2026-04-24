@@ -266,7 +266,8 @@
 
         async function loadTasks() {
             try {
-                const response = await fetch('kanban_handler.php');
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`kanban_handler.php?u=${encodeURIComponent(username)}`);
                 tasks = await response.json();
                 renderBoard();
             } catch (error) {

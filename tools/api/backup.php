@@ -40,7 +40,7 @@ $filesToBackup = [
     'tools/api/microapps.json' => 'tools/api/microapps.json'
 ];
 
-$username = $_GET['u'] ?? 'Anonymous';
+$username = $_POST['username'] ?? $_GET['username'] ?? $_GET['u'] ?? 'Anonymous';
 logEvent('System Backup Requested', $username);
 
 if (class_exists('ZipArchive')) {

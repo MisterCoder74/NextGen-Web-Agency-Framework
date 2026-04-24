@@ -251,7 +251,8 @@
 
         async function fetchApps() {
             try {
-                const response = await fetch('api/microapps.php?action=list');
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`api/microapps.php?action=list&u=${encodeURIComponent(username)}`);
                 const apps = await response.json();
                 renderApps(apps);
             } catch (error) {
@@ -293,10 +294,11 @@
 
         window.assignClient = async (id, clientId) => {
             try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 const res = await fetch('api/microapps.php?action=assign', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, client_id: clientId })
+                    body: JSON.stringify({ id, client_id: clientId, username })
                 });
                 const result = await res.json();
                 if (!result.success) {
@@ -312,10 +314,11 @@
             const newName = prompt('Enter new name:', oldName);
             if (newName && newName !== oldName) {
                 try {
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
                     const res = await fetch('api/microapps.php?action=rename', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, name: newName })
+                        body: JSON.stringify({ id, name: newName, username })
                     });
                     const result = await res.json();
                     if (result.success) {
@@ -332,7 +335,8 @@
         window.deleteApp = async (id) => {
             if (confirm('Are you sure you want to delete this app? This action cannot be undone.')) {
                 try {
-                    const res = await fetch(`api/microapps.php?action=delete&id=${id}`);
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
+                    const res = await fetch(`api/microapps.php?action=delete&id=${id}&u=${encodeURIComponent(username)}`);
                     const result = await res.json();
                     if (result.success) {
                         document.getElementById(`app-row-${id}`).remove();

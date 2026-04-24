@@ -360,6 +360,7 @@
             
             loadClients() {
                 this.showLoading(true);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
                 fetch('client_handler.php', {
                     method: 'POST',
@@ -367,7 +368,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: 'list'
+                        action: 'list',
+                        username: username
                     })
                 })
                 .then(response => response.json())
@@ -423,6 +425,7 @@
             
             editClient(id) {
                 this.showLoading(true);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
                 fetch('client_handler.php', {
                     method: 'POST',
@@ -431,7 +434,8 @@
                     },
                     body: JSON.stringify({
                         action: 'get',
-                        id: id
+                        id: id,
+                        username: username
                     })
                 })
                 .then(response => response.json())

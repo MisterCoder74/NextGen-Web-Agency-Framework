@@ -24,6 +24,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw  = file_get_contents('php://input');
 $body = json_decode($raw, true);
 
+/**
+ * Log an event to the audit log.
+ */
+function logEvent($action, $username = 'Anonymous') {
+    $logFile = __DIR__ . '/../../audit_log.json';
+    $entry = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'action'    => $action,
+        'user'      => $username,
+        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+    ];
+
+    $logs = [];
+    if (file_exists($logFile)) {
+        $logs = json_decode(file_get_contents($logFile), true) ?: [];
+    }
+    $logs[] = $entry;
+    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+}
+
 if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid JSON body.']);
@@ -31,10 +52,15 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
 }
 
 $apiKey   = isset($body['api_key'])    ? trim($body['api_key'])    : '';
+$username = isset($body['username'])   ? trim($body['username'])   : 'Anonymous';
 $model    = isset($body['model'])      ? trim($body['model'])      : 'gpt-4.1-nano';
 $messages = isset($body['messages'])   ? $body['messages']         : [];
 $maxTok   = isset($body['max_tokens']) ? (int)$body['max_tokens']  : 28000;
 $temp     = isset($body['temperature'])? (float)$body['temperature']: 0.3;
+
+if (!empty($messages)) {
+    logEvent("AI Chat Request (Model: $model)", $username);
+}
 
 if (empty($apiKey)) {
     http_response_code(400);

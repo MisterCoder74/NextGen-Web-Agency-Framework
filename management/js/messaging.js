@@ -72,10 +72,11 @@
     msgInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
 
     function fetchProjects() {
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
         fetch(projectApiEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'list' })
+            body: JSON.stringify({ action: 'list', username: username })
         })
         .then(res => res.json())
         .then(data => {
@@ -118,7 +119,8 @@
     }
 
     function fetchMessages() {
-        fetch(apiEndpoint)
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
+        fetch(`${apiEndpoint}?u=${encodeURIComponent(username)}`)
         .then(res => res.json())
         .then(messages => {
             if (!Array.isArray(messages)) messages = [];
@@ -130,8 +132,7 @@
             });
 
             renderMessages(filteredMessages);
-            updateBadge(messages); // Use all messages for badge? Or just filtered?
-            // Usually badges are for all unread messages.
+            updateBadge(messages); // Use all messages for badge
         })
         .catch(err => console.error('Error fetching messages:', err));
     }
@@ -166,20 +167,14 @@
     function updateBadge(messages) {
         if (isOpen) return;
 
-        let unreadCount = 0;
-        if (role === 'tech') {
-            // Tech sees unanswered manager messages
-            unreadCount = messages.filter(m => m.role === 'manager' && m.status === 'unanswered').length;
-        } else {
-            // Manager sees tech messages that arrived after their last message?
-            if (messages.length > 0 && messages[messages.length - 1].role === 'tech' && messages.length > lastMessageCount) {
-                unreadCount = messages.length - lastMessageCount;
-            }
-        }
+        const otherRole = (role === 'manager') ? 'tech' : 'manager';
+        const unreadCount = messages.filter(m => m.role === otherRole && m.status === 'unanswered').length;
 
         if (unreadCount > 0) {
             msgBadge.innerText = unreadCount;
             msgBadge.style.display = 'flex';
+        } else {
+            msgBadge.style.display = 'none';
         }
     }
 

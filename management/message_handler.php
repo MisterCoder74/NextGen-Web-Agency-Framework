@@ -31,15 +31,14 @@ if ($method === 'GET') {
         'project_id' => isset($data['project_id']) ? $data['project_id'] : 'general',
         'username' => isset($data['username']) ? $data['username'] : 'Anonymous',
         'timestamp' => date('c'),
-        'status' => $data['role'] === 'manager' ? 'unanswered' : 'answered'
+        'status' => 'unanswered'
     ];
 
-    if ($data['role'] === 'tech') {
-        // When tech replies, mark all previous manager messages as answered
-        foreach ($messages as &$msg) {
-            if ($msg['role'] === 'manager' && $msg['status'] === 'unanswered') {
-                $msg['status'] = 'answered';
-            }
+    // When someone replies, mark all previous messages from the OTHER role as answered
+    $otherRole = ($data['role'] === 'manager') ? 'tech' : 'manager';
+    foreach ($messages as &$msg) {
+        if ($msg['role'] === $otherRole && $msg['status'] === 'unanswered') {
+            $msg['status'] = 'answered';
         }
     }
 
