@@ -1,3 +1,22 @@
+<?php
+function load_company_data() {
+    $file = 'setup.json';
+    if (!file_exists($file)) {
+        return null;
+    }
+    $content = file_get_contents($file);
+    return $content ? json_decode($content, true) : null;
+}
+
+$company_data = load_company_data() ?: [
+    'company' => [
+        'name' => 'NextGen Web Agency',
+        'address' => '123 Tech Lane, Silicon Valley',
+        'phone' => '+1 234 567 890',
+        'iva' => 'US123456789'
+    ]
+];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,7 +179,33 @@
     </div>
 
     <script>
+        const companyData = <?=json_encode($company_data['company'])?>;
         let curr = null;
+
+        function formatDateTime(ts) {
+            const date = new Date(ts);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${yyyy}${mm}${dd}_${hh}${min}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (companyData) {
+                const f = document.getElementById('contractForm');
+                // Attempt to split name if it's a single string
+                if (companyData.name) {
+                    const names = companyData.name.split(' ');
+                    if (f.elements['p_nome'] && !f.elements['p_nome'].value) f.elements['p_nome'].value = names[0] || '';
+                    if (f.elements['p_cognome'] && !f.elements['p_cognome'].value) f.elements['p_cognome'].value = names.slice(1).join(' ') || '';
+                }
+                if (f.elements['p_res'] && !f.elements['p_res'].value) f.elements['p_res'].value = companyData.address || '';
+                if (f.elements['p_tel'] && !f.elements['p_tel'].value) f.elements['p_tel'].value = companyData.phone || '';
+                if (f.elements['p_cf'] && !f.elements['p_cf'].value) f.elements['p_cf'].value = companyData.iva || '';
+            }
+        });
 
         function switchTab(t) {
             document.querySelectorAll('.tab-btn, .tab-content').forEach(e => e.classList.remove('active'));
@@ -194,7 +239,9 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `contract_${data.ts}.json`;
+            const lastName = (data.c_cognome || 'Client').replace(/\s+/g, '_');
+            const dateTime = formatDateTime(data.ts);
+            a.download = `Contract_${lastName}_${dateTime}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
@@ -291,84 +338,151 @@
         }
 
         function printContract() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
             const f = document.getElementById('contractForm');
             const fd = new FormData(f);
             const d = curr || {};
             fd.forEach((v, k) => d[k] = v);
 
-            const w = window.open('', '_blank');
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contract</title><style>body{font-family:Arial;margin:40px;line-height:1.6}h1{text-align:center;text-transform:uppercase}h2{margin-top:20px;border-bottom:2px solid #333;padding-bottom:5px}.field{margin:8px 0}.label{font-weight:bold;min-width:150px;display:inline-block}p{margin:10px 0}.firma{margin-top:60px;display:flex;justify-content:space-between}.firma div{width:45%;text-align:center}.firma-line{border-top:1px solid #000;margin-top:40px;padding-top:10px}@media print{body{margin:20mm}}</style></head><body>
-            <h1>Freelance Work Contract</h1>
-            <h2>BETWEEN - CLIENT</h2>
-            <div class="field"><span class="label">First Name:</span> ${d.c_nome||''}</div>
-            <div class="field"><span class="label">Last Name:</span> ${d.c_cognome||''}</div>
-            <div class="field"><span class="label">Date of Birth:</span> ${formatDate(d.c_data)}</div>
-            <div class="field"><span class="label">Place of Birth:</span> ${d.c_luogo||''}</div>
-            <div class="field"><span class="label">Residence:</span> ${d.c_res||''}</div>
-            <div class="field"><span class="label">Tax ID:</span> ${d.c_cf||''}</div>
-            <div class="field"><span class="label">Phone:</span> ${d.c_tel||''}</div>
+            // --- Branding & Header ---
+            doc.setFillColor(20, 184, 166); // Cyan-ish color
+            doc.rect(0, 0, 210, 40, 'F');
             
-            <h2>AND - SERVICE PROVIDER</h2>
-            <div class="field"><span class="label">First Name:</span> ${d.p_nome||''}</div>
-            <div class="field"><span class="label">Last Name:</span> ${d.p_cognome||''}</div>
-            <div class="field"><span class="label">Date of Birth:</span> ${formatDate(d.p_data)}</div>
-            <div class="field"><span class="label">Place of Birth:</span> ${d.p_luogo||''}</div>
-            <div class="field"><span class="label">Residence:</span> ${d.p_res||''}</div>
-            <div class="field"><span class="label">Tax ID:</span> ${d.p_cf||''}</div>
-            <div class="field"><span class="label">Phone:</span> ${d.p_tel||''}</div>
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('WORK CONTRACT', 105, 25, { align: 'center' });
             
-            <h2>Preamble</h2>
-            <p>• The client requires a freelance work performance from the service provider;</p>
-            <p>• The service provider has declared their willingness to carry out the requested activity on an occasional and non-continuous basis;</p>
-            <p>• The parties have agreed on the terms and conditions of the performance.</p>
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
             
-            <h2>The parties agree as follows:</h2>
+            let y = 55;
             
-            <h2>Article 1 – Subject of the contract</h2>
-            <div class="field"><span class="label">Activity Description:</span> ${d.a_desc||''}</div>
-            <div class="field"><span class="label">Place of Execution:</span> ${d.a_luogo||''}</div>
-            <div class="field"><span class="label">Start Date:</span> ${formatDate(d.a_inizio)}</div>
-            <div class="field"><span class="label">End Date:</span> ${formatDate(d.a_fine)}</div>
-            <div class="field"><span class="label">Total Duration:</span> ${d.a_durata||''} ${d.a_unita||'hours'}</div>
-            <div class="field"><span class="label">Work Schedule:</span> ${d.a_orari||'To be agreed'}</div>
+            // --- Two Columns: Client & Provider ---
+            // Left Column: FROM (Service Provider)
+            doc.setFont('helvetica', 'bold');
+            doc.text('SERVICE PROVIDER (FROM):', 15, y);
+            doc.setFont('helvetica', 'normal');
+            y += 6;
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${d.p_nome} ${d.p_cognome}`, 15, y);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            y += 5;
+            doc.text(`Residence: ${d.p_res}`, 15, y);
+            y += 5;
+            doc.text(`Tax ID: ${d.p_cf}`, 15, y);
+            y += 5;
+            doc.text(`Phone: ${d.p_tel}`, 15, y);
+            y += 5;
+            doc.text(`Birth: ${d.p_luogo}, ${formatDate(d.p_data)}`, 15, y);
+
+            // Right Column: TO (Client)
+            let yRight = 55;
+            doc.setFont('helvetica', 'bold');
+            doc.text('CLIENT (TO):', 110, yRight);
+            doc.setFont('helvetica', 'normal');
+            yRight += 6;
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${d.c_nome} ${d.c_cognome}`, 110, yRight);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            yRight += 5;
+            doc.text(`Residence: ${d.c_res}`, 110, yRight);
+            yRight += 5;
+            doc.text(`Tax ID: ${d.c_cf}`, 110, yRight);
+            yRight += 5;
+            doc.text(`Phone: ${d.c_tel}`, 110, yRight);
+            yRight += 5;
+            doc.text(`Birth: ${d.c_luogo}, ${formatDate(d.c_data)}`, 110, yRight);
+
+            y = Math.max(y, yRight) + 15;
+
+            // --- Preamble ---
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, y, 180, 8, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text('PREAMBLE', 20, y + 5.5);
+            y += 15;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            const preambleText = [
+                "• The client requires a freelance work performance from the service provider;",
+                "• The service provider has declared their willingness to carry out the requested activity on an occasional and non-continuous basis;",
+                "• The parties have agreed on the terms and conditions of the performance."
+            ];
+            preambleText.forEach(line => {
+                doc.text(line, 15, y);
+                y += 5;
+            });
+
+            y += 5;
+            doc.setFont('helvetica', 'bold');
+            doc.text('THE PARTIES AGREE AS FOLLOWS:', 15, y);
+            y += 10;
+
+            const checkPageBreak = (needed) => {
+                if (y + needed > 275) {
+                    doc.addPage();
+                    y = 20;
+                }
+            };
+
+            // Articles
+            const articles = [
+                { title: "Article 1 – Subject of the contract", content: `Activity Description: ${d.a_desc}\nPlace of Execution: ${d.a_luogo}\nStart Date: ${formatDate(d.a_inizio)}  |  End Date: ${formatDate(d.a_fine)}\nTotal Duration: ${d.a_durata} ${d.a_unita}\nWork Schedule: ${d.a_orari || 'To be agreed'}` },
+                { title: "Article 2 – Compensation", content: `The client agrees to pay the service provider a total compensation of € ${d.comp_importo}, which will be paid via ${d.comp_mod}.${d.comp_mod === 'bank transfer' ? `\nBank: ${d.comp_banca} | IBAN: ${d.comp_iban}` : ''}\nPayment will be made within ${d.comp_gg || 30} days from the date of completion of the performance.` },
+                { title: "Article 3 – Method of execution", content: "The performance must be carried out by the service provider in full autonomy and without subordination constraints." },
+                { title: "Article 4 – Characteristics of the performance", content: "The performance is of an occasional, non-continuous nature, and does not imply the establishment of a subordinate employment relationship." },
+                { title: "Article 5 – Compensation Limits", content: "The total compensation must not exceed 5,000 euros per year, as provided by law." },
+                { title: "Article 6 – Withholding Tax", content: "The compensation is subject to a 20% withholding tax, as provided by current tax regulations." },
+                { title: "Article 7 – Early Termination", content: `Both parties may terminate the contract with ${d.o_preav || 7} days' notice.` },
+                { title: "Article 8 – Insurance", content: "No insurance coverage is provided. The service provider assumes responsibility for any damage." },
+                { title: "Article 9 – Applicable Law", content: "The contract is governed by Italian law." }
+            ];
+
+            articles.forEach(art => {
+                checkPageBreak(30);
+                doc.setFont('helvetica', 'bold');
+                doc.text(art.title.toUpperCase(), 15, y);
+                y += 6;
+                doc.setFont('helvetica', 'normal');
+                const splitContent = doc.splitTextToSize(art.content, 180);
+                doc.text(splitContent, 15, y);
+                y += (splitContent.length * 5) + 8;
+            });
+
+            // --- Signature ---
+            checkPageBreak(50);
+            y += 10;
+            doc.text(`Date: ${formatDate(d.o_data)}`, 15, y);
+            y += 5;
+            doc.text(`Location: ${d.o_luogo}`, 15, y);
             
-            <h2>Article 2 – Compensation</h2>
-            <p>The client agrees to pay the service provider a total compensation of € ${d.comp_importo||''}, which will be paid via ${d.comp_mod||'bank transfer'}.</p>
-            ${d.comp_mod==='bank transfer'?`<div class="field"><span class="label">Bank:</span> ${d.comp_banca||''}</div><div class="field"><span class="label">IBAN:</span> ${d.comp_iban||''}</div>`:''}
-            <p>Payment will be made within ${d.comp_gg||30} days from the date of completion of the performance.</p>
-            
-            <h2>Article 3 – Method of execution</h2>
-            <p>The performance must be carried out by the service provider in full autonomy and without subordination constraints.</p>
-            
-            <h2>Article 4 – Characteristics of the performance</h2>
-            <p>The performance is of an occasional, non-continuous nature, and does not imply the establishment of a subordinate employment relationship.</p>
-            
-            <h2>Article 5 – Compensation Limits</h2>
-            <p>The total compensation must not exceed 5,000 euros per year, as provided by law.</p>
-            
-            <h2>Article 6 – Withholding Tax</h2>
-            <p>The compensation is subject to a 20% withholding tax, as provided by current tax regulations.</p>
-            
-            <h2>Article 7 – Early Termination</h2>
-            <p>Both parties may terminate the contract with ${d.o_preav||7} days' notice.</p>
-            
-            <h2>Article 8 – Insurance</h2>
-            <p>No insurance coverage is provided. The service provider assumes responsibility for any damage.</p>
-            
-            <h2>Article 9 – Applicable Law</h2>
-            <p>The contract is governed by Italian law.</p>
-            
-            <h2>Signature of the parties</h2>
-            <div class="field"><span class="label">Date:</span> ${formatDate(d.o_data)}</div>
-            <div class="field"><span class="label">Location:</span> ${d.o_luogo||''}</div>
-            
-            <div class="firma">
-                <div><div class="firma-line">Client's Signature</div></div>
-                <div><div class="firma-line">Service Provider's Signature</div></div>
-            </div>
-            </body></html>`);
-            w.document.close();
-            setTimeout(() => w.print(), 500);
+            y += 25;
+            doc.line(15, y, 90, y);
+            doc.line(120, y, 195, y);
+            y += 5;
+            doc.setFontSize(8);
+            doc.text("CLIENT'S SIGNATURE", 52.5, y, { align: 'center' });
+            doc.text("SERVICE PROVIDER'S SIGNATURE", 157.5, y, { align: 'center' });
+
+            const lastName = (d.c_cognome || 'Client').replace(/\s+/g, '_');
+            const dateTime = formatDateTime(d.ts || Date.now());
+            doc.save(`Contract_${lastName}_${dateTime}.pdf`);
+        }
+    </script>
+    <script src="js/jsPDF.min.js"></script>
+    <script>
+        // Use local jsPDF if available, or fall back to CDN
+        if (typeof jspdf === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            document.head.appendChild(script);
         }
     </script>
 </body>
