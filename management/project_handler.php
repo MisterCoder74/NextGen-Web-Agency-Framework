@@ -40,8 +40,42 @@ class ProjectManager {
                 if ($res['success']) $this->logEvent("Project Added: " . ($data['data']['nome_progetto'] ?? 'Unknown'), $username);
                 return $res;
             case 'update':
-                $res = $this->updateProject($data['id'] ?? '', $data['data'] ?? []);
-                if ($res['success']) $this->logEvent("Project Updated: " . ($data['data']['nome_progetto'] ?? $data['id']), $username);
+                $id = $data['id'] ?? '';
+                $newData = $data['data'] ?? [];
+                
+                // Get old data for comparison
+                $oldProject = null;
+                $projects = $this->loadProjects();
+                foreach ($projects as $p) {
+                    if ($p['id'] === $id) {
+                        $oldProject = $p;
+                        break;
+                    }
+                }
+                
+                $res = $this->updateProject($id, $newData);
+                
+                if ($res['success'] && $oldProject) {
+                    $changes = [];
+                    $fields = ['nome_progetto', 'tipologia', 'cliente_id', 'stato', 'data_inizio', 'data_fine', 'budget', 'priorita', 'descrizione'];
+                    
+                    foreach ($fields as $field) {
+                        $oldVal = $oldProject[$field] ?? '';
+                        $newVal = $newData[$field] ?? '';
+                        
+                        if ($field === 'budget') {
+                            $oldVal = floatval($oldVal);
+                            $newVal = floatval($newVal);
+                        }
+                        
+                        if ($oldVal != $newVal) {
+                            $changes[] = "$field: $oldVal -> $newVal";
+                        }
+                    }
+                    
+                    $changeLog = !empty($changes) ? " (Changes: " . implode(", ", $changes) . ")" : " (No field changes)";
+                    $this->logEvent("Project Updated: " . ($newData['nome_progetto'] ?? $id) . $changeLog, $username);
+                }
                 return $res;
             case 'delete':
                 $res = $this->deleteProject($data['id'] ?? '');

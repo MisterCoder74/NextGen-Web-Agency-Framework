@@ -10,11 +10,16 @@
 
     if (urlUser) {
         localStorage.setItem('sync_username', urlUser);
-        // Clean up the URL without reloading the page while preserving other params
-        urlParams.delete('u');
-        const paramsString = urlParams.toString();
-        const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
-        window.history.replaceState({}, document.title, newUrl);
+        // We no longer remove it from the URL to ensure persistence
+    } else {
+        // If not in URL, try to restore from localStorage
+        const storedUser = localStorage.getItem('sync_username');
+        if (storedUser) {
+            urlParams.set('u', storedUser);
+            const paramsString = urlParams.toString();
+            const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
+            window.history.replaceState({}, document.title, newUrl);
+        }
     }
 
     // Initialize UI elements when DOM is loaded

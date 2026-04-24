@@ -1,3 +1,4 @@
+<?php $version = time(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
          
-<link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
 <style>
     .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
     #repoUrl {
@@ -101,7 +103,7 @@
     </div>
 </div>
 
-<script src="js/core.js"></script>
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script>
     async function analyzeRepo() {
         const url = document.getElementById('repoUrl').value.trim();
