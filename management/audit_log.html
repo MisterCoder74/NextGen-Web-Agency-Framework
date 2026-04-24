@@ -84,7 +84,8 @@
     <script>
         async function loadLogs() {
             try {
-                const response = await fetch('../audit_log.json');
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`../audit_log.json?u=${encodeURIComponent(username)}`);
                 if (!response.ok) throw new Error('Could not load logs');
                 const logs = await response.json();
                 

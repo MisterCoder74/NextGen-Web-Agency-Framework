@@ -151,10 +151,11 @@ return;
 
 /* Quick probe: confirm chat.php is reachable before starting */
 try {
+const username = localStorage.getItem('sync_username') || 'Anonymous';
 const probe = await fetch('api/chat.php', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ api_key: STATE.apiKey, model: 'gpt-4o-mini', messages: [] }),
+body: JSON.stringify({ api_key: STATE.apiKey, model: 'gpt-4o-mini', messages: [], username: username }),
 });
 const probeData = await probe.json().catch(() => ({}));
 /* 400 "Missing or invalid messages" = PHP reached OK */
@@ -491,9 +492,11 @@ DOM.downloadBtn.textContent = '↓ Preparing ZIP...';
 DOM.downloadBtn.disabled = true;
 
 try {
+const username = localStorage.getItem('sync_username') || 'Anonymous';
 const formData = new FormData();
 formData.append('files', JSON.stringify(files));
 formData.append('project_name', STATE.projectName);
+formData.append('username', username);
 
 const response = await fetch('api/download.php', {
 method: 'POST',
@@ -608,13 +611,15 @@ openModal(DOM.outputModal);
 
 /* ---- OPENAI API CALL ---- */
 async function callOpenAI(messages) {
-const payload = {
-api_key: STATE.apiKey,
-model: 'gpt-4.1-nano',
-messages: messages,
-max_tokens: 28000,
-temperature: 0.3,
-};
+    const username = localStorage.getItem('sync_username') || 'Anonymous';
+    const payload = {
+    api_key: STATE.apiKey,
+    model: 'gpt-4.1-nano',
+    messages: messages,
+    username: username,
+    max_tokens: 28000,
+    temperature: 0.3,
+    };
 
 const response = await fetch('api/chat.php', {
 method: 'POST',

@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnBackup = document.getElementById('btnBackup');
     if (btnBackup) {
         btnBackup.addEventListener('click', () => {
-            window.location.href = '../tools/api/backup.php';
+            const username = localStorage.getItem('sync_username') || 'Anonymous';
+            window.location.href = `../tools/api/backup.php?u=${encodeURIComponent(username)}`;
         });
     }
 });

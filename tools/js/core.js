@@ -19,6 +19,8 @@ const Core = {
             throw new Error('Missing API Key. Please set it in the dashboard.');
         }
 
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
+
         const response = await fetch('api/chat.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -26,6 +28,7 @@ const Core = {
                 api_key: apiKey,
                 model: model,
                 messages: messages,
+                username: username,
                 max_tokens: options.max_tokens || 8000,
                 temperature: options.temperature || 0.3
             })
@@ -66,9 +69,11 @@ const Core = {
 
     downloadZip: async (files, projectName = 'project') => {
         // files should be an array of { name: 'file.html', content: '...' }
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
         const formData = new FormData();
         formData.append('project_name', projectName);
         formData.append('files', JSON.stringify(files));
+        formData.append('username', username);
 
         try {
             const response = await fetch('api/download.php', {
@@ -105,12 +110,14 @@ const Core = {
 
     deployProject: async (frontendCode, backendCode) => {
         try {
+            const username = localStorage.getItem('sync_username') || 'Anonymous';
             const response = await fetch('deploy.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     frontend: frontendCode,
-                    backend: backendCode
+                    backend: backendCode,
+                    username: username
                 })
             });
 

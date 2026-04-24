@@ -6,8 +6,29 @@
 
 header('Content-Type: application/json');
 
+// Log an event to the audit log.
+function logEvent($action, $username = 'Anonymous') {
+    $logFile = __DIR__ . '/../audit_log.json';
+    $entry = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'action'    => $action,
+        'user'      => $username,
+        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+    ];
+
+    $logs = [];
+    if (file_exists($logFile)) {
+        $logs = json_decode(file_get_contents($logFile), true) ?: [];
+    }
+    $logs[] = $entry;
+    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+}
+
 // Leggo input JSON
 $data = json_decode(file_get_contents('php://input'), true);
+$username = $data['username'] ?? 'Anonymous';
+
 if (!$data || !isset($data['frontend']) || !isset($data['backend'])) {
 echo json_encode(['success' => false, 'message' => 'Dati mancanti']);
 exit;
@@ -88,6 +109,7 @@ $newApp = [
 array_unshift($apps, $newApp);
 file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
 
+logEvent("Microapp Deployed: $appId", $username);
 echo json_encode(['success' => true, 'url' => $finalUrl]);
 exit;
 ?>

@@ -655,10 +655,11 @@ $job_prices = [
             btn.disabled = true;
             statusDiv.textContent = "⏳ Saving...";
             
+            const username = localStorage.getItem('sync_username') || 'Anonymous';
             fetch('save_quote.php', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
-                body: JSON.stringify(window.currentQuote)
+                body: JSON.stringify({...window.currentQuote, username: username})
             }).then(res => res.json())
             .then(data => {
                 if (data.success) {

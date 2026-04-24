@@ -210,11 +210,12 @@
             }
 
             async fetchData() {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 // Fetch client details
                 const clientRes = await fetch('client_handler.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get', id: this.clientId })
+                    body: JSON.stringify({ action: 'get', id: this.clientId, username: username })
                 });
                 const clientJson = await clientRes.json();
                 if (!clientJson.success || !clientJson.data) throw new Error('Client not found');
@@ -222,7 +223,7 @@
 
                 // Fetch micro-apps
                 try {
-                    const appsRes = await fetch('../tools/api/microapps.php?action=list');
+                    const appsRes = await fetch(`../tools/api/microapps.php?action=list&u=${encodeURIComponent(username)}`);
                     const appsJson = await appsRes.json();
                     this.microApps = Array.isArray(appsJson) ? appsJson.filter(app => app.client_id === this.clientId) : [];
                 } catch (e) {
@@ -354,6 +355,7 @@
                 try {
                     saveBtn.disabled = true;
                     saveBtn.textContent = 'Saving...';
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
                     
                     const res = await fetch('client_handler.php', {
                         method: 'POST',
@@ -361,6 +363,7 @@
                         body: JSON.stringify({
                             action: 'update',
                             id: this.clientId,
+                            username: username,
                             data: {
                                 ...this.clientData,
                                 intelligence: intelligence,
@@ -422,6 +425,7 @@ Return ONLY the strategic profile text (maximum 150 words).`;
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             api_key: localStorage.getItem('openaikey'),
+                            username: localStorage.getItem('sync_username') || 'Anonymous',
                             messages: [
                                 { role: 'system', content: 'You are a strategic business analyst for Vivacity, a web agency. You provide concise client intelligence.' },
                                 { role: 'user', content: promptText }
@@ -438,12 +442,14 @@ Return ONLY the strategic profile text (maximum 150 words).`;
                     const generatedIntelligence = json.choices[0].message.content.trim();
                     
                     // Save to server
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
                     const saveRes = await fetch('client_handler.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'update',
                             id: this.clientId,
+                            username: username,
                             data: {
                                 ...this.clientData,
                                 intelligence: generatedIntelligence

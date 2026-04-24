@@ -27,6 +27,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo json_encode($response);
         exit;
     }
+
+    $username = $_POST['username'] ?? 'Anonymous';
+
+    // Log an event to the audit log.
+    function logEvent($action, $username = 'Anonymous') {
+        $logFile = __DIR__ . '/../audit_log.json';
+        $entry = [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'action'    => $action,
+            'user'      => $username,
+            'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+            'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+        ];
+
+        $logs = [];
+        if (file_exists($logFile)) {
+            $logs = json_decode(file_get_contents($logFile), true) ?: [];
+        }
+        $logs[] = $entry;
+        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+    }
     
     // Email configuration
     $from_name = "Vivacity NextGen Mail Campaigner";
@@ -137,6 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($mail_sent) {
         $response['success'] = true;
         $response['message'] = "Email sent successfully to " . count($bcc_list) . " recipients";
+        logEvent("Email Campaign Sent: $subject (" . count($bcc_list) . " recipients)", $username);
     } else {
         $response['message'] = 'Error while sending email';
     }
@@ -345,7 +367,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('clients.json');
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`clients.json?u=${encodeURIComponent(username)}`);
                 if (response.ok) {
                     clientsData = await response.json();
                     if (clientsData.length > 0) {
@@ -466,10 +489,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             btn.innerHTML = '<span>⏳</span> Sending...';
 
             try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 const formData = new FormData();
                 formData.append('action', 'send_email');
                 formData.append('subject', subject);
                 formData.append('message', message);
+                formData.append('username', username);
                 selectedClients.forEach(c => formData.append('recipients[]', c.email));
 
                 const res = await fetch(window.location.href, { method: 'POST', body: formData });
