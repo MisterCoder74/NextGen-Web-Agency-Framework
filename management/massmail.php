@@ -33,16 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $from_email = "info@nextgen-webagency.com";
     $reply_to = "info@nextgen-webagency.com";
     
-    // Prepare message with signature
-    $email_body = $message . "\n\n---\n";
-    $email_body .= "NextGen Web Agency\n";
-    $email_body .= "Email: info@nextgen-webagency.com\n";
-    $email_body .= "Website: https://www.nextgen-webagency.com";
+    // Prepare HTML message
+    $html_message = "
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset='UTF-8'>
+        <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #d1d5db; margin: 0; padding: 0; background-color: #07090f; }
+            .container { max-width: 600px; margin: 0 auto; background: #111520; overflow: hidden; border: 1px solid #1e293b; }
+            .header { background: #07090f; padding: 40px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
+            .header h1 { margin: 0; font-size: 28px; color: #5eead4; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; }
+            .content { padding: 40px 30px; font-size: 16px; color: #94a3b8; }
+            .footer { background: #07090f; padding: 30px; text-align: center; font-size: 12px; color: #475569; border-top: 1px solid #1e293b; }
+            .footer a { color: #5eead4; text-decoration: none; }
+            .divider { height: 1px; background: #1e293b; margin: 20px 0; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>Vivacity <em>NextGen</em></h1>
+            </div>
+            <div class='content'>
+                " . nl2br(htmlspecialchars($message)) . "
+            </div>
+            <div class='footer'>
+                <strong>NextGen Web Agency</strong><br>
+                Integrated Management System — Operations Suite<br>
+                <div class='divider'></div>
+                Email: info@nextgen-webagency.com | Website: <a href='https://www.nextgen-webagency.com'>nextgen-webagency.com</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
     
     // Headers for email
     $headers = [];
     $headers[] = "MIME-Version: 1.0";
-    $headers[] = "Content-type: text/plain; charset=UTF-8";
+    $headers[] = "Content-type: text/html; charset=UTF-8";
     $headers[] = "From: {$from_name} <{$from_email}>";
     $headers[] = "Reply-To: {$reply_to}";
     $headers[] = "X-Mailer: PHP/" . phpversion();
@@ -68,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $mail_sent = mail(
         $from_email, // TO (send to self)
         $subject,
-        $email_body,
+        $html_message,
         implode("\r\n", $headers)
     );
     
@@ -252,11 +282,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <div><strong>BCC:</strong> <span id="previewRecipients">No recipients selected</span></div>
                         <div style="margin-top: 5px;"><strong>Subject:</strong> <span id="previewSubject" style="color: #fff;">-</span></div>
                     </div>
-                    <div class="preview-body" id="previewMessage" style="color: rgba(255,255,255,0.8);">-</div>
-                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.8rem; color: rgba(255,255,255,0.4);">
-                        <strong style="color: rgba(255,255,255,0.6);">NextGen Web Agency</strong><br>
-                        Email: info@nextgen-webagency.com<br>
-                        Website: nextgen-webagency.com
+                    
+                    <!-- Simulated Email Client -->
+                    <div style="background: #07090f; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; margin-top: 15px;">
+                        <div style="background: #07090f; padding: 20px; text-align: center; border-bottom: 1px solid #1e293b;">
+                             <h1 style="margin: 0; font-size: 1.2rem; color: #5eead4; letter-spacing: 2px; text-transform: uppercase;">Vivacity <em>NextGen</em></h1>
+                        </div>
+                        <div style="padding: 30px; font-size: 0.9rem; color: #94a3b8; line-height: 1.6; min-height: 100px; white-space: pre-wrap;" id="previewMessage">...</div>
+                        <div style="background: #07090f; padding: 20px; text-align: center; font-size: 0.7rem; color: #475569; border-top: 1px solid #1e293b;">
+                            <strong>NextGen Web Agency</strong><br>
+                            Integrated Management System — Operations Suite<br>
+                            <div style="height: 1px; background: #1e293b; margin: 10px 0;"></div>
+                            Email: info@nextgen-webagency.com | Website: nextgen-webagency.com
+                        </div>
                     </div>
                 </div>
 
