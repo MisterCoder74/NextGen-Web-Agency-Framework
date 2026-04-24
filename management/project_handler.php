@@ -82,7 +82,7 @@ class ProjectManager {
                 if ($res['success']) $this->logEvent("Project Deleted: " . $data['id'], $username);
                 return $res;
             case 'list':
-                return $this->listProjects();
+                return $this->listProjects($username);
             case 'get':
                 return $this->getProject($data['id'] ?? '');
             default:
@@ -106,6 +106,34 @@ class ProjectManager {
         }
         $logs[] = $entry;
         file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+    }
+
+    private function getSetupConfig() {
+        $setupFile = __DIR__ . '/setup.json';
+        if (file_exists($setupFile)) {
+            return json_decode(file_get_contents($setupFile), true);
+        }
+        return [];
+    }
+
+    private function ensureProjectDirectory($project) {
+        $config = $this->getSetupConfig();
+        if (($config['mode'] ?? '') !== 'sync') {
+            return;
+        }
+
+        $projectsRoot = __DIR__ . '/../projects/';
+        if (!file_exists($projectsRoot)) {
+            mkdir($projectsRoot, 0777, true);
+        }
+
+        $projectDir = $projectsRoot . $project['id'] . '/';
+        if (!file_exists($projectDir)) {
+            mkdir($projectDir, 0777, true);
+        }
+
+        $infoFile = $projectDir . 'info.json';
+        file_put_contents($infoFile, json_encode($project, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
     
     private function addProject($data) {
@@ -145,6 +173,7 @@ class ProjectManager {
         $projects[] = $project;
         
         if ($this->saveProjects($projects)) {
+            $this->ensureProjectDirectory($project);
             return $this->success('Project added successfully', $project);
         } else {
             return $this->error('Error saving');
@@ -185,6 +214,7 @@ class ProjectManager {
                 $projects[$i]['priorita'] = $data['priorita'] ?? 'medium';
                 $projects[$i]['descrizione'] = trim($data['descrizione'] ?? '');
                 $projects[$i]['updated_at'] = date('Y-m-d H:i:s');
+                $updatedProject = $projects[$i];
                 $found = true;
                 break;
             }
@@ -195,6 +225,7 @@ class ProjectManager {
         }
         
         if ($this->saveProjects($projects)) {
+            $this->ensureProjectDirectory($updatedProject);
             return $this->success('Project updated successfully');
         } else {
             return $this->error('Error saving');
@@ -226,8 +257,14 @@ class ProjectManager {
         }
     }
     
-    private function listProjects() {
+    private function listProjects($username = 'Anonymous') {
+        $config = $this->getSetupConfig();
+        $mode = $config['mode'] ?? 'sync';
+        
         $projects = $this->loadProjects();
+        
+        // In the future, if mode is 'control', we might filter by $username
+        // For now, in 'sync' mode (or default), we show all projects as requested
         
         // Sort by priority and creation date
         usort($projects, function($a, $b) {
