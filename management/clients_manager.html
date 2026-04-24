@@ -1,3 +1,4 @@
+<?php $version = time(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+    <script src="js/identity.js?v=<?php echo $version; ?>"></script>
     <style>
         .manager-table {
             width: 100%;
@@ -151,6 +153,11 @@
                         </div>
                         
                         <div class="form-group full-width">
+                            <label for="intelligence">AI Intelligence</label>
+                            <textarea id="intelligence" name="intelligence" placeholder="Analyze client's digital presence, market niche, and AI potential..."></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
                             <label for="note">Notes</label>
                             <textarea id="note" name="note" placeholder="Add any notes about the client..."></textarea>
                         </div>
@@ -179,6 +186,7 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Address</th>
+                            <th>Intelligence</th>
                             <th>Notes</th>
                             <th style="text-align: right;">Actions</th>
                         </tr>
@@ -233,6 +241,7 @@
                     nominativo: document.getElementById('nominativo').value.trim(),
                     email: document.getElementById('email').value.trim(),
                     indirizzo: document.getElementById('indirizzo').value.trim(),
+                    intelligence: document.getElementById('intelligence').value.trim(),
                     note: document.getElementById('note').value.trim()
                 };
             }
@@ -403,6 +412,7 @@
                             <td><strong>${this.escapeHtml(client.nominativo)}</strong></td>
                             <td><span style="color: rgba(255,255,255,0.6);">${this.escapeHtml(client.email)}</span></td>
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.indirizzo || '-')}</span></td>
+                            <td><span style="font-size: 0.8rem; color: var(--cyan);">${this.escapeHtml(client.intelligence || '-')}</span></td>
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.4);">${this.escapeHtml(client.note || '-')}</span></td>
                             <td class="actions-cell">
                                 <a href="client_portfolio.html?id=${client.id}" class="btn btn-small btn-portfolio-tool">
@@ -461,6 +471,7 @@
                 document.getElementById('nominativo').value = client.nominativo || '';
                 document.getElementById('email').value = client.email || '';
                 document.getElementById('indirizzo').value = client.indirizzo || '';
+                document.getElementById('intelligence').value = client.intelligence || '';
                 document.getElementById('note').value = client.note || '';
             }
             

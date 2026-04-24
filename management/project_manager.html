@@ -1,3 +1,4 @@
+<?php $version = time(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+    <script src="js/identity.js?v=<?php echo $version; ?>"></script>
     <style>
         .manager-table {
             width: 100%;
@@ -264,10 +266,10 @@
                 this.init();
             }
             
-            init() {
+            async init() {
                 this.bindEvents();
-                this.loadClients();
-                this.loadProjects();
+                await this.loadClients();
+                await this.loadProjects();
                 this.setDefaultDates();
             }
             
@@ -293,7 +295,7 @@
             
             loadClients() {
                 const username = localStorage.getItem('sync_username') || 'Anonymous';
-                fetch('client_handler.php', {
+                return fetch('client_handler.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -489,7 +491,7 @@
                 this.showLoading(true);
                 const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
-                fetch('project_handler.php', {
+                return fetch('project_handler.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 <?php
+$version = time();
 $setupData = file_exists('../management/setup.json') ? file_get_contents('../management/setup.json') : '{}';
 $clientsData = file_exists('../management/clients.json') ? file_get_contents('../management/clients.json') : '[]';
 ?>
@@ -12,8 +13,9 @@ $clientsData = file_exists('../management/clients.json') ? file_get_contents('..
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
          
-<link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
 <style>
     .collab-container {
         display: flex;
@@ -125,7 +127,7 @@ $clientsData = file_exists('../management/clients.json') ? file_get_contents('..
     </div>
 </div>
 
-<script src="js/core.js"></script>
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script>
     const origin = window.location.origin;
     const pathname = window.location.pathname;
