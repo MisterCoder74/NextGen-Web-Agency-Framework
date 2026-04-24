@@ -257,6 +257,7 @@
             
             addClient(data) {
                 this.showLoading(true);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
                 fetch('client_handler.php', {
                     method: 'POST',
@@ -265,7 +266,8 @@
                     },
                     body: JSON.stringify({
                         action: 'add',
-                        data: data
+                        data: data,
+                        username: username
                     })
                 })
                 .then(response => response.json())
@@ -288,6 +290,7 @@
             
             updateClient(data) {
                 this.showLoading(true);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
                 fetch('client_handler.php', {
                     method: 'POST',
@@ -297,7 +300,8 @@
                     body: JSON.stringify({
                         action: 'update',
                         id: this.editingId,
-                        data: data
+                        data: data,
+                        username: username
                     })
                 })
                 .then(response => response.json())
@@ -324,6 +328,7 @@
                 }
                 
                 this.showLoading(true);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 
                 fetch('client_handler.php', {
                     method: 'POST',
@@ -332,7 +337,8 @@
                     },
                     body: JSON.stringify({
                         action: 'delete',
-                        id: id
+                        id: id,
+                        username: username
                     })
                 })
                 .then(response => response.json())

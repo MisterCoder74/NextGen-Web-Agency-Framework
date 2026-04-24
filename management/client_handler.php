@@ -31,13 +31,21 @@ class ClientManager {
             return $this->error('Invalid data');
         }
         
+        $username = $data['username'] ?? 'Anonymous';
+        
         switch ($data['action']) {
             case 'add':
-                return $this->addClient($data['data'] ?? []);
+                $res = $this->addClient($data['data'] ?? []);
+                if ($res['success']) $this->logEvent("Client Added: " . ($data['data']['nominativo'] ?? 'Unknown'), $username);
+                return $res;
             case 'update':
-                return $this->updateClient($data['id'] ?? '', $data['data'] ?? []);
+                $res = $this->updateClient($data['id'] ?? '', $data['data'] ?? []);
+                if ($res['success']) $this->logEvent("Client Updated: " . ($data['data']['nominativo'] ?? $data['id']), $username);
+                return $res;
             case 'delete':
-                return $this->deleteClient($data['id'] ?? '');
+                $res = $this->deleteClient($data['id'] ?? '');
+                if ($res['success']) $this->logEvent("Client Deleted: " . $data['id'], $username);
+                return $res;
             case 'list':
                 return $this->listClients();
             case 'get':
@@ -45,6 +53,24 @@ class ClientManager {
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function logEvent($action, $username = 'Anonymous') {
+        $logFile = __DIR__ . '/../audit_log.json';
+        $entry = [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'action'    => $action,
+            'user'      => $username,
+            'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+            'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+        ];
+
+        $logs = [];
+        if (file_exists($logFile)) {
+            $logs = json_decode(file_get_contents($logFile), true) ?: [];
+        }
+        $logs[] = $entry;
+        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
     }
     
     private function addClient($data) {

@@ -276,10 +276,14 @@
 
         async function saveTasks() {
             try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
                 await fetch('kanban_handler.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(tasks)
+                    body: JSON.stringify({
+                        tasks: tasks,
+                        username: username
+                    })
                 });
             } catch (error) {
                 console.error('Error saving tasks:', error);

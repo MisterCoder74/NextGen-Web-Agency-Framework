@@ -103,10 +103,12 @@
         const text = msgInput.value.trim();
         if (!text) return;
 
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
+
         fetch(apiEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, role, project_id: selectedProjectId })
+            body: JSON.stringify({ text, role, project_id: selectedProjectId, username: username })
         })
         .then(res => res.json())
         .then(() => {
@@ -144,8 +146,11 @@
             div.className = `msg-item ${msg.role}`;
             
             const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const capitalizedRole = msg.role.charAt(0).toUpperCase() + msg.role.slice(1);
+            const displayName = msg.username ? `${msg.username} (${capitalizedRole})` : capitalizedRole;
             
             div.innerHTML = `
+                <div class="msg-sender" style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 2px;">${displayName}</div>
                 <div>${msg.text}</div>
                 <span class="msg-time">${time}</span>
             `;

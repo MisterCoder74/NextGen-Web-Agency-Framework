@@ -29,6 +29,7 @@ if ($method === 'GET') {
         'text' => $data['text'],
         'role' => $data['role'], // 'manager' or 'tech'
         'project_id' => isset($data['project_id']) ? $data['project_id'] : 'general',
+        'username' => isset($data['username']) ? $data['username'] : 'Anonymous',
         'timestamp' => date('c'),
         'status' => $data['role'] === 'manager' ? 'unanswered' : 'answered'
     ];

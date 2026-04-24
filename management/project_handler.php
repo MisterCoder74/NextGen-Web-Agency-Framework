@@ -32,13 +32,21 @@ class ProjectManager {
             return $this->error('Invalid data');
         }
         
+        $username = $data['username'] ?? 'Anonymous';
+        
         switch ($data['action']) {
             case 'add':
-                return $this->addProject($data['data'] ?? []);
+                $res = $this->addProject($data['data'] ?? []);
+                if ($res['success']) $this->logEvent("Project Added: " . ($data['data']['nome_progetto'] ?? 'Unknown'), $username);
+                return $res;
             case 'update':
-                return $this->updateProject($data['id'] ?? '', $data['data'] ?? []);
+                $res = $this->updateProject($data['id'] ?? '', $data['data'] ?? []);
+                if ($res['success']) $this->logEvent("Project Updated: " . ($data['data']['nome_progetto'] ?? $data['id']), $username);
+                return $res;
             case 'delete':
-                return $this->deleteProject($data['id'] ?? '');
+                $res = $this->deleteProject($data['id'] ?? '');
+                if ($res['success']) $this->logEvent("Project Deleted: " . $data['id'], $username);
+                return $res;
             case 'list':
                 return $this->listProjects();
             case 'get':
@@ -46,6 +54,24 @@ class ProjectManager {
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function logEvent($action, $username = 'Anonymous') {
+        $logFile = __DIR__ . '/../audit_log.json';
+        $entry = [
+            'timestamp' => date('Y-m-d H:i:s'),
+            'action'    => $action,
+            'user'      => $username,
+            'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+            'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+        ];
+
+        $logs = [];
+        if (file_exists($logFile)) {
+            $logs = json_decode(file_get_contents($logFile), true) ?: [];
+        }
+        $logs[] = $entry;
+        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
     }
     
     private function addProject($data) {
