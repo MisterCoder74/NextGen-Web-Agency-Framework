@@ -76,21 +76,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Encode From name
     $encoded_from_name = "=?UTF-8?Q?" . str_replace(["=\r\n", "\r", "\n", " ", "?"], ["", "", "", "_", "=3F"], quoted_printable_encode($from_name)) . "?=";
     
-    // Headers for email
-    $headers = [];
-    $headers[] = "MIME-Version: 1.0";
-    $headers[] = "Content-Type: text/html; charset=UTF-8";
-    $headers[] = "Content-Transfer-Encoding: 8bit";
-    $headers[] = "From: {$encoded_from_name} <{$from_email}>";
-    $headers[] = "Reply-To: {$reply_to}";
-    $headers[] = "X-Mailer: PHP/" . phpversion();
+    // Ensure clean To: field and From/Reply-To addresses
+    $clean_from_email = filter_var(trim($from_email), FILTER_SANITIZE_EMAIL);
+    $to_field = $clean_from_email;
+
+    // Headers for email - Robust Header Isolation
+    $headers_array = [];
+    $headers_array[] = "MIME-Version: 1.0";
+    $headers_array[] = "Content-Type: text/html; charset=UTF-8";
+    $headers_array[] = "Content-Transfer-Encoding: 8bit";
+    $headers_array[] = "From: {$encoded_from_name} <{$clean_from_email}>";
+    $headers_array[] = "Reply-To: {$clean_from_email}";
+    $headers_array[] = "X-Mailer: PHP/" . phpversion();
     
-    // Add all recipients in BCC
+    // Add all recipients in BCC - Sanitize and remove hidden characters
     $bcc_list = [];
     foreach ($recipients as $email) {
-        $email = trim($email);
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $bcc_list[] = $email;
+        $clean_email = filter_var(trim($email), FILTER_SANITIZE_EMAIL);
+        // Remove line breaks, tabs, and null characters to prevent header injection
+        $clean_email = str_replace(["\r", "\n", "\t", "\0", "\x0B"], '', $clean_email);
+        if (filter_var($clean_email, FILTER_VALIDATE_EMAIL)) {
+            $bcc_list[] = $clean_email;
         }
     }
     
@@ -100,17 +106,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
     
-    // Properly fold the Bcc header to avoid excessively long lines
-    $bcc_header = "Bcc: " . implode(",\r\n ", $bcc_list);
-    $headers[] = $bcc_header;
+    // Format the Bcc header using a strictly controlled loop to ensure no trailing commas or broken lines
+    $bcc_header = "Bcc: ";
+    $bcc_count = count($bcc_list);
+    for ($i = 0; $i < $bcc_count; $i++) {
+        $bcc_header .= $bcc_list[$i];
+        if ($i < $bcc_count - 1) {
+            $bcc_header .= ", " . PHP_EOL . " ";
+        }
+    }
+    $headers_array[] = $bcc_header;
     
-    // Send email
+    // Construction of clean headers string using PHP_EOL consistently
+    $headers_string = implode(PHP_EOL, $headers_array);
+
+    // Fallback: Ensure no output buffers interfere with mail() execution
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    // Send email with perfectly clean To field
     $mail_sent = mail(
-        $from_email, // TO (send to self)
+        $to_field, 
         $encoded_subject,
         $html_message,
-        implode("\r\n", $headers),
-        "-f" . $from_email
+        $headers_string,
+        "-f" . $clean_from_email
     );
     
     if ($mail_sent) {
