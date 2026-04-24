@@ -69,23 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     </html>
     ";
     
-    // Prepare Base64 encoded body
-    $encoded_message = chunk_split(base64_encode($html_message));
-    
     // Sanitize and encode subject (RFC 2047)
     $safe_subject = str_replace(["\r", "\n"], '', $subject);
-    $encoded_subject = '=?UTF-8?B?' . base64_encode($safe_subject) . '?=';
+    $encoded_subject = "=?UTF-8?Q?" . str_replace(["=\r\n", "\r", "\n", " ", "?"], ["", "", "", "_", "=3F"], quoted_printable_encode($safe_subject)) . "?=";
     
     // Encode From name
-    $encoded_from_name = '=?UTF-8?B?' . base64_encode($from_name) . '?=';
+    $encoded_from_name = "=?UTF-8?Q?" . str_replace(["=\r\n", "\r", "\n", " ", "?"], ["", "", "", "_", "=3F"], quoted_printable_encode($from_name)) . "?=";
     
     // Headers for email
     $headers = [];
     $headers[] = "MIME-Version: 1.0";
     $headers[] = "Content-Type: text/html; charset=UTF-8";
-    $headers[] = "Content-Transfer-Encoding: base64";
+    $headers[] = "Content-Transfer-Encoding: 8bit";
     $headers[] = "From: {$encoded_from_name} <{$from_email}>";
-    $headers[] = "Reply-To: <{$reply_to}>";
+    $headers[] = "Reply-To: {$reply_to}";
     $headers[] = "X-Mailer: PHP/" . phpversion();
     
     // Add all recipients in BCC
@@ -103,16 +100,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
     
-    // Use wordwrap for Bcc header folding (RFC 2822)
-    $bcc_header = "Bcc: " . implode(', ', $bcc_list);
-    $headers[] = wordwrap($bcc_header, 78, "\r\n ");
+    // Properly fold the Bcc header to avoid excessively long lines
+    $bcc_header = "Bcc: " . implode(",\r\n ", $bcc_list);
+    $headers[] = $bcc_header;
     
     // Send email
     $mail_sent = mail(
         $from_email, // TO (send to self)
         $encoded_subject,
-        $encoded_message,
-        implode("\r\n", $headers)
+        $html_message,
+        implode("\r\n", $headers),
+        "-f" . $from_email
     );
     
     if ($mail_sent) {
