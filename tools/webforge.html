@@ -298,6 +298,7 @@ const STATE = {
   outputs: { bot1: null, bot2: null, bot3: null, bot4: null },
   projectName: 'Website',
   screenshot: null,
+  clientId: new URLSearchParams(window.location.search).get('client_id') || '',
 };
 
 const $ = (id) => document.getElementById(id);
@@ -680,7 +681,7 @@ DOM.deployBtn.onclick = async () => {
     const htmlFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html')) || { content: '' };
     const phpFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php')) || { content: '<' + '?php // Default backend' };
     
-    const result = await Core.deployProject(htmlFile.content, phpFile.content);
+    const result = await Core.deployProject(htmlFile.content, phpFile.content, STATE.clientId);
     
     if (result.success) {
         DOM.deployFeedback.innerHTML = `

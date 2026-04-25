@@ -104,7 +104,8 @@ $newApp = [
     'name' => 'Micro App ' . $appId,
     'url' => $finalUrl,
     'date' => date('Y-m-d H:i:s'),
-    'client_id' => ''
+    'client_id' => $data['client_id'] ?? '',
+    'created_by' => $username
 ];
 array_unshift($apps, $newApp);
 file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));

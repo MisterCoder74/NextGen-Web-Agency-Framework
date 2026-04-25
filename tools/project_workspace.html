@@ -107,6 +107,7 @@
                 <p id="project-subtitle">Manage assets and view project brief</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+                <a href="#" id="build-microapp-btn" class="btn btn-primary">Build Micro-App</a>
                 <a href="dashboard.html" class="btn btn-secondary btn-back-dashboard">Back to Dashboard</a>
             </div>
         </div>
@@ -201,6 +202,10 @@
                 if (result.success) {
                     renderBrief(result.data);
                     document.getElementById('project-title').innerHTML = `${result.data.nome_progetto} <em>Workspace</em>`;
+                    const buildBtn = document.getElementById('build-microapp-btn');
+                    if (buildBtn) {
+                        buildBtn.href = `webforge.html?client_id=${result.data.cliente_id}`;
+                    }
                     setupClientView(result.data.cliente_id);
                 } else {
                     document.getElementById('brief-content').innerHTML = `<p style="color:#ff6b6b;">${result.message}</p>`;
