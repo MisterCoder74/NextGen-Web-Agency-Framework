@@ -76,8 +76,10 @@ switch ($action) {
                 }
             }
             
-            $apps = array_filter($apps, function($app) use ($assignedClientIds) {
-                return in_array($app['client_id'] ?? '', $assignedClientIds);
+            $apps = array_filter($apps, function($app) use ($assignedClientIds, $username) {
+                $isAssigned = in_array($app['client_id'] ?? '', $assignedClientIds);
+                $isCreator = ($app['created_by'] ?? '') === $username;
+                return $isAssigned || $isCreator;
             });
             $apps = array_values($apps);
         }

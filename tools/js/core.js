@@ -141,7 +141,7 @@ const Core = {
         }
     },
 
-    deployProject: async (frontendCode, backendCode) => {
+    deployProject: async (frontendCode, backendCode, clientId = '') => {
         try {
             const username = localStorage.getItem('sync_username') || 'Anonymous';
             const response = await fetch('deploy.php', {
@@ -150,7 +150,8 @@ const Core = {
                 body: JSON.stringify({
                     frontend: frontendCode,
                     backend: backendCode,
-                    username: username
+                    username: username,
+                    client_id: clientId
                 })
             });
 
