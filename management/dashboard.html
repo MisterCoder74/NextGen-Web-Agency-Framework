@@ -95,6 +95,14 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                     <h2>NextGen Kanban Board</h2>
                     <p>Strategic task management and workflow orchestration for agency projects.</p>
                 </a>
+
+                <?php if ($app_mode === 'CONTROL'): ?>
+                <a href="workload_auditor.html" class="tool-card">
+                    <div class="tool-icon">⚖️</div>
+                    <h2>Agency Workload Auditor</h2>
+                    <p>Analyze technician workload, calculate stress indices, and get AI-driven rebalancing recommendations.</p>
+                </a>
+                <?php endif; ?>
             </div>
              
             <div class="stats-container" id="statsContainer" style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
