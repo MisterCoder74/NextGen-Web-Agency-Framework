@@ -1,4 +1,15 @@
-<?php $version = time(); ?>
+<?php 
+$version = time(); 
+$setup_file = 'setup.json';
+$app_mode = 'SYNC';
+if (file_exists($setup_file)) {
+    $setup_data = json_decode(file_get_contents($setup_file), true);
+    if (isset($setup_data['mode'])) {
+        $app_mode = strtoupper($setup_data['mode']);
+    }
+}
+$mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +30,7 @@
         <div class="page-header">
             <div class="icon-badge">🚀</div>
             <div class="page-header-text">
-                <h1>Vivacity <em>NextGen Management Dashboard</em></h1>
+                <h1>Vivacity <em>NextGen Management Dashboard</em><sup class="mode-sup <?php echo $mode_class; ?>"><?php echo $app_mode; ?></sup></h1>
                 <p>Integrated Management System — Control & Operations Suite</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
