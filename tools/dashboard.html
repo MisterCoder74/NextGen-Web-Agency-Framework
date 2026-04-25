@@ -328,8 +328,16 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
 
         async function fetchClients() {
             try {
-                const response = await fetch('../management/clients.json');
-                allClients = await response.json();
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch('../management/client_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', username })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    allClients = result.data;
+                }
             } catch (error) {
                 console.error('Error fetching clients:', error);
             }

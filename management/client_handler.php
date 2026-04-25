@@ -47,12 +47,35 @@ class ClientManager {
                 if ($res['success']) $this->logEvent("Client Deleted: " . $data['id'], $username);
                 return $res;
             case 'list':
-                return $this->listClients();
+                return $this->listClients($username);
             case 'get':
-                return $this->getClient($data['id'] ?? '');
+                return $this->getClient($data['id'] ?? '', $username);
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function getUserRole($username) {
+        $usersFile = __DIR__ . '/../users.json';
+        if (!file_exists($usersFile)) return 'technician';
+        
+        $users = json_decode(file_get_contents($usersFile), true);
+        if (!is_array($users)) return 'technician';
+        
+        foreach ($users as $user) {
+            if ($user['username'] === $username) {
+                return $user['role'] ?? 'technician';
+            }
+        }
+        return 'technician';
+    }
+
+    private function getSetupConfig() {
+        $setupFile = __DIR__ . '/setup.json';
+        if (file_exists($setupFile)) {
+            return json_decode(file_get_contents($setupFile), true);
+        }
+        return [];
     }
 
     private function logEvent($action, $username = 'Anonymous') {
@@ -176,8 +199,30 @@ class ClientManager {
         }
     }
     
-    private function listClients() {
+    private function listClients($username = 'Anonymous') {
+        $config = $this->getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
+        
         $clients = $this->loadClients();
+        
+        if ($mode === 'control' && $role === 'technician') {
+            $projectsFile = __DIR__ . '/projects.json';
+            $assignedClientIds = [];
+            if (file_exists($projectsFile)) {
+                $projects = json_decode(file_get_contents($projectsFile), true) ?: [];
+                foreach ($projects as $p) {
+                    if (($p['assigned_to'] ?? '') === $username) {
+                        $assignedClientIds[] = $p['cliente_id'];
+                    }
+                }
+            }
+            
+            $clients = array_filter($clients, function($c) use ($assignedClientIds) {
+                return in_array($c['id'], $assignedClientIds);
+            });
+            $clients = array_values($clients);
+        }
         
         // Sort by name
         usort($clients, function($a, $b) {
@@ -187,9 +232,30 @@ class ClientManager {
         return $this->success('Client list loaded', $clients);
     }
     
-    private function getClient($id) {
+    private function getClient($id, $username = 'Anonymous') {
         if (empty($id)) {
             return $this->error('Invalid client ID');
+        }
+
+        $config = $this->getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
+
+        if ($mode === 'control' && $role === 'technician') {
+            $projectsFile = __DIR__ . '/projects.json';
+            $hasAccess = false;
+            if (file_exists($projectsFile)) {
+                $projects = json_decode(file_get_contents($projectsFile), true) ?: [];
+                foreach ($projects as $p) {
+                    if (($p['assigned_to'] ?? '') === $username && $p['cliente_id'] === $id) {
+                        $hasAccess = true;
+                        break;
+                    }
+                }
+            }
+            if (!$hasAccess) {
+                return $this->error('Access denied to this client');
+            }
         }
         
         $clients = $this->loadClients();

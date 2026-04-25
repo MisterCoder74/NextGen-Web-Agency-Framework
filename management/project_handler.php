@@ -57,7 +57,7 @@ class ProjectManager {
                 
                 if ($res['success'] && $oldProject) {
                     $changes = [];
-                    $fields = ['nome_progetto', 'tipologia', 'cliente_id', 'stato', 'data_inizio', 'data_fine', 'budget', 'priorita', 'descrizione'];
+                    $fields = ['nome_progetto', 'tipologia', 'cliente_id', 'stato', 'data_inizio', 'data_fine', 'budget', 'priorita', 'descrizione', 'assigned_to'];
                     
                     foreach ($fields as $field) {
                         $oldVal = $oldProject[$field] ?? '';
@@ -83,11 +83,46 @@ class ProjectManager {
                 return $res;
             case 'list':
                 return $this->listProjects($username);
+            case 'list_technicians':
+                return $this->listTechnicians();
             case 'get':
-                return $this->getProject($data['id'] ?? '');
+                return $this->getProject($data['id'] ?? '', $username);
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function getUserRole($username) {
+        $usersFile = __DIR__ . '/../users.json';
+        if (!file_exists($usersFile)) return 'technician'; // Default if not found
+        
+        $users = json_decode(file_get_contents($usersFile), true);
+        if (!is_array($users)) return 'technician';
+        
+        foreach ($users as $user) {
+            if ($user['username'] === $username) {
+                return $user['role'] ?? 'technician';
+            }
+        }
+        return 'technician';
+    }
+
+    private function listTechnicians() {
+        $usersFile = __DIR__ . '/../users.json';
+        if (!file_exists($usersFile)) return $this->success('No technicians found', []);
+        
+        $users = json_decode(file_get_contents($usersFile), true);
+        if (!is_array($users)) return $this->success('No technicians found', []);
+        
+        $technicians = array_filter($users, function($user) {
+            return ($user['role'] ?? '') === 'technician';
+        });
+        
+        $safeTechnicians = array_map(function($tech) {
+            return ['username' => $tech['username']];
+        }, array_values($technicians));
+        
+        return $this->success('Technicians list loaded', $safeTechnicians);
     }
 
     private function logEvent($action, $username = 'Anonymous') {
@@ -166,6 +201,7 @@ class ProjectManager {
             'budget' => floatval($data['budget'] ?? 0),
             'priorita' => $data['priorita'] ?? 'medium',
             'descrizione' => trim($data['descrizione'] ?? ''),
+            'assigned_to' => $data['assigned_to'] ?? null,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
@@ -213,6 +249,7 @@ class ProjectManager {
                 $projects[$i]['budget'] = floatval($data['budget'] ?? 0);
                 $projects[$i]['priorita'] = $data['priorita'] ?? 'medium';
                 $projects[$i]['descrizione'] = trim($data['descrizione'] ?? '');
+                $projects[$i]['assigned_to'] = $data['assigned_to'] ?? null;
                 $projects[$i]['updated_at'] = date('Y-m-d H:i:s');
                 $updatedProject = $projects[$i];
                 $found = true;
@@ -259,12 +296,17 @@ class ProjectManager {
     
     private function listProjects($username = 'Anonymous') {
         $config = $this->getSetupConfig();
-        $mode = $config['mode'] ?? 'sync';
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
         
         $projects = $this->loadProjects();
         
-        // In the future, if mode is 'control', we might filter by $username
-        // For now, in 'sync' mode (or default), we show all projects as requested
+        if ($mode === 'control' && $role === 'technician') {
+            $projects = array_filter($projects, function($p) use ($username) {
+                return ($p['assigned_to'] ?? '') === $username;
+            });
+            $projects = array_values($projects);
+        }
         
         // Sort by priority and creation date
         usort($projects, function($a, $b) {
@@ -282,15 +324,24 @@ class ProjectManager {
         return $this->success('Project list loaded', $projects);
     }
     
-    private function getProject($id) {
+    private function getProject($id, $username = 'Anonymous') {
         if (empty($id)) {
             return $this->error('Invalid project ID');
         }
+
+        $config = $this->getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
         
         $projects = $this->loadProjects();
         
         foreach ($projects as $project) {
             if ($project['id'] === $id) {
+                if ($mode === 'control' && $role === 'technician') {
+                    if (($project['assigned_to'] ?? '') !== $username) {
+                        return $this->error('Access denied to this project');
+                    }
+                }
                 return $this->success('Project found', $project);
             }
         }
