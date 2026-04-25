@@ -28,10 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($authenticated) {
                 // Successful login - Redirect based on role
                 if ($role === 'management') {
-                    header('Location: ./management/dashboard.html?u=' . urlencode($username));
+                    header('Location: ./management/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role));
                 } else {
                     // Default to technician path
-                    header('Location: ./tools/dashboard.html?u=' . urlencode($username));
+                    header('Location: ./tools/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role));
                 }
                 exit;
             } else {
