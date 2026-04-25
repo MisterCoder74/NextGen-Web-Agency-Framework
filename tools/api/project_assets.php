@@ -21,9 +21,10 @@ class ProjectAssets {
 
         $projectDir = $this->projectsRoot . $id . '/';
         if (!file_exists($projectDir)) {
-            // Try to create it if sync mode is on
+            // Try to create it if sync or control mode is on
             $setup = $this->getSetupConfig();
-            if (($setup['mode'] ?? '') === 'sync') {
+            $mode = strtolower($setup['mode'] ?? 'sync');
+            if ($mode === 'sync' || $mode === 'control') {
                 if (!file_exists($this->projectsRoot)) {
                     mkdir($this->projectsRoot, 0777, true);
                 }

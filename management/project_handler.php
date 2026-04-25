@@ -167,7 +167,8 @@ class ProjectManager {
 
     private function ensureProjectDirectory($project) {
         $config = $this->getSetupConfig();
-        if (($config['mode'] ?? '') !== 'sync') {
+        $mode = strtolower($config['mode'] ?? 'sync');
+        if ($mode !== 'sync' && $mode !== 'control') {
             return;
         }
 
