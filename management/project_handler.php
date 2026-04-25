@@ -36,10 +36,12 @@ class ProjectManager {
         
         switch ($data['action']) {
             case 'add':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $res = $this->addProject($data['data'] ?? []);
                 if ($res['success']) $this->logEvent("Project Added: " . ($data['data']['nome_progetto'] ?? 'Unknown'), $username);
                 return $res;
             case 'update':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $id = $data['id'] ?? '';
                 $newData = $data['data'] ?? [];
                 
@@ -78,6 +80,7 @@ class ProjectManager {
                 }
                 return $res;
             case 'delete':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $res = $this->deleteProject($data['id'] ?? '');
                 if ($res['success']) $this->logEvent("Project Deleted: " . $data['id'], $username);
                 return $res;
@@ -90,6 +93,17 @@ class ProjectManager {
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function checkPermission($username) {
+        $config = $this->getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
+        
+        if ($mode === 'control' && $role === 'technician') {
+            return false;
+        }
+        return true;
     }
 
     private function getUserRole($username) {
