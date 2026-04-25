@@ -4,22 +4,36 @@
  */
 
 (function() {
-    // Parse username from URL if present
+    // Parse username and role from URL if present
     const urlParams = new URLSearchParams(window.location.search);
     const urlUser = urlParams.get('u');
+    const urlRole = urlParams.get('r');
 
     if (urlUser) {
         localStorage.setItem('sync_username', urlUser);
-        // We no longer remove it from the URL to ensure persistence
-    } else {
-        // If not in URL, try to restore from localStorage
-        const storedUser = localStorage.getItem('sync_username');
-        if (storedUser) {
-            urlParams.set('u', storedUser);
-            const paramsString = urlParams.toString();
-            const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
-            window.history.replaceState({}, document.title, newUrl);
-        }
+    }
+    if (urlRole) {
+        localStorage.setItem('sync_role', urlRole);
+    }
+
+    // Ensure persistence in the URL
+    let updateUrl = false;
+    const storedUser = localStorage.getItem('sync_username');
+    const storedRole = localStorage.getItem('sync_role');
+
+    if (!urlUser && storedUser) {
+        urlParams.set('u', storedUser);
+        updateUrl = true;
+    }
+    if (!urlRole && storedRole) {
+        urlParams.set('r', storedRole);
+        updateUrl = true;
+    }
+
+    if (updateUrl) {
+        const paramsString = urlParams.toString();
+        const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
+        window.history.replaceState({}, document.title, newUrl);
     }
 
     // Initialize UI elements when DOM is loaded
@@ -47,6 +61,7 @@
      */
     function logout() {
         localStorage.removeItem('sync_username');
+        localStorage.removeItem('sync_role');
         // Determine redirect path based on current location
         if (window.location.pathname.includes('/management/') || window.location.pathname.includes('/tools/')) {
             window.location.href = '../index.php';

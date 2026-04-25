@@ -137,17 +137,32 @@ const Core = {
 
 // Common UI Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    const getDashboardUrl = () => {
+        const role = localStorage.getItem('sync_role');
+        const user = localStorage.getItem('sync_username');
+        let dashUrl = role === 'management' ? '../management/dashboard.html' : 'dashboard.html';
+        const params = new URLSearchParams();
+        if (user) params.set('u', user);
+        if (role) params.set('r', role);
+        const paramsString = params.toString();
+        return dashUrl + (paramsString ? '?' + paramsString : '');
+    };
+
     // Add "Back to Dashboard" button if it's not the dashboard itself
     const isDashboard = window.location.pathname.endsWith('dashboard.html');
     if (!isDashboard) {
         const header = document.querySelector('.page-header');
-        if (header && !document.querySelector('.btn-back-dashboard')) {
-            const backBtn = document.createElement('a');
-            backBtn.href = 'dashboard.html';
-            backBtn.className = 'btn btn-back-dashboard';
-            backBtn.style.marginLeft = 'auto';
-            backBtn.innerHTML = '🏠 Dashboard';
-            header.appendChild(backBtn);
+        if (header) {
+            let backBtn = document.querySelector('.btn-back-dashboard');
+            if (!backBtn) {
+                backBtn = document.createElement('a');
+                backBtn.className = 'btn btn-back-dashboard';
+                backBtn.style.marginLeft = 'auto';
+                backBtn.innerHTML = '🏠 Dashboard';
+                header.appendChild(backBtn);
+            }
+            // Always update the href to ensure it has the correct parameters
+            backBtn.href = getDashboardUrl();
         }
     }
 });

@@ -107,7 +107,7 @@
                 <p id="project-subtitle">Manage assets and view project brief</p>
             </div>
             <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-                <a href="dashboard.html" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="dashboard.html" class="btn btn-secondary btn-back-dashboard">Back to Dashboard</a>
             </div>
         </div>
 
@@ -160,10 +160,29 @@
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('id');
 
+        function getDashboardUrl() {
+            const role = localStorage.getItem('sync_role');
+            const user = localStorage.getItem('sync_username');
+            let dashUrl = role === 'management' ? '../management/dashboard.html' : 'dashboard.html';
+            const params = new URLSearchParams();
+            if (user) params.set('u', user);
+            if (role) params.set('r', role);
+            const paramsString = params.toString();
+            return dashUrl + (paramsString ? '?' + paramsString : '');
+        }
+
         if (!projectId) {
             alert('No project ID provided');
-            window.location.href = 'dashboard.html';
+            window.location.href = getDashboardUrl();
         }
+
+        // Update Back to Dashboard button
+        document.addEventListener('DOMContentLoaded', () => {
+            const backBtn = document.querySelector('.btn-back-dashboard');
+            if (backBtn) {
+                backBtn.href = getDashboardUrl();
+            }
+        });
 
         async function loadProjectInfo() {
             try {
