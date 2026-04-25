@@ -245,6 +245,7 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
         const keyInput = document.getElementById('globalApiKey');
         const saveBtn = document.getElementById('btnSaveKey');
         const status = document.getElementById('apiKeyStatus');
+        const APP_MODE = '<?php echo $app_mode; ?>';
 
         // Load existing key
         const savedKey = Core.getApiKey();
@@ -361,26 +362,33 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 return;
             }
 
+            const role = localStorage.getItem('sync_role') || 'technician';
+            const isRestricted = (APP_MODE === 'CONTROL' && role === 'technician');
+
             appsList.innerHTML = apps.map(app => {
                 const clientOptions = allClients.map(c => `
                     <option value="${c.id}" ${app.client_id === c.id ? 'selected' : ''}>${c.nominativo}</option>
                 `).join('');
+
+                const clientCell = isRestricted ? 
+                    (allClients.find(c => c.id === app.client_id)?.nominativo || 'Unassigned') :
+                    `<select class="client-select" onchange="assignClient('${app.id}', this.value)">
+                        <option value="">Unassigned</option>
+                        ${clientOptions}
+                    </select>`;
+
+                const actionsCell = isRestricted ? '' : `
+                    <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
+                `;
 
                 return `
                     <tr id="app-row-${app.id}">
                         <td><strong id="app-name-${app.id}">${app.name}</strong></td>
                         <td><a href="${app.url}" target="_blank" class="app-url">${app.id} ↗</a></td>
                         <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${app.date}</td>
-                        <td>
-                            <select class="client-select" onchange="assignClient('${app.id}', this.value)">
-                                <option value="">Unassigned</option>
-                                ${clientOptions}
-                            </select>
-                        </td>
-                        <td class="actions-cell">
-                            <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
-                        </td>
+                        <td>${clientCell}</td>
+                        <td class="actions-cell">${actionsCell}</td>
                     </tr>
                 `;
             }).join('');

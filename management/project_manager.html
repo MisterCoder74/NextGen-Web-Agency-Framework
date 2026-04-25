@@ -128,6 +128,31 @@
         }
         .client-name { font-weight: 700; color: #fff; }
         .client-email { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+        .workload-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .workload-tech-name {
+            font-weight: 700;
+            color: var(--cyan);
+            font-size: 0.9rem;
+        }
+        .workload-count {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .workload-label {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -237,6 +262,11 @@
                     </div>
                 </form>
                 <div id="message"></div>
+            </div>
+
+            <div class="section-title" style="margin-top: 20px;">👷 Technicians Workload</div>
+            <div id="workloadSummary" class="form-grid" style="margin-bottom: 20px;">
+                <div class="loading" style="padding: 20px;">Calculating workload...</div>
             </div>
 
             <div class="section-title" style="margin-top: 20px;">📋 Project List</div>
@@ -547,6 +577,7 @@
                     this.showLoading(false);
                     if (result.success) {
                         this.displayProjects(result.data);
+                        this.updateWorkloadSummary(result.data);
                     } else {
                         this.showMessage('Error loading: ' + result.message, 'error');
                     }
@@ -608,6 +639,47 @@
                 }
                 
                 table.style.display = 'table';
+            }
+
+            updateWorkloadSummary(projects) {
+                const container = document.getElementById('workloadSummary');
+                if (!container) return;
+                
+                const workload = {};
+                this.technicians.forEach(tech => {
+                    workload[tech.username] = 0;
+                });
+                
+                projects.forEach(project => {
+                    // Only count projects that are not completed or cancelled
+                    if (project.stato !== 'completed' && project.stato !== 'cancelled') {
+                        if (project.assigned_to && workload.hasOwnProperty(project.assigned_to)) {
+                            workload[project.assigned_to]++;
+                        }
+                    }
+                });
+                
+                let html = Object.entries(workload).map(([tech, count]) => `
+                    <div class="workload-card">
+                        <span class="workload-tech-name">${this.escapeHtml(tech)}</span>
+                        <span class="workload-count">${count}</span>
+                        <span class="workload-label">Active Projects</span>
+                    </div>
+                `).join('');
+                
+                // Add "Unassigned" count for non-completed projects
+                const unassignedCount = projects.filter(p => !p.assigned_to && p.stato !== 'completed' && p.stato !== 'cancelled').length;
+                if (unassignedCount > 0) {
+                    html += `
+                        <div class="workload-card" style="border-color: rgba(239, 68, 68, 0.2);">
+                            <span class="workload-tech-name" style="color: #ef4444;">Unassigned</span>
+                            <span class="workload-count">${unassignedCount}</span>
+                            <span class="workload-label">Active Projects</span>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = html || '<div style="padding: 20px; color: rgba(255,255,255,0.3);">No workload data available</div>';
             }
             
             editProject(id) {

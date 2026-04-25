@@ -6,8 +6,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
     $recipients = $_POST['recipients'] ?? [];
+    $username = $_POST['username'] ?? 'Anonymous';
     
     $response = ['success' => false, 'message' => ''];
+
+    // Permission Check
+    function getUserRoleForMail($username) {
+        $usersFile = __DIR__ . '/../users.json';
+        if (!file_exists($usersFile)) return 'technician';
+        $users = json_decode(file_get_contents($usersFile), true);
+        if (!is_array($users)) return 'technician';
+        foreach ($users as $user) {
+            if ($user['username'] === $username) return $user['role'] ?? 'technician';
+        }
+        return 'technician';
+    }
+
+    function getSetupConfigForMail() {
+        $setupFile = __DIR__ . '/setup.json';
+        return file_exists($setupFile) ? json_decode(file_get_contents($setupFile), true) : [];
+    }
+
+    $config = getSetupConfigForMail();
+    if (strtolower($config['mode'] ?? '') === 'control' && getUserRoleForMail($username) === 'technician') {
+        $response['message'] = 'Permission denied: Managers only in CONTROL mode';
+        echo json_encode($response);
+        exit;
+    }
     
     // Validation
     if (empty($subject)) {
@@ -27,8 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo json_encode($response);
         exit;
     }
-
-    $username = $_POST['username'] ?? 'Anonymous';
 
     // Log an event to the audit log.
     function logEvent($action, $username = 'Anonymous') {

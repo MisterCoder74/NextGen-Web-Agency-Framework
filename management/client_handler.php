@@ -35,14 +35,17 @@ class ClientManager {
         
         switch ($data['action']) {
             case 'add':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $res = $this->addClient($data['data'] ?? []);
                 if ($res['success']) $this->logEvent("Client Added: " . ($data['data']['nominativo'] ?? 'Unknown'), $username);
                 return $res;
             case 'update':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $res = $this->updateClient($data['id'] ?? '', $data['data'] ?? []);
                 if ($res['success']) $this->logEvent("Client Updated: " . ($data['data']['nominativo'] ?? $data['id']), $username);
                 return $res;
             case 'delete':
+                if (!$this->checkPermission($username)) return $this->error('Permission denied: Managers only in CONTROL mode');
                 $res = $this->deleteClient($data['id'] ?? '');
                 if ($res['success']) $this->logEvent("Client Deleted: " . $data['id'], $username);
                 return $res;
@@ -53,6 +56,17 @@ class ClientManager {
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function checkPermission($username) {
+        $config = $this->getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = $this->getUserRole($username);
+        
+        if ($mode === 'control' && $role === 'technician') {
+            return false;
+        }
+        return true;
     }
 
     private function getUserRole($username) {

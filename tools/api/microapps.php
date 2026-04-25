@@ -6,6 +6,15 @@ $appsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'microapps';
 
 $action = $_GET['action'] ?? '';
 $username = $_GET['username'] ?? $_GET['u'] ?? '';
+$postData = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $rawInput = file_get_contents('php://input');
+    $postData = json_decode($rawInput, true) ?: [];
+    if (!$username) {
+        $username = $postData['username'] ?? $postData['u'] ?? '';
+    }
+}
 
 function getUserRole($username) {
     $usersFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'users.json';
@@ -28,6 +37,19 @@ function getSetupConfig() {
         return json_decode(file_get_contents($setupFile), true);
     }
     return [];
+}
+
+// Permission Check for CONTROL mode
+$restricted_actions = ['rename', 'assign', 'delete'];
+if (in_array($action, $restricted_actions)) {
+    $config = getSetupConfig();
+    $mode = strtolower($config['mode'] ?? 'sync');
+    $role = getUserRole($username);
+
+    if ($mode === 'control' && $role === 'technician') {
+        echo json_encode(['success' => false, 'message' => 'Restricted action: Managers only in CONTROL mode.']);
+        exit;
+    }
 }
 
 switch ($action) {
@@ -64,7 +86,7 @@ switch ($action) {
         break;
 
     case 'rename':
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = $postData;
         $id = $data['id'] ?? '';
         $newName = $data['name'] ?? '';
 
@@ -97,7 +119,7 @@ switch ($action) {
         break;
 
     case 'assign':
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = $postData;
         $id = $data['id'] ?? '';
         $clientId = $data['client_id'] ?? '';
 

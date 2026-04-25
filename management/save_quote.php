@@ -1,6 +1,22 @@
 <?php
 header('Content-Type: application/json');
 
+function getUserRole($username) {
+    $usersFile = __DIR__ . '/../users.json';
+    if (!file_exists($usersFile)) return 'technician';
+    $users = json_decode(file_get_contents($usersFile), true);
+    if (!is_array($users)) return 'technician';
+    foreach ($users as $user) {
+        if ($user['username'] === $username) return $user['role'] ?? 'technician';
+    }
+    return 'technician';
+}
+
+function getSetupConfig() {
+    $setupFile = __DIR__ . '/setup.json';
+    return file_exists($setupFile) ? json_decode(file_get_contents($setupFile), true) : [];
+}
+
 // Log an event to the audit log.
 function logEvent($action, $username = 'Anonymous') {
     $logFile = __DIR__ . '/../audit_log.json';
@@ -21,10 +37,17 @@ function logEvent($action, $username = 'Anonymous') {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-$username = $input['username'] ?? 'Anonymous';
-
 if (!$input) {
     echo json_encode(['success'=>false, 'error'=>'Invalid data']);
+    exit;
+}
+
+$username = $input['username'] ?? 'Anonymous';
+
+// Permission Check
+$config = getSetupConfig();
+if (strtolower($config['mode'] ?? '') === 'control' && getUserRole($username) === 'technician') {
+    echo json_encode(['success' => false, 'error' => 'Permission denied: Managers only in CONTROL mode']);
     exit;
 }
 

@@ -8,19 +8,45 @@ if (!file_exists($file)) {
     file_put_contents($file, json_encode([]));
 }
 
+function getUserRole($username) {
+    $usersFile = __DIR__ . '/../users.json';
+    if (!file_exists($usersFile)) return 'technician';
+    $users = json_decode(file_get_contents($usersFile), true);
+    if (!is_array($users)) return 'technician';
+    foreach ($users as $user) {
+        if ($user['username'] === $username) return $user['role'] ?? 'technician';
+    }
+    return 'technician';
+}
+
+function getSetupConfig() {
+    $setupFile = __DIR__ . '/setup.json';
+    return file_exists($setupFile) ? json_decode(file_get_contents($setupFile), true) : [];
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     echo file_get_contents($file);
 } elseif ($method === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $rawInput = file_get_contents('php://input');
+    $data = json_decode($rawInput, true);
+    
     if ($data !== null) {
-        // Extract username and tasks
+        $username = $data['username'] ?? 'Anonymous';
+        
+        // Permission Check
+        $config = getSetupConfig();
+        if (strtolower($config['mode'] ?? '') === 'control' && getUserRole($username) === 'technician') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Permission denied: Managers only in CONTROL mode']);
+            exit;
+        }
+
+        // Extract tasks
         if (isset($data['tasks']) && is_array($data['tasks'])) {
-            $username = $data['username'] ?? 'Anonymous';
             $tasksToSave = $data['tasks'];
         } else {
-            $username = 'Anonymous';
             $tasksToSave = $data;
         }
 
