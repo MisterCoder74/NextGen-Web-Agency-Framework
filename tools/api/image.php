@@ -56,7 +56,7 @@ $apiKey   = isset($body['api_key'])  ? trim($body['api_key'])  : '';
 $username = isset($body['username']) ? trim($body['username']) : 'Anonymous';
 $prompt   = isset($body['prompt'])   ? trim($body['prompt'])   : '';
 $model    = isset($body['model'])    ? trim($body['model'])    : 'gpt-image-1';
-$size     = isset($body['size'])     ? trim($body['size'])     : '1024x1024';
+$size     = !empty($body['size'])    ? trim($body['size'])     : '1024x1024';
 $quality  = isset($body['quality'])  ? trim($body['quality'])  : 'medium';
 
 if (empty($apiKey)) {
