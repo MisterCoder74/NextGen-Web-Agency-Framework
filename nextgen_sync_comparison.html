@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen Evolution | Base vs Sync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="tools/css/global.css?v=1.1">
+    <style>
+        :root {
+            --base-muted: rgba(255, 255, 255, 0.2);
+            --sync-bright: #14b8a6;
+            --sync-accent: #a78bfa;
+            --bg-dark: #07090f;
+        }
+
+        body {
+            background: radial-gradient(circle at top center, #1e1b4b 0%, #07090f 70%);
+            font-family: 'Syne', sans-serif;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-y: auto;
+            padding: 60px 20px;
+            margin: 0;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        header h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--sync-bright), var(--sync-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        header p {
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
+            color: var(--base-muted);
+        }
+
+        .evolution-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .comparison-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            position: relative;
+        }
+
+        .block-label {
+            grid-column: 1 / -1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--sync-bright);
+            opacity: 0.6;
+            margin-bottom: -20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .block-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(20, 184, 166, 0.3), transparent);
+        }
+
+        .card {
+            padding: 40px;
+            border-radius: 24px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .base-card {
+            color: var(--base-muted);
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+
+        .sync-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .sync-card::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.5), transparent, rgba(167, 139, 250, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .sync-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(20, 184, 166, 0.5);
+            box-shadow: 0 30px 60px rgba(20, 184, 166, 0.1);
+        }
+
+        .base-card h3 { color: rgba(255, 255, 255, 0.4); }
+        .sync-card h3 { color: var(--sync-bright); text-shadow: 0 0 10px rgba(20, 184, 166, 0.3); }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .base-card .feature-list li::before {
+            content: '○';
+            font-size: 0.8rem;
+            margin-top: 5px;
+            opacity: 0.5;
+        }
+
+        .sync-card .feature-list li::before {
+            content: '✦';
+            color: var(--sync-accent);
+            text-shadow: 0 0 8px var(--sync-accent);
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .pop {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--sync-bright);
+            border: 1px solid rgba(20, 184, 166, 0.3);
+            text-transform: uppercase;
+        }
+
+        footer {
+            margin-top: 100px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px 20px 60px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--base-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-link:hover {
+            color: var(--sync-bright);
+            gap: 15px;
+        }
+
+        @media (max-width: 850px) {
+            .comparison-block {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <div class="container">
+        <header>
+            <h1>NextGen Evolution</h1>
+            <p>Scaling from MVP foundations to the synchronized future of agency work.</p>
+        </header>
+
+        <main class="evolution-grid">
+
+            <!-- Identity & Access -->
+            <div class="comparison-block">
+                <div class="block-label">01. Identity & Access</div>
+                <div class="card base-card">
+                    <h3>Base MVP</h3>
+                    <ul class="feature-list">
+                        <li>Anonymous, open-access environment</li>
+                        <li>Single-user local isolation</li>
+                        <li>LocalStorage-only data reliance</li>
+                        <li>Fragmented session experience</li>
+                    </ul>
+                </div>
+                <div class="card sync-card">
+                    <span class="badge">Active Sync</span>
+                    <h3>NextGen Sync</h3>
+                    <ul class="feature-list">
+                        <li><span class="pop">Persistent User Identity</span> via secure login</li>
+                        <li><span class="pop">Role-Based Distinction</span> (Manager vs Tech)</li>
+                        <li>Unified <span class="pop">Cloud-URL Syncing</span> & LocalStorage</li>
+                        <li>Seamless cross-device session continuity</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Infrastructure -->
+            <div class="comparison-block">
+                <div class="block-label">02. Infrastructure</div>
+                <div class="card base-card">
+                    <h3>Base MVP</h3>
+                    <ul class="feature-list">
+                        <li>Static, flat JSON data architecture</li>
+                        <li>No physical project directory structure</li>
+                        <li>Abstracted asset management</li>
+                        <li>Manual deployment orchestration</li>
+                    </ul>
+                </div>
+                <div class="card sync-card">
+                    <span class="badge">Active Sync</span>
+                    <h3>NextGen Sync</h3>
+                    <ul class="feature-list">
+                        <li><span class="pop">Automated Workspace Creator</span> (/projects/ID/)</li>
+                        <li>Dedicated <span class="pop">info.json</span> project manifests</li>
+                        <li>Physical <span class="pop">Asset Directory</span> organization</li>
+                        <li>High-portability, scalable filesystem backend</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI Models & Tools -->
+            <div class="comparison-block">
+                <div class="block-label">03. AI Models & Tools</div>
+                <div class="card base-card">
+                    <h3>Base MVP</h3>
+                    <ul class="feature-list">
+                        <li>Standard DALL-E 3 (1:1 square only)</li>
+                        <li>Generic Chat Completion endpoints</li>
+                        <li>Linear, single-agent code generation</li>
+                        <li>Broad, non-specialized AI output</li>
+                    </ul>
+                </div>
+                <div class="card sync-card">
+                    <span class="badge">Active Sync</span>
+                    <h3>NextGen Sync</h3>
+                    <ul class="feature-list">
+                        <li><span class="pop">Specialized GPT-Image Models</span> with presets</li>
+                        <li>Advanced <span class="pop">Orientation Control</span> (16:9 / 9:16)</li>
+                        <li>4-Stage <span class="pop">WebForge Multi-Agent Pipeline</span></li>
+                        <li>Optimized "Ultra/Cheap" cost-efficiency toggles</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Accountability -->
+            <div class="comparison-block">
+                <div class="block-label">04. Accountability</div>
+                <div class="card base-card">
+                    <h3>Base MVP</h3>
+                    <ul class="feature-list">
+                        <li>Zero activity logging or history</li>
+                        <li>No attribution for project changes</li>
+                        <li>Untraceable system modifications</li>
+                        <li>Difficult-to-diagnose user errors</li>
+                    </ul>
+                </div>
+                <div class="card sync-card">
+                    <span class="badge">Active Sync</span>
+                    <h3>NextGen Sync</h3>
+                    <ul class="feature-list">
+                        <li>Real-time <span class="pop">System Audit Log</span></li>
+                        <li>Granular <span class="pop">User Attribution</span> for all events</li>
+                        <li>Timestamped <span class="pop">Event Tracking</span> (JSON-backed)</li>
+                        <li>Comprehensive history of project life-cycles</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- UI & UX -->
+            <div class="comparison-block">
+                <div class="block-label">05. UI & UX</div>
+                <div class="card base-card">
+                    <h3>Base MVP</h3>
+                    <ul class="feature-list">
+                        <li>Minimalist, static dashboard interface</li>
+                        <li>Manual browser cache clearing requirements</li>
+                        <li>Hard-coded application behaviors</li>
+                        <li>Standard, non-contextual labeling</li>
+                    </ul>
+                </div>
+                <div class="card sync-card">
+                    <span class="badge">Active Sync</span>
+                    <h3>NextGen Sync</h3>
+                    <ul class="feature-list">
+                        <li><span class="pop">Mission Control Dashboard</span> aesthetic</li>
+                        <li>Dynamic <span class="pop">App Mode Labels</span> (SYNC/CONTROL)</li>
+                        <li>Automatic <span class="pop">PHP-Based Cache Busting</span></li>
+                        <li>High-response, dark-mode optimized UX design</li>
+                    </ul>
+                </div>
+            </div>
+
+        </main>
+
+        <footer>
+            <a href="index.php" class="back-link">
+                <span>← Return to Mission Control</span>
+            </a>
+            <p style="margin-top: 30px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.2); font-family: 'JetBrains Mono', monospace;">
+                &copy; 2024 Vivacity Design. All Rights Reserved.
+            </p>
+        </footer>
+    </div>
+
+</body>
+</html>
