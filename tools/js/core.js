@@ -46,6 +46,39 @@ const Core = {
         return await response.json();
     },
 
+    rebuildImage: async (prompt, options = {}) => {
+        const apiKey = Core.getApiKey();
+        if (!apiKey) {
+            throw new Error('Missing API Key. Please set it in the dashboard.');
+        }
+
+        const username = localStorage.getItem('sync_username') || 'Anonymous';
+
+        const response = await fetch('api/image.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_key: apiKey,
+                prompt: prompt,
+                username: username,
+                model: options.model || 'gpt-image-1',
+                size: options.size || '1024x1024',
+                quality: options.quality || 'standard'
+            })
+        });
+
+        if (!response.ok) {
+            let errorMsg = 'Image Generation Error';
+            try {
+                const error = await response.json();
+                errorMsg = error.error?.message || error.error || 'Image Generation Error';
+            } catch(e) {}
+            throw new Error(errorMsg);
+        }
+
+        return await response.json();
+    },
+
     // UTILITIES
     cleanResponse: (text) => {
         if (!text) return "";
