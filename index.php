@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGen Web Agency Framework - Login</title>
-    <?php $version = time(); ?>
+    <?php 
+    $version = time(); 
+    $setup_file = 'management/setup.json';
+    $app_mode = 'SYNC';
+    if (file_exists($setup_file)) {
+        $setup_data = json_decode(file_get_contents($setup_file), true);
+        if (isset($setup_data['mode'])) {
+            $app_mode = strtoupper($setup_data['mode']);
+        }
+    }
+    $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
+    ?>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -177,7 +188,7 @@
 <body>
 
     <div class="hero-section">
-        <h1>NextGen Web Agency<br><small>Framework</small></h1>
+        <h1>NextGen Web Agency<br><small>Framework</small><span class="mode-label <?php echo $mode_class; ?>"><?php echo $app_mode; ?></span></h1>
         <p>Empower your workflow with next-generation generative artificial intelligence.</p>
         <div class="middle-container">        
         <div class="login-card">
