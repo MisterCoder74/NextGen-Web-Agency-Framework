@@ -5,6 +5,30 @@ $jsonFile = __DIR__ . DIRECTORY_SEPARATOR . 'microapps.json';
 $appsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'microapps';
 
 $action = $_GET['action'] ?? '';
+$username = $_GET['username'] ?? $_GET['u'] ?? '';
+
+function getUserRole($username) {
+    $usersFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'users.json';
+    if (!file_exists($usersFile)) return 'technician';
+    
+    $users = json_decode(file_get_contents($usersFile), true);
+    if (!is_array($users)) return 'technician';
+    
+    foreach ($users as $user) {
+        if ($user['username'] === $username) {
+            return $user['role'] ?? 'technician';
+        }
+    }
+    return 'technician';
+}
+
+function getSetupConfig() {
+    $setupFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'management' . DIRECTORY_SEPARATOR . 'setup.json';
+    if (file_exists($setupFile)) {
+        return json_decode(file_get_contents($setupFile), true);
+    }
+    return [];
+}
 
 switch ($action) {
     case 'list':
@@ -12,7 +36,31 @@ switch ($action) {
             echo json_encode([]);
             exit;
         }
-        echo file_get_contents($jsonFile);
+        $apps = json_decode(file_get_contents($jsonFile), true) ?: [];
+        
+        $config = getSetupConfig();
+        $mode = strtolower($config['mode'] ?? 'sync');
+        $role = getUserRole($username);
+
+        if ($mode === 'control' && $role === 'technician') {
+            $projectsFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'management' . DIRECTORY_SEPARATOR . 'projects.json';
+            $assignedClientIds = [];
+            if (file_exists($projectsFile)) {
+                $projects = json_decode(file_get_contents($projectsFile), true) ?: [];
+                foreach ($projects as $p) {
+                    if (($p['assigned_to'] ?? '') === $username) {
+                        $assignedClientIds[] = $p['cliente_id'];
+                    }
+                }
+            }
+            
+            $apps = array_filter($apps, function($app) use ($assignedClientIds) {
+                return in_array($app['client_id'] ?? '', $assignedClientIds);
+            });
+            $apps = array_values($apps);
+        }
+        
+        echo json_encode($apps);
         break;
 
     case 'rename':

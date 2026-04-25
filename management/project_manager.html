@@ -213,6 +213,13 @@
                                 <option value="urgent">Urgent</option>
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <label for="assigned_to">Assigned To (Technician)</label>
+                            <select id="assigned_to" name="assigned_to">
+                                <option value="">Not Assigned</option>
+                            </select>
+                        </div>
                         
                         <div class="form-group full-width">
                             <label for="descrizione">Description</label>
@@ -245,6 +252,7 @@
                             <th>Type</th>
                             <th>Status</th>
                             <th>Priority</th>
+                            <th>Assigned To</th>
                             <th>Budget</th>
                             <th>Dates</th>
                             <th>Workspace</th>
@@ -264,12 +272,14 @@
             constructor() {
                 this.editingId = null;
                 this.clients = [];
+                this.technicians = [];
                 this.init();
             }
             
             async init() {
                 this.bindEvents();
                 await this.loadClients();
+                await this.loadTechnicians();
                 await this.loadProjects();
                 this.setDefaultDates();
             }
@@ -292,6 +302,35 @@
                 const nextMonth = new Date();
                 nextMonth.setMonth(nextMonth.getMonth() + 1);
                 document.getElementById('data_fine').value = nextMonth.toISOString().split('T')[0];
+            }
+
+            async loadTechnicians() {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                try {
+                    const response = await fetch('project_handler.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'list_technicians', username: username })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        this.technicians = result.data;
+                        this.populateTechnicianSelect();
+                    }
+                } catch (error) {
+                    console.error('Error loading technicians:', error);
+                }
+            }
+
+            populateTechnicianSelect() {
+                const select = document.getElementById('assigned_to');
+                select.innerHTML = '<option value="">Not Assigned</option>';
+                this.technicians.forEach(tech => {
+                    const option = document.createElement('option');
+                    option.value = tech.username;
+                    option.textContent = tech.username;
+                    select.appendChild(option);
+                });
             }
             
             loadClients() {
@@ -357,6 +396,7 @@
                     data_fine: document.getElementById('data_fine').value,
                     budget: parseFloat(document.getElementById('budget').value) || 0,
                     priorita: document.getElementById('priorita').value,
+                    assigned_to: document.getElementById('assigned_to').value,
                     descrizione: document.getElementById('descrizione').value.trim()
                 };
             }
@@ -525,7 +565,7 @@
                 tbody.innerHTML = '';
                 
                 if (projects.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: rgba(255,255,255,0.3); padding: 40px;">No projects found in database</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: rgba(255,255,255,0.3); padding: 40px;">No projects found in database</td></tr>';
                 } else {
                     projects.forEach(project => {
                         const client = this.clients.find(c => c.id === project.cliente_id);
@@ -541,6 +581,7 @@
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${this.escapeHtml(project.tipologia)}</span></td>
                             <td><span class="status-badge status-${project.stato}">${this.capitalizeFirst(project.stato)}</span></td>
                             <td><span style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${this.capitalizeFirst(project.priorita)}</span></td>
+                            <td><span style="font-size: 0.8rem; color: var(--cyan);">${project.assigned_to ? this.escapeHtml(project.assigned_to) : '<em style="opacity:0.5;">Unassigned</em>'}</span></td>
                             <td><strong style="color: var(--cyan);">${project.budget > 0 ? '€' + project.budget.toLocaleString('en-US', {minimumFractionDigits: 2}) : '-'}</strong></td>
                             <td>
                                 <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4); font-family: var(--font-mono);">
@@ -554,14 +595,14 @@
                                 </a>
                             </td>
                             <td class="actions-cell">
-
+                                <button class="btn btn-small btn-edit-tool" onclick="projectManager.editProject('${project.id}')">
                                     Edit
                                 </button>
                                 <button class="btn btn-small btn-delete-tool" onclick="projectManager.deleteProject('${project.id}')">
                                     Delete
                                 </button>
                             </td>
-                        `;
+                            `;
                         tbody.appendChild(row);
                     });
                 }
@@ -612,6 +653,7 @@
                 document.getElementById('data_fine').value = project.data_fine || '';
                 document.getElementById('budget').value = project.budget || '';
                 document.getElementById('priorita').value = project.priorita || 'medium';
+                document.getElementById('assigned_to').value = project.assigned_to || '';
                 document.getElementById('descrizione').value = project.descrizione || '';
             }
             
@@ -642,6 +684,7 @@
                 this.setDefaultDates();
                 document.getElementById('stato').value = 'active';
                 document.getElementById('priorita').value = 'medium';
+                document.getElementById('assigned_to').value = '';
             }
             
             showLoading(show) {

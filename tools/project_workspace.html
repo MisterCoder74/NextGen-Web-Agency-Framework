@@ -121,6 +121,11 @@
                     <div id="brief-content">
                         <p style="color: rgba(255,255,255,0.4);">Loading project details...</p>
                     </div>
+                    <div id="client-info-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: none;">
+                        <div class="section-title">👤 Client Info</div>
+                        <div id="client-details"></div>
+                    </div>
+                    <button id="view-client-btn" class="btn btn-secondary" style="width: 100%; margin-top: 20px; display: none;">View Client Info</button>
                 </aside>
 
                 <!-- Right Column: Assets -->
@@ -185,22 +190,71 @@
         });
 
         async function loadProjectInfo() {
+            const username = localStorage.getItem('sync_username') || 'Anonymous';
             try {
                 const response = await fetch('../management/project_handler.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get', id: projectId })
+                    body: JSON.stringify({ action: 'get', id: projectId, username: username })
                 });
                 const result = await response.json();
                 if (result.success) {
                     renderBrief(result.data);
                     document.getElementById('project-title').innerHTML = `${result.data.nome_progetto} <em>Workspace</em>`;
+                    setupClientView(result.data.cliente_id);
                 } else {
                     document.getElementById('brief-content').innerHTML = `<p style="color:#ff6b6b;">${result.message}</p>`;
                 }
             } catch (e) {
                 console.error(e);
             }
+        }
+
+        function setupClientView(clientId) {
+            const viewBtn = document.getElementById('view-client-btn');
+            viewBtn.style.display = 'block';
+            viewBtn.onclick = async () => {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                try {
+                    const response = await fetch('../management/client_handler.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get', id: clientId, username: username })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        renderClientDetails(result.data);
+                        document.getElementById('client-info-section').style.display = 'block';
+                        viewBtn.style.display = 'none';
+                    } else {
+                        alert('Error loading client: ' + result.message);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+        }
+
+        function renderClientDetails(c) {
+            const container = document.getElementById('client-details');
+            container.innerHTML = `
+                <div class="brief-item">
+                    <div class="brief-label">Name</div>
+                    <div class="brief-value">${c.nominativo}</div>
+                </div>
+                <div class="brief-item">
+                    <div class="brief-label">Email</div>
+                    <div class="brief-value">${c.email}</div>
+                </div>
+                <div class="brief-item">
+                    <div class="brief-label">Address</div>
+                    <div class="brief-value">${c.indirizzo || 'N/A'}</div>
+                </div>
+                <div class="brief-item">
+                    <div class="brief-label">Notes</div>
+                    <div class="brief-value">${c.note || 'No notes.'}</div>
+                </div>
+            `;
         }
 
         function renderBrief(p) {
