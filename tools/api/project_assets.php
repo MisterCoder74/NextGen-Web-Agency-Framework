@@ -40,6 +40,8 @@ class ProjectAssets {
                 return $this->uploadFile($projectDir);
             case 'delete':
                 return $this->deleteFile($projectDir, $_GET['filename'] ?? $_POST['filename'] ?? '');
+            case 'download':
+                return $this->downloadFile($projectDir, $_GET['filename'] ?? $_POST['filename'] ?? '');
             default:
                 return $this->error('Invalid action');
         }
@@ -81,19 +83,69 @@ class ProjectAssets {
             return $this->error('No file uploaded');
         }
 
-        $file = $_FILES['asset'];
-        $filename = basename($file['name']);
-        $targetPath = $dir . $filename;
+        $files = $_FILES['asset'];
+        $uploadedCount = 0;
+        $errors = [];
 
-        // Prevent overwriting info.json
-        if ($filename === 'info.json') {
-            return $this->error('Cannot overwrite info.json');
+        // Check if multiple files
+        if (!is_array($files['name'])) {
+            $files = [
+                'name' => [$files['name']],
+                'type' => [$files['type']],
+                'tmp_name' => [$files['tmp_name']],
+                'error' => [$files['error']],
+                'size' => [$files['size']]
+            ];
         }
 
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            return $this->success('File uploaded successfully');
+        for ($i = 0; $i < count($files['name']); $i++) {
+            if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                $filename = basename($files['name'][$i]);
+                if ($filename === 'info.json') {
+                    $errors[] = "Cannot overwrite info.json";
+                    continue;
+                }
+                $targetPath = $dir . $filename;
+                if (move_uploaded_file($files['tmp_name'][$i], $targetPath)) {
+                    $uploadedCount++;
+                } else {
+                    $errors[] = "Failed to move $filename";
+                }
+            } else if ($files['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                $errors[] = "Error uploading {$files['name'][$i]} (Code: {$files['error'][$i]})";
+            }
+        }
+
+        if ($uploadedCount > 0) {
+            return $this->success("$uploadedCount file(s) uploaded successfully", ['errors' => $errors]);
         } else {
-            return $this->error('Failed to move uploaded file');
+            return $this->error('Upload failed: ' . implode(', ', $errors));
+        }
+    }
+
+    private function downloadFile($dir, $filename) {
+        if (empty($filename)) {
+            return $this->error('Filename required');
+        }
+
+        $filename = basename($filename);
+        $path = $dir . $filename;
+
+        if (file_exists($path) && !is_dir($path)) {
+            // Clear output buffer to avoid any extra characters
+            if (ob_get_level()) ob_end_clean();
+            
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($path));
+            readfile($path);
+            exit;
+        } else {
+            return $this->error('File not found');
         }
     }
 

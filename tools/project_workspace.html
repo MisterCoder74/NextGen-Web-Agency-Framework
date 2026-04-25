@@ -128,8 +128,8 @@
                     <div class="asset-header">
                         <div class="section-title" style="margin: 0;">📦 Asset Manager</div>
                         <div class="btn-upload-wrapper">
-                            <button class="btn btn-primary">Upload Asset</button>
-                            <input type="file" id="file-upload" name="asset">
+                            <button class="btn btn-primary">Upload Asset(s)</button>
+                            <input type="file" id="file-upload" name="asset[]" multiple>
                         </div>
                     </div>
                     <table class="asset-table">
@@ -244,16 +244,24 @@
                 return;
             }
 
-            list.innerHTML = files.map(f => `
-                <tr>
-                    <td><span class="file-icon">📄</span> <strong>${f.name}</strong></td>
-                    <td style="color:rgba(255,255,255,0.4);">${formatBytes(f.size)}</td>
-                    <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${f.date}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-danger btn-small" onclick="deleteAsset('${f.name}')">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+            list.innerHTML = files.map(f => {
+                const fileUrl = `../projects/${projectId}/${f.name}`;
+                const downloadUrl = `api/project_assets.php?action=download&id=${projectId}&filename=${encodeURIComponent(f.name)}`;
+                return `
+                    <tr>
+                        <td><span class="file-icon">📄</span> <strong>${f.name}</strong></td>
+                        <td style="color:rgba(255,255,255,0.4);">${formatBytes(f.size)}</td>
+                        <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${f.date}</td>
+                        <td class="actions-cell">
+                            <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                                <a href="${fileUrl}" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;">View</a>
+                                <a href="${downloadUrl}" class="btn btn-primary btn-small" style="text-decoration:none;">Download</a>
+                                <button class="btn btn-danger btn-small" onclick="deleteAsset('${f.name}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         async function deleteAsset(filename) {
@@ -276,13 +284,16 @@
         }
 
         document.getElementById('file-upload').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const files = e.target.files;
+            if (files.length === 0) return;
 
             const formData = new FormData();
             formData.append('action', 'upload');
             formData.append('id', projectId);
-            formData.append('asset', file);
+            
+            for (let i = 0; i < files.length; i++) {
+                formData.append('asset[]', files[i]);
+            }
 
             try {
                 const response = await fetch('api/project_assets.php', {
