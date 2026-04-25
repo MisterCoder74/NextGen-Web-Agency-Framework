@@ -247,6 +247,7 @@
                             <th>Priority</th>
                             <th>Budget</th>
                             <th>Dates</th>
+                            <th>Workspace</th>
                             <th style="text-align: right;">Actions</th>
                         </tr>
                     </thead>
@@ -547,8 +548,13 @@
                                     ${project.data_fine ? 'E: ' + this.formatDate(project.data_fine) : ''}
                                 </div>
                             </td>
+                            <td>
+                                <a href="../tools/project_workspace.html?id=${project.id}" class="btn btn-small btn-edit-tool" style="display: inline-flex; align-items: center; text-decoration: none; gap: 5px;">
+                                    <span>📂</span> Open
+                                </a>
+                            </td>
                             <td class="actions-cell">
-                                <button class="btn btn-small btn-edit-tool" onclick="projectManager.editProject('${project.id}')">
+
                                     Edit
                                 </button>
                                 <button class="btn btn-small btn-delete-tool" onclick="projectManager.deleteProject('${project.id}')">

@@ -11,11 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function fetchStats() {
+    const t = Date.now();
     try {
         const [clientsRes, projectsRes, microappsRes] = await Promise.all([
-            fetch('clients.json').then(r => r.json()).catch(() => []),
-            fetch('projects.json').then(r => r.json()).catch(() => []),
-            fetch('../tools/api/microapps.json').then(r => r.json()).catch(() => [])
+            fetch(`clients.json?t=${t}`).then(r => r.json()).catch(() => []),
+            fetch(`projects.json?t=${t}`).then(r => r.json()).catch(() => []),
+            fetch(`../tools/api/microapps.json?t=${t}`).then(r => r.json()).catch(() => [])
         ]);
 
         displayRecentClients(clientsRes);
@@ -35,7 +36,13 @@ function displayRecentClients(clients) {
     }
 
     // Sort by created_at descending
-    const sortedClients = [...clients].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const sortedClients = [...clients].sort((a, b) => {
+        let dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        let dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (isNaN(dateA)) dateA = 0;
+        if (isNaN(dateB)) dateB = 0;
+        return dateB - dateA;
+    });
     const latest3 = sortedClients.slice(0, 3);
 
     container.innerHTML = latest3.map(client => `
@@ -74,7 +81,13 @@ function displayRecentProjects(projects, microapps) {
     }
 
     // Sort by date descending
-    const sorted = combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sorted = combined.sort((a, b) => {
+        let dateA = a.date ? new Date(a.date).getTime() : 0;
+        let dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (isNaN(dateA)) dateA = 0;
+        if (isNaN(dateB)) dateB = 0;
+        return dateB - dateA;
+    });
     const latest5 = sorted.slice(0, 5);
 
     container.innerHTML = latest5.map(item => `

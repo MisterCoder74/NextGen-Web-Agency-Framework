@@ -56,7 +56,13 @@ $quote_to_save = [
 $quotes[] = $quote_to_save;
 
 if (file_put_contents($file, json_encode($quotes, JSON_PRETTY_PRINT))) {
-    logEvent("Quote Saved for: " . ($input['client']['nominativo'] ?? 'Unknown'), $username);
+    $clientInfo = 'Unknown Client';
+    if (isset($input['client']) && is_array($input['client'])) {
+        $clientName = $input['client']['nominativo'] ?? 'Unknown Name';
+        $clientId = $input['client']['id'] ?? 'Manual';
+        $clientInfo = "$clientName [ID: $clientId]";
+    }
+    logEvent("Quote Saved for: " . $clientInfo, $username);
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'error' => 'Unable to save']);

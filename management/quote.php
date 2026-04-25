@@ -196,14 +196,18 @@ $job_prices = [
                         </div>
 
                         <div class="form-group">
-                            <label for="client_id">Client (Optional)</label>
+                            <label for="client_id">Select Client</label>
                             <select name="client_id" id="client_id">
                                 <option value="">--Select a client--</option>
                                 <?php foreach ($clients as $client): ?>
                                     <option value="<?= htmlspecialchars($client['id']) ?>"><?= htmlspecialchars($client['nominativo']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <p style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 5px;">Select a client to include their details in the quote</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="manual_client">Or Manual Client Name</label>
+                            <input type="text" name="manual_client" id="manual_client" placeholder="Enter client name if not in list" style="width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; padding: 10px 13px; font-size: 0.86rem; outline: none; transition: border-color 0.2s; font-family: inherit;">
                         </div>
                     </div>
 
@@ -393,7 +397,12 @@ $job_prices = [
             const quoteDetails = document.getElementById('quoteDetails');
             
             const clientId = formData.get('client_id');
-            const selectedClient = clients.find(c => c.id === clientId) || null;
+            const manualClient = formData.get('manual_client');
+            let selectedClient = clients.find(c => c.id === clientId) || null;
+            
+            if (!selectedClient && manualClient) {
+                selectedClient = { nominativo: manualClient };
+            }
             
             const jobTypeDisplay = jobtypes.join(', ');
             let detailsHtml = `<p style="font-size: 0.9rem; margin-bottom: 15px;">Job type(s): <strong style="color: #fff; text-transform: capitalize;">${jobTypeDisplay}</strong></p>`;
@@ -538,7 +547,7 @@ $job_prices = [
             doc.text('TO:', 120, yRight);
             doc.setFont('helvetica', 'normal');
             yRight += 6;
-            if (quote.client) {
+            if (quote.client && quote.client.nominativo) {
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'bold');
                 doc.text(quote.client.nominativo, 120, yRight);
@@ -644,7 +653,8 @@ $job_prices = [
             doc.line(130, 265, 190, 265);
             doc.text('Authorized Signature', 145, 270);
             
-            doc.save(`Quote_${quote.company.name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+            const clientName = (quote.client && quote.client.nominativo) ? quote.client.nominativo : 'Client';
+            doc.save(`Quote_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
         }
 
         function saveQuote() {
