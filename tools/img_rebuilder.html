@@ -156,8 +156,10 @@
                 <div class="field-group">
                     <label>Quality</label>
                     <select id="quality-select" class="btn-ghost">
-                        <option value="standard" selected>Standard</option>
-                        <option value="hd">HD</option>
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="auto">Auto</option>
                     </select>
                 </div>
                 <div class="field-group">
@@ -189,15 +191,15 @@
         const val = presetSelect.value;
         if (val === 'ultra') {
             modelSelect.value = 'gpt-image-1.5';
-            qualitySelect.value = 'hd';
+            qualitySelect.value = 'high';
             orientationSelect.value = '1024x1024';
         } else if (val === 'optimized') {
             modelSelect.value = 'gpt-image-1';
-            qualitySelect.value = 'standard';
+            qualitySelect.value = 'medium';
             orientationSelect.value = '1024x1024';
         } else if (val === 'cheap') {
             modelSelect.value = 'gpt-image-1-mini';
-            qualitySelect.value = 'standard';
+            qualitySelect.value = 'low';
             orientationSelect.value = '1024x1024';
         }
     };
