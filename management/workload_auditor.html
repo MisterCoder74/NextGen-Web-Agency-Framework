@@ -456,14 +456,18 @@ if ($app_mode !== 'CONTROL') {
             let dataSummary = "Agency Workload Data:\n";
             Object.keys(stressData).forEach(tech => {
                 const data = stressData[tech];
+                // Only include Unassigned if there are projects
+                if (tech === 'Unassigned' && data.projects.length === 0) return;
+                
                 dataSummary += `- ${tech}: Stress Index ${data.score} (${data.projects.map(p => `${p.nome_progetto} [${p.priorita}]`).join(', ')})\n`;
             });
 
+            const hasUnassigned = stressData['Unassigned'] && stressData['Unassigned'].projects.length > 0;
             const prompt = `As an Agency Operations AI, analyze this workload data:
 ${dataSummary}
 
 Identify overloaded technicians (Stress Index > 8) and suggest how to redistribute projects to those with lower indices. 
-Consider "Unassigned" projects as high priority to be assigned.
+'Unassigned' projects are those without an 'assigned_to' technician.${hasUnassigned ? '\nConsider "Unassigned" projects as high priority to be assigned.' : ''}
 Provide specific project move recommendations in a clear, professional tone. 
 Use bullet points and bold text for technicians and project names.`;
 
@@ -475,7 +479,7 @@ Use bullet points and bold text for technicians and project names.`;
                     body: JSON.stringify({
                         api_key: apiKey,
                         username: username,
-                        model: 'gpt-4o-mini',
+                        model: 'gpt-4.1-mini',
                         messages: [
                             { role: 'system', content: 'You are an expert Agency Operations Consultant.' },
                             { role: 'user', content: prompt }
