@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = $postData['username'] ?? $postData['u'] ?? '';
     }
 }
+if (!$username) $username = 'Anonymous';
 
 function getUserRole($username) {
     $usersFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'users.json';
