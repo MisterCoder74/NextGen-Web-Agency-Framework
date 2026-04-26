@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGen | Official Strategic Presentation</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-dark: #07090f;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --cyan-accent: #14b8a6;
+            --violet-accent: #a78bfa;
+            --amber-accent: #f59e0b;
+            --text-main: #e2e8f0;
+            --text-muted: rgba(226, 232, 240, 0.5);
+            --border-glow: rgba(20, 184, 166, 0.2);
+            --font-display: 'Syne', sans-serif;
+            --font-serif: 'Instrument Serif', serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(20, 184, 166, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(167, 139, 250, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: var(--font-display);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        /* --- HEADER (Mirroring index.php) --- */
+        .hero-section {
+            text-align: center;
+            padding: 100px 16px 80px;
+        }
+
+        .hero-section h1 {
+            font-size: clamp(2.5rem, 8vw, 4.2rem);
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--cyan-accent), var(--violet-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero-section h1 small {
+            font-size: 0.5em;
+            display: block;
+            margin-top: -5px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            -webkit-text-fill-color: var(--text-muted);
+        }
+
+        .hero-section p.subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-family: var(--font-serif);
+            font-style: italic;
+        }
+
+        .mode-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            vertical-align: middle;
+            margin-top: 20px;
+            display: inline-block;
+            border: 1px solid rgba(20, 184, 166, 0.4);
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--cyan-accent);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.2);
+            -webkit-text-fill-color: var(--cyan-accent);
+        }
+
+        /* --- SECTION GENESI --- */
+        .section {
+            padding: 80px 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .kicker {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--amber-accent);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.2;
+        }
+
+        .genesi-content {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .genesi-text {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+        }
+
+        .genesi-text strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .genesi-visual {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .genesi-visual span {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* --- SYNC VS CONTROL --- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .comp-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .comp-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .comp-card.sync { border-top: 4px solid var(--cyan-accent); }
+        .comp-card.control { border-top: 4px solid var(--violet-accent); }
+
+        .comp-card h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .comp-card p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .feature-list li::before {
+            content: "→";
+            color: var(--amber-accent);
+        }
+
+        /* --- CHAT DIALOGUE --- */
+        .dialogue-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            padding: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 40px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .chat-bubble.ai {
+            background: rgba(255, 255, 255, 0.03);
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-bubble.nextgen {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(167, 139, 250, 0.1));
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+            border: 1px solid var(--border-glow);
+            text-align: right;
+        }
+
+        .bubble-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .chat-bubble p {
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .highlight-text {
+            color: var(--cyan-accent);
+            font-weight: 700;
+        }
+
+        /* --- VANTAGGIO COMPETITIVO --- */
+        .advantage-box {
+            background: linear-gradient(to right, #1e1b4b, #07090f);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 40px;
+            padding: 80px;
+            text-align: center;
+        }
+
+        .advantage-box h2 {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 3.5rem;
+        }
+
+        .advantage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .adv-item h4 {
+            color: var(--cyan-accent);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .adv-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- CONTACT --- */
+        .contact-section {
+            padding: 120px 0 100px;
+            text-align: center;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 20px 50px;
+            background: var(--cyan-accent);
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 100px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            margin-bottom: 60px;
+            box-shadow: 0 10px 40px rgba(20, 184, 166, 0.4);
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(20, 184, 166, 0.6);
+        }
+
+        .contact-details {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .contact-card h5 {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--amber-accent);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .contact-card a, .contact-card p {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-card a:hover {
+            color: var(--cyan-accent);
+        }
+
+        footer {
+            padding: 60px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 900px) {
+            .genesi-content, .comparison-grid, .advantage-grid {
+                grid-template-columns: 1fr;
+            }
+            .chat-bubble { max-width: 100%; }
+            .advantage-box { padding: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header class="hero-section">
+            <h1>NextGen Web Agency<br><small>Framework</small></h1>
+            <p class="subtitle">Empower your workflow with next-generation generative artificial intelligence.</p>
+            <div class="mode-label">STRATEGIC PRESENTATION | VERSION 2.0</div>
+        </header>
+
+        <!-- LA GENESI -->
+        <section class="section" id="genesi">
+            <span class="kicker">01. La Genesi</span>
+            <div class="genesi-content">
+                <div class="genesi-text">
+                    <h2>Dalle agenzie, per le agenzie.</h2>
+                    <p>
+                        NextGen Web Agency Framework non è nato in un laboratorio di ricerca, ma nel caos creativo di <strong>Vivacity Design</strong>. 
+                        È la risposta pragmatica alla complessità crescente del mercato digitale moderno.
+                    </p>
+                    <br>
+                    <p>
+                        Costruito <strong>"by an agency, for agencies"</strong>, il framework è stato progettato per risolvere un paradosso fondamentale: 
+                        come mantenere l'artigianalità del design scalando contemporaneamente la produzione attraverso l'automazione intelligente. 
+                        Abbiamo trasformato anni di frizioni operative in un ecosistema fluido che elimina l'overhead tecnico.
+                    </p>
+                </div>
+                <div class="genesi-visual">
+                    <span>🏗️</span>
+                    <p style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan-accent);">ORIGIN: VIVACITY LABS<br>STRESS TESTED IN REAL PROJECTS</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SYNC VS CONTROL -->
+        <section class="section" id="sync-vs-control">
+            <span class="kicker">02. Sync vs Control</span>
+            <h2>Due anime, un unico sistema.</h2>
+            <p style="color: var(--text-muted); max-width: 700px; margin-bottom: 40px;">
+                Il framework si adatta alla dimensione della tua sfida, offrendo due modalità operative distinte ma integrate.
+            </p>
+            
+            <div class="comparison-grid">
+                <!-- SYNC -->
+                <div class="comp-card sync">
+                    <h3>SYNC Mode</h3>
+                    <p>Libertà creativa e rapidità d'esecuzione per team agili e startup.</p>
+                    <ul class="feature-list">
+                        <li>Collaborazione Peer-to-Peer</li>
+                        <li>Accesso Globale al Workspace</li>
+                        <li>Prototipazione Ultra-Rapida</li>
+                        <li>Deployment Istantaneo</li>
+                    </ul>
+                </div>
+                <!-- CONTROL -->
+                <div class="comp-card control">
+                    <h3>CONTROL Mode</h3>
+                    <p>Governance enterprise e isolamento dei dati per agenzie strutturate.</p>
+                    <ul class="feature-list">
+                        <li>Gating Layer (Accesso Selettivo)</li>
+                        <li>Gerarchie Manager/Technician</li>
+                        <li>Workload Auditor & Analytics</li>
+                        <li>Multi-stage Validation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PERCHE NEXTGEN -->
+        <section class="section" id="agency-os">
+            <span class="kicker">03. Perché NextGen?</span>
+            <h2>L'Analisi "Agency OS"</h2>
+            
+            <div class="dialogue-container">
+                <!-- ChatGPT -->
+                <div class="chat-bubble ai">
+                    <span class="bubble-label">Conventional AI Assistant</span>
+                    <p>
+                        "Il mercato offre già tutto ciò che serve. Usa Trello per i task, Slack per parlare, VS Code per sviluppare e diverse schede browser per le AI. È lo standard dell'industria."
+                    </p>
+                </div>
+                
+                <!-- NextGen -->
+                <div class="chat-bubble nextgen">
+                    <span class="bubble-label">NextGen Visionary</span>
+                    <p>
+                        "Lo <span class="highlight-text">'Stack Frammentato'</span> è il killer silenzioso dei margini in agenzia. Ogni switch tra tool diversi causa un <span class="highlight-text">'Cognitive Leakage'</span> che drena tempo e creatività."
+                    </p>
+                    <br>
+                    <p>
+                        "NextGen non è un altro tool da aggiungere alla lista. È l'<strong>Integrated OS</strong> dove strategia, gestione e codice collassano in un unico flusso continuo. Non usiamo l'AI; operiamo <em>all'interno</em> dell'AI."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VANTAGGIO COMPETITIVO -->
+        <section class="section" id="advantage">
+            <span class="kicker">04. Vantaggio Competitivo</span>
+            <div class="advantage-box">
+                <h2>Il Potere dell'Integrazione.</h2>
+                <p style="color: var(--text-muted); margin-top: 20px; font-size: 1.2rem;">
+                    Mentre i tool specializzati rimangono fondamentali, NextGen elimina l'attrito tra loro.
+                </p>
+                
+                <div class="advantage-grid">
+                    <div class="adv-item">
+                        <h4>Synergy Engine</h4>
+                        <p>Collabora con VS Code, GitHub e AWS, ma gestisce l'intero overhead operativo al posto tuo.</p>
+                    </div>
+                    <div class="adv-item">
+                        <h4>90% Time Reduction</h4>
+                        <p>Dal brief alla micro-app in produzione in una frazione del tempo tradizionale.</p>
+                    </div>
+                    <div class="adv-item">
+                        <h4>Scalabilità Zero-Ops</h4>
+                        <p>Architettura database-less portabile che cresce con il tuo portfolio clienti.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="contact-section" id="contact">
+            <span class="kicker">Pronto per il Futuro?</span>
+            <h2>Richiedi una Demo Strategica.</h2>
+            <a href="mailto:info@vivacitydesign.net" class="cta-btn">Contatta Vivacity Design</a>
+            
+            <div class="contact-details">
+                <div class="contact-card">
+                    <h5>Website</h5>
+                    <a href="http://www.vivacitydesign.net" target="_blank">vivacitydesign.net</a>
+                </div>
+                <div class="contact-card">
+                    <h5>Email</h5>
+                    <a href="mailto:info@vivacitydesign.net">info@vivacitydesign.net</a>
+                </div>
+                <div class="contact-card">
+                    <h5>Phone</h5>
+                    <p>+39 328 08 75 032</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                &copy; 2024 <strong>Vivacity Design</strong>. All rights reserved.<br>
+                NextGen Web Agency Framework is an exclusive intellectual property of Vivacity Design.
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
