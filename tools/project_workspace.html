@@ -129,55 +129,57 @@
                     <button id="view-client-btn" class="btn btn-secondary" style="width: 100%; margin-top: 20px; display: none;">View Client Info</button>
                 </aside>
 
-                <!-- Right Column: Assets -->
-                <section class="asset-manager-card">
-                    <div class="asset-header">
-                        <div class="section-title" style="margin: 0;">📦 Asset Manager</div>
-                        <div class="btn-upload-wrapper">
-                            <button class="btn btn-primary">Upload Asset(s)</button>
-                            <input type="file" id="file-upload" name="asset[]" multiple>
+                <!-- Right Column: Assets & Micro-Apps -->
+                <div class="workspace-main-col">
+                    <section class="asset-manager-card">
+                        <div class="asset-header">
+                            <div class="section-title" style="margin: 0;">📦 Asset Manager</div>
+                            <div class="btn-upload-wrapper">
+                                <button class="btn btn-primary">Upload Asset(s)</button>
+                                <input type="file" id="file-upload" name="asset[]" multiple>
+                            </div>
                         </div>
-                    </div>
-                    <table class="asset-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Size</th>
-                                <th>Date</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="asset-list">
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
-                                    Loading assets...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+                        <table class="asset-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                    <th>Date</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="asset-list">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
+                                        Loading assets...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
 
-                <section class="asset-manager-card" style="margin-top: 20px;">
-                    <div class="asset-header">
-                        <div class="section-title" style="margin: 0;">🚀 Project Micro-Apps</div>
-                    </div>
-                    <table class="asset-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Deployment Date</th>
-                                <th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="microapps-list">
-                            <tr>
-                                <td colspan="3" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
-                                    No micro-apps linked to this project.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+                    <section class="asset-manager-card" style="margin-top: 20px;">
+                        <div class="asset-header">
+                            <div class="section-title" style="margin: 0;">🚀 Project Micro-Apps</div>
+                        </div>
+                        <table class="asset-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Deployment Date</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="microapps-list">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
+                                        No micro-apps linked to this project.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
             </div>
         </div>
     </div>
@@ -422,7 +424,8 @@
 
         async function loadMicroApps() {
             try {
-                const response = await fetch(`api/microapps.php?action=list&project_id=${projectId}`);
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`api/microapps.php?action=list&project_id=${projectId}&u=${encodeURIComponent(username)}`);
                 const apps = await response.json();
                 renderMicroApps(apps);
             } catch (e) {
@@ -453,6 +456,8 @@
         loadProjectInfo();
         loadAssets();
         loadMicroApps();
+        // Refresh micro-apps every 30 seconds
+        setInterval(loadMicroApps, 30000);
     </script>
 </body>
 </html>
