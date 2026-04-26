@@ -156,6 +156,28 @@
                         </tbody>
                     </table>
                 </section>
+
+                <section class="asset-manager-card" style="margin-top: 20px;">
+                    <div class="asset-header">
+                        <div class="section-title" style="margin: 0;">🚀 Project Micro-Apps</div>
+                    </div>
+                    <table class="asset-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Deployment Date</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="microapps-list">
+                            <tr>
+                                <td colspan="3" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.3);">
+                                    No micro-apps linked to this project.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
             </div>
         </div>
     </div>
@@ -204,7 +226,7 @@
                     document.getElementById('project-title').innerHTML = `${result.data.nome_progetto} <em>Workspace</em>`;
                     const buildBtn = document.getElementById('build-microapp-btn');
                     if (buildBtn) {
-                        buildBtn.href = `webforge.html?client_id=${result.data.cliente_id}`;
+                        buildBtn.href = `webforge.html?client_id=${result.data.cliente_id}&project_id=${projectId}`;
                     }
                     setupClientView(result.data.cliente_id);
                 } else {
@@ -398,8 +420,39 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
 
+        async function loadMicroApps() {
+            try {
+                const response = await fetch(`api/microapps.php?action=list&project_id=${projectId}`);
+                const apps = await response.json();
+                renderMicroApps(apps);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderMicroApps(apps) {
+            const list = document.getElementById('microapps-list');
+            if (!apps || apps.length === 0) {
+                list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:40px; color:rgba(255,255,255,0.3);">No micro-apps linked to this project.</td></tr>';
+                return;
+            }
+
+            list.innerHTML = apps.map(app => `
+                <tr>
+                    <td><strong>${app.name}</strong></td>
+                    <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${app.date}</td>
+                    <td class="actions-cell">
+                        <div style="display: flex; gap: 5px; justify-content: flex-end;">
+                            <a href="${app.url}" target="_blank" class="btn btn-secondary btn-small" style="text-decoration:none;">Open App</a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         loadProjectInfo();
         loadAssets();
+        loadMicroApps();
     </script>
 </body>
 </html>

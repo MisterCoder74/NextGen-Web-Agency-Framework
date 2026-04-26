@@ -60,6 +60,14 @@ switch ($action) {
         }
         $apps = json_decode(file_get_contents($jsonFile), true) ?: [];
         
+        $projectId = $_GET['project_id'] ?? '';
+        if ($projectId) {
+            $apps = array_filter($apps, function($app) use ($projectId) {
+                return ($app['project_id'] ?? '') === $projectId;
+            });
+            $apps = array_values($apps);
+        }
+
         $config = getSetupConfig();
         $mode = strtolower($config['mode'] ?? 'sync');
         $role = getUserRole($username);

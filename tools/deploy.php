@@ -105,6 +105,7 @@ $newApp = [
     'url' => $finalUrl,
     'date' => date('Y-m-d H:i:s'),
     'client_id' => $data['client_id'] ?? '',
+    'project_id' => $data['project_id'] ?? '',
     'created_by' => $username
 ];
 array_unshift($apps, $newApp);
