@@ -152,6 +152,10 @@
 
 <script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('client_id') || '';
+    const projectId = urlParams.get('project_id') || '';
+
     let currentFrontend = "";
     let currentBackend = "";
     let chatMemory = [];
@@ -299,7 +303,7 @@ NEVER use markdown in your responses.`;
         btn.disabled = true;
         statusArea.innerHTML = '<div class="preloader active">Deploying...</div>';
         
-        const result = await Core.deployProject(currentFrontend, currentBackend);
+        const result = await Core.deployProject(currentFrontend, currentBackend, clientId, projectId);
         if (result.success) {
             statusArea.innerHTML = `
                 <div class="success-message" style="margin-top: 10px;">

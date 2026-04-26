@@ -129,6 +129,10 @@ $clientsData = file_exists('../management/clients.json') ? file_get_contents('..
 
 <script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('client_id') || '';
+    const projectId = urlParams.get('project_id') || '';
+
     const origin = window.location.origin;
     const pathname = window.location.pathname;
     const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
@@ -250,7 +254,7 @@ ${JSON.stringify(clientsData)}`;
         btn.disabled = true;
         feedback.innerHTML = '<div class="preloader active">Deploying...</div>';
         
-        const result = await Core.deployProject(generatedHtml, generatedPhp);
+        const result = await Core.deployProject(generatedHtml, generatedPhp, clientId, projectId);
         if (result.success) {
             appendLog(`Deploy successful: ${result.url}`, 'sys');
             feedback.innerHTML = `
