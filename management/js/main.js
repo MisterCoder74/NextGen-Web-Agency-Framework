@@ -62,14 +62,16 @@ function displayRecentProjects(projects, microapps) {
         name: p.nome_progetto, 
         type: 'Project', 
         date: p.created_at || p.data_inizio,
-        status: p.stato 
+        status: p.stato,
+        url: `../tools/project_workspace.html?id=${p.id}`
     })) : [];
 
     const normalizedMicroapps = Array.isArray(microapps) ? microapps.map(m => ({ 
         name: m.name || 'Unnamed Microapp', 
         type: 'Microapp', 
         date: m.date,
-        status: 'completed'
+        status: 'completed',
+        url: m.url
     })) : [];
 
     // Combine
@@ -93,7 +95,7 @@ function displayRecentProjects(projects, microapps) {
     container.innerHTML = latest5.map(item => `
         <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <div style="font-weight: 600; color: #fff;">${item.name}</div>
+                <a href="${item.url}" target="_blank" style="font-weight: 600; color: #fff; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#00f2a0'" onmouseout="this.style.color='#fff'">${item.name}</a>
                 <div style="font-size: 0.7rem; opacity: 0.5;">${item.type} • ${new Date(item.date).toLocaleDateString()}</div>
             </div>
             <span style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); text-transform: uppercase;">${item.status}</span>
