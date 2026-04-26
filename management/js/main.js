@@ -66,13 +66,22 @@ function displayRecentProjects(projects, microapps) {
         url: `../tools/project_workspace.html?id=${p.id}`
     })) : [];
 
-    const normalizedMicroapps = Array.isArray(microapps) ? microapps.map(m => ({ 
-        name: m.name || 'Unnamed Microapp', 
-        type: 'Microapp', 
-        date: m.date,
-        status: 'completed',
-        url: m.url
-    })) : [];
+    const normalizedMicroapps = Array.isArray(microapps) ? microapps.map(m => {
+        let displayName = m.name || 'Unnamed Microapp';
+        if (m.project_id && Array.isArray(projects)) {
+            const linkedProject = projects.find(p => p.id === m.project_id);
+            if (linkedProject) {
+                displayName += ` (${linkedProject.nome_progetto})`;
+            }
+        }
+        return { 
+            name: displayName, 
+            type: 'Microapp', 
+            date: m.date,
+            status: 'completed',
+            url: m.url
+        };
+    }) : [];
 
     // Combine
     const combined = [...normalizedProjects, ...normalizedMicroapps];
