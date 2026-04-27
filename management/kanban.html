@@ -351,7 +351,8 @@
                 text: text,
                 priority: priority,
                 column: column,
-                timestamp: new Date().toLocaleString()
+                timestamp: new Date().toLocaleString(),
+                created_by: localStorage.getItem('sync_username') || 'Anonymous'
             };
 
             tasks.push(newTask);
