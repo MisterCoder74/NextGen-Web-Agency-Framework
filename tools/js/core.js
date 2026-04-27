@@ -12,6 +12,14 @@ const Core = {
         localStorage.setItem('openaikey', key);
     },
     
+    // GITHUB TOKEN MANAGEMENT
+    getGitHubToken: () => {
+        return localStorage.getItem('githubtoken') || '';
+    },
+    setGitHubToken: (token) => {
+        localStorage.setItem('githubtoken', token);
+    },
+    
     // API CALLS
     callAI: async (messages, model = 'gpt-4o-mini', options = {}) => {
         const apiKey = Core.getApiKey();

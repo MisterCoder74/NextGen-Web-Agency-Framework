@@ -132,6 +132,7 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
             <div class="api-key-input-group">
                 <input type="password" id="globalApiKey" placeholder="sk-...">
                 <button class="btn btn-primary" id="btnSaveKey">Save Key</button>
+                <button class="btn btn-secondary" onclick="openGitHubSettings()">🐙 GitHub Settings</button>
             </div>
             <div id="apiKeyStatus" style="margin-top: 10px; font-size: 0.75rem;"></div>
         </div>
@@ -192,6 +193,12 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 <div class="tool-icon">📝</div>
                 <h2>Markdown Converter</h2>
                 <p>Convert README.md to professional documentation or vice-versa.</p>
+            </a>
+
+            <a href="github_publisher.html" class="tool-card">
+                <div class="tool-icon">🐙</div>
+                <h2>GitHub Publisher</h2>
+                <p>Push your micro-apps directly to GitHub repositories with one click.</p>
             </a>
         </div>
 
@@ -259,6 +266,32 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
     </div>
 </div>
 
+<!-- GitHub Settings Modal -->
+<div id="ghSettingsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">🐙 GitHub <em>Settings</em></div>
+            <button class="modal-close" onclick="closeGitHubSettings()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            <div class="field-group" style="max-width: 100%;">
+                <label>Personal Access Token (Classic)</label>
+                <div class="input-row">
+                    <input type="password" id="ghTokenInput" placeholder="ghp_...">
+                </div>
+                <p class="field-hint" style="margin-top: 10px;">
+                    Need a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--cyan);">Generate one here</a>.<br>
+                    Ensure it has <strong>repo</strong> and <strong>workflow</strong> scopes.
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-secondary" onclick="closeGitHubSettings()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveGitHubSettings()">Save Token</button>
+        </div>
+    </div>
+</div>
+
 <script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
 <script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script src="../management/js/messaging.js?v=<?php echo $version; ?>"></script>
@@ -296,6 +329,26 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 status.style.color = '#ff6b6b';
             }
         });
+
+        // GitHub Settings logic
+        window.openGitHubSettings = () => {
+            const token = Core.getGitHubToken();
+            document.getElementById('ghTokenInput').value = token;
+            document.getElementById('ghSettingsModal').classList.add('open');
+        };
+
+        window.closeGitHubSettings = () => {
+            document.getElementById('ghSettingsModal').classList.remove('open');
+        };
+
+        window.saveGitHubSettings = () => {
+            const token = document.getElementById('ghTokenInput').value.trim();
+            Core.setGitHubToken(token);
+            closeGitHubSettings();
+            if (token) {
+                alert('GitHub token saved successfully!');
+            }
+        };
 
         // --- Active Projects Logic ---
         const projectsList = document.getElementById('projectsList');
