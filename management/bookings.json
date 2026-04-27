@@ -9,7 +9,7 @@
             "serviceType": "Capelli",
             "startTime": "10:00",
             "endTime": "10:30",
-            "priority": "urgente",
+            "priority": "urgent",
             "notes": ""
         },
         {
@@ -21,7 +21,7 @@
             "serviceType": "Capelli",
             "startTime": "11:00",
             "endTime": "11:30",
-            "priority": "normale",
+            "priority": "normal",
             "notes": ""
         },
         {
@@ -33,7 +33,7 @@
             "serviceType": "Capelli",
             "startTime": "13:00",
             "endTime": "13:30",
-            "priority": "urgente",
+            "priority": "urgent",
             "notes": ""
         },
         {
@@ -45,7 +45,7 @@
             "serviceType": "trggrtbrg",
             "startTime": "11:30",
             "endTime": "12:00",
-            "priority": "normale",
+            "priority": "normal",
             "notes": ""
         },
         {
@@ -57,7 +57,7 @@
             "serviceType": "Unghie",
             "startTime": "11:30",
             "endTime": "12:00",
-            "priority": "urgente",
+            "priority": "urgent",
             "notes": ""
         }
     ]

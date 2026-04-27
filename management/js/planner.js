@@ -5,9 +5,8 @@ function parseDateLocal(dateString) {
     return new Date(year, month - 1, day);
 }
 
-function formatDateItaly(dateObj) {
-    return new Intl.DateTimeFormat('it-IT', {
-        timeZone: 'Europe/Rome',
+function formatDateEnglish(dateObj) {
+    return new Intl.DateTimeFormat('en-US', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
@@ -21,7 +20,7 @@ function formatDateLocalForInput(date) {
     return `${y}-${m}-${d}`;
 }
 
-// Configurazione globale
+// Global Configuration
 let currentDate = new Date();
 let currentYear = currentDate.getFullYear();
 let currentMonth = currentDate.getMonth();
@@ -29,7 +28,7 @@ let bookings = [];
 let projects = [];
 let timeSlots = [];
 
-// Configurazione fasce orarie
+// Time Slot Configuration
 let config = {
     startHour: 8,
     startMinute: 0,
@@ -38,7 +37,7 @@ let config = {
     intervalMinutes: 30
 };
 
-// Inizializzazione
+// Initialization
 document.addEventListener('DOMContentLoaded', async function() {
     initializeEventListeners();
     await loadProjects();
@@ -48,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // Event Listeners
 function initializeEventListeners() {
-    // Navigazione mese
+    // Month Navigation
     document.getElementById('prevMonth').addEventListener('click', () => {
         currentMonth--;
         if (currentMonth < 0) {
@@ -74,7 +73,7 @@ function initializeEventListeners() {
         updateCalendar();
     });
 
-    // Applica impostazioni orario
+    // Apply Time Settings
     document.getElementById('applyTimeSettings').addEventListener('click', applyTimeSettings);
 
     // Modal
@@ -86,7 +85,7 @@ function initializeEventListeners() {
         btn.addEventListener('click', closeModal);
     });
 
-    // Form prenotazione
+    // Booking Form
     document.getElementById('bookingForm').addEventListener('submit', saveBooking);
     document.getElementById('deleteBtn').addEventListener('click', deleteBooking);
     document.getElementById('editBookingBtn').addEventListener('click', editFromDetails);
@@ -105,7 +104,7 @@ function initializeEventListeners() {
         }
     });
 
-    // Chiudi modal cliccando fuori
+    // Close modal on outside click
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
             closeModal();
@@ -113,14 +112,14 @@ function initializeEventListeners() {
     });
 }
 
-// Carica progetti
+// Load Projects
 async function loadProjects() {
     try {
         const response = await fetch('projects.json', { cache: 'no-store' });
         projects = await response.json();
         populateProjectSelect();
     } catch (error) {
-        console.error('Errore caricamento progetti:', error);
+        console.error('Error loading projects:', error);
     }
 }
 
@@ -137,14 +136,14 @@ function populateProjectSelect() {
     });
 }
 
-// Applica configurazione orari
+// Apply Time Configuration
 function applyTimeSettings() {
-    const startHour = document.getElementById('startHour').value;
-    const endHour = document.getElementById('endHour').value;
+    const startHourValue = document.getElementById('startHour').value;
+    const endHourValue = document.getElementById('endHour').value;
     const intervalMinutes = parseInt(document.getElementById('intervalMinutes').value);
 
-    const [startH, startM] = startHour.split(':').map(Number);
-    const [endH, endM] = endHour.split(':').map(Number);
+    const [startH, startM] = startHourValue.split(':').map(Number);
+    const [endH, endM] = endHourValue.split(':').map(Number);
 
     config.startHour = startH;
     config.startMinute = startM;
@@ -155,7 +154,7 @@ function applyTimeSettings() {
     updateCalendar();
 }
 
-// Genera fasce orarie
+// Generate Time Slots
 function generateTimeSlots() {
     const slots = [];
     let currentHour = config.startHour;
@@ -175,21 +174,22 @@ function generateTimeSlots() {
     return slots;
 }
 
-// Aggiorna calendario
+// Update Calendar
 function updateCalendar() {
     timeSlots = generateTimeSlots();
 
-    // Aggiorna intestazione mese
-    const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-        'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+    // Update Month Header
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
     document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
     const grid = document.getElementById('plannerGrid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
-    // Configura le colonne della griglia: 80px per sidebar, 100px per All Day, e poi le fasce orarie
+    // Configure grid columns: 80px for day sidebar, 100px for All Day, and then time slots
     grid.style.gridTemplateColumns = `80px 100px repeat(${timeSlots.length}, 120px)`;
     
     // Corner cell
@@ -219,7 +219,7 @@ function updateCalendar() {
     });
 
     const today = new Date();
-    const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
@@ -265,7 +265,7 @@ function updateCalendar() {
     renderBookings();
 }
 
-// Carica prenotazioni
+// Load Bookings
 async function loadBookings() {
     try {
         const response = await fetch('load_bookings.php', {
@@ -274,12 +274,11 @@ async function loadBookings() {
         const data = await response.json();
         bookings = data.bookings || [];
         
-        // Add virtual bookings from projects milestones
+        // Add virtual bookings from project milestones
         addProjectMilestones();
         
-        renderBookings();
     } catch (error) {
-        console.error('Errore caricamento prenotazioni:', error);
+        console.error('Error loading bookings:', error);
         bookings = [];
     }
 }
@@ -295,7 +294,7 @@ function addProjectMilestones() {
                 projectId: project.id,
                 description: `Official start of ${project.nome_progetto}`,
                 isAllDay: true,
-                priority: 'normale',
+                priority: 'normal',
                 creator: 'System',
                 isVirtual: true
             });
@@ -309,7 +308,7 @@ function addProjectMilestones() {
                 projectId: project.id,
                 description: `Deadline for ${project.nome_progetto}`,
                 isAllDay: true,
-                priority: 'urgente',
+                priority: 'urgent',
                 creator: 'System',
                 isVirtual: true
             });
@@ -320,8 +319,6 @@ function addProjectMilestones() {
 function getTimeSlotIndex(timeStr, roundUp = false) {
     const [h, m] = timeStr.split(':').map(Number);
     const totalMinutes = h * 60 + m;
-    
-    let index = -1;
     
     if (roundUp) {
         // Find the first slot that is >= totalMinutes
@@ -346,9 +343,9 @@ function getTimeSlotIndex(timeStr, roundUp = false) {
     }
 }
 
-// Renderizza prenotazioni sulla griglia
+// Render Bookings on the Grid
 function renderBookings() {
-    // Rimuovi blocchi esistenti
+    // Remove existing blocks
     document.querySelectorAll('.booking-block').forEach(block => block.remove());
 
     const grid = document.getElementById('plannerGrid');
@@ -403,12 +400,12 @@ function renderBookings() {
     });
 }
 
-// Apri modal nuova prenotazione
+// Open New Booking Modal
 function openNewBookingModal(day, slot) {
     const modal = document.getElementById('bookingModal');
     const form = document.getElementById('bookingForm');
 
-    document.getElementById('modalTitle').textContent = 'Nuova Task - ' + day + '/' + (currentMonth + 1);
+    document.getElementById('modalTitle').textContent = 'New Task - ' + day + '/' + (currentMonth + 1);
     document.getElementById('deleteBtn').style.display = 'none';
 
     form.reset();
@@ -439,7 +436,7 @@ function openNewBookingModal(day, slot) {
         document.getElementById('bookingTime').value = slot;
         document.getElementById('startTime').value = slot;
 
-        // Calcola ora fine (aggiungi intervallo)
+        // Calculate end time (add interval)
         const [hours, minutes] = slot.split(':').map(Number);
         const totalMinutes = hours * 60 + minutes + config.intervalMinutes;
         const endHours = Math.floor(totalMinutes / 60);
@@ -451,13 +448,13 @@ function openNewBookingModal(day, slot) {
     modal.classList.add('show');
 }
 
-// Mostra dettagli prenotazione
+// Show Booking Details
 function showBookingDetails(booking) {
     const modal = document.getElementById('detailsModal');
     const details = document.getElementById('bookingDetails');
 
     const date = parseDateLocal(booking.date);
-    const formattedDate = formatDateItaly(date);
+    const formattedDate = formatDateEnglish(date);
 
     details.innerHTML = `
         <div class="detail-row">
@@ -469,27 +466,27 @@ function showBookingDetails(booking) {
             <span class="detail-value">${booking.projectName || '-'}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Data:</span>
+            <span class="detail-label">Date:</span>
             <span class="detail-value">${formattedDate}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Orario:</span>
+            <span class="detail-label">Time:</span>
             <span class="detail-value">${booking.isAllDay ? 'All Day' : (booking.startTime + ' - ' + booking.endTime)}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Descrizione:</span>
+            <span class="detail-label">Description:</span>
             <span class="detail-value">${booking.description || booking.serviceType}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Priorità:</span>
-            <span class="detail-value" style="color: ${booking.priority === 'urgente' ? 'var(--violet)' : 'var(--cyan)'}">${booking.priority.toUpperCase()}</span>
+            <span class="detail-label">Priority:</span>
+            <span class="detail-value" style="color: ${booking.priority === 'urgent' ? 'var(--violet)' : 'var(--cyan)'}">${booking.priority.toUpperCase()}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Creato da:</span>
+            <span class="detail-label">Created by:</span>
             <span class="detail-value">${booking.creator || 'N/A'}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-label">Note:</span>
+            <span class="detail-label">Notes:</span>
             <span class="detail-value">${booking.notes || '-'}</span>
         </div>
     `;
@@ -502,11 +499,11 @@ function showBookingDetails(booking) {
     modal.classList.add('show');
 }
 
-// Modifica prenotazione
+// Edit Booking
 function editBooking(booking) {
     const modal = document.getElementById('bookingModal');
     
-    document.getElementById('modalTitle').textContent = 'Modifica Task';
+    document.getElementById('modalTitle').textContent = 'Edit Task';
     document.getElementById('deleteBtn').style.display = 'block';
 
     document.getElementById('bookingId').value = booking.id;
@@ -535,7 +532,7 @@ function editFromDetails() {
     // Logic is handled via onclick assignment in showBookingDetails
 }
 
-// Salva prenotazione (crea o modifica)
+// Save Booking (create or modify)
 async function saveBooking(e) {
     e.preventDefault();
 
@@ -573,19 +570,19 @@ async function saveBooking(e) {
 
         if (result.success) {
             closeModal();
-            loadBookings();
+            loadBookings().then(() => updateCalendar());
         } else {
-            alert('Errore: ' + result.message);
+            alert('Error: ' + result.message);
         }
     } catch (error) {
-        console.error('Errore salvataggio:', error);
-        alert('Errore durante il salvataggio');
+        console.error('Error saving:', error);
+        alert('Error during saving');
     }
 }
 
-// Elimina prenotazione
+// Delete Booking
 async function deleteBooking() {
-    if (!confirm('Sei sicuro di voler eliminare questa task?')) {
+    if (!confirm('Are you sure you want to delete this task?')) {
         return;
     }
 
@@ -605,17 +602,17 @@ async function deleteBooking() {
 
         if (result.success) {
             closeModal();
-            loadBookings();
+            loadBookings().then(() => updateCalendar());
         } else {
-            alert('Errore: ' + result.message);
+            alert('Error: ' + result.message);
         }
     } catch (error) {
-        console.error('Errore eliminazione:', error);
-        alert('Errore durante l\'eliminazione');
+        console.error('Error deleting:', error);
+        alert('Error during deletion');
     }
 }
 
-// Chiudi modal
+// Close Modal
 function closeModal() {
     document.querySelectorAll('.modal').forEach(modal => {
         modal.classList.remove('show');

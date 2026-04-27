@@ -29,13 +29,19 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Override global.css overflow:hidden to allow natural page scroll */
+html, body {
+    overflow: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+}
+
 body {
     background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) fixed;
     color: var(--text);
     font-family: var(--font-display);
     font-size: 14px;
     line-height: 1.6;
-    min-height: 100vh;
 }
 
 .noise {
@@ -67,6 +73,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .logo {
@@ -104,6 +113,8 @@ body {
     padding: 8px 12px;
     cursor: pointer;
     transition: var(--transition);
+    font-family: var(--font-display);
+    font-size: 13px;
 }
 
 .nav-btn:hover {
@@ -127,7 +138,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* Controlli Visualizzazione */
+/* View Controls */
 .view-controls {
     padding: 15px 30px;
     background: rgba(13, 16, 23, 0.5);
@@ -136,6 +147,9 @@ body {
     gap: 20px;
     align-items: flex-end;
     flex-wrap: wrap;
+    position: sticky;
+    top: 66px; /* Below header */
+    z-index: 90;
 }
 
 .control-group {
@@ -184,7 +198,6 @@ body {
 .planner-wrapper {
     flex: 1;
     padding: 20px;
-    /* Removed overflow: auto to allow natural page scroll */
 }
 
 .planner-grid {
@@ -193,15 +206,15 @@ body {
     border-radius: var(--radius);
     background: var(--bg-card);
     position: relative;
-    /* Grid template columns and rows will be set in JS */
+    /* Grid template columns and rows are set in JS */
 }
 
 /* Corner Cell */
 .corner-cell {
     position: sticky;
-    top: 0;
+    top: 131px; /* Below header (66px) and view controls (65px approx) */
     left: 0;
-    z-index: 30;
+    z-index: 40;
     background: var(--bg-surface);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -212,13 +225,14 @@ body {
     font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
+    height: 48px; /* Standard header height */
 }
 
-/* Header Fasce Orarie */
+/* Header Time Slots */
 .time-slot-header {
     position: sticky;
-    top: 0;
-    z-index: 20;
+    top: 131px;
+    z-index: 30;
     background: var(--bg-surface);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -229,11 +243,11 @@ body {
     color: var(--text-muted);
 }
 
-/* Sidebar Giorni */
+/* Sidebar Days */
 .day-sidebar-cell {
     position: sticky;
     left: 0;
-    z-index: 20;
+    z-index: 30;
     background: var(--bg-surface);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -242,6 +256,7 @@ body {
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
+    min-height: 80px;
 }
 
 .day-sidebar-cell .day-number { font-size: 18px; font-weight: 700; }
@@ -249,7 +264,7 @@ body {
 .day-sidebar-cell.today { background: var(--cyan-dim); color: var(--cyan); }
 .day-sidebar-cell.weekend { background: rgba(255,255,255,0.02); }
 
-/* Celle della Griglia */
+/* Grid Cells */
 .grid-cell {
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -288,12 +303,12 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
-.booking-block.normale {
+.booking-block.normal {
     border-left: 3px solid var(--cyan);
     background: linear-gradient(to right, var(--cyan-dim), var(--bg-surface));
 }
 
-.booking-block.urgente {
+.booking-block.urgent {
     border-left: 3px solid var(--violet);
     background: linear-gradient(to right, var(--violet-dim), var(--bg-surface));
 }
@@ -307,6 +322,7 @@ body {
     align-items: center;
     gap: 8px;
     top: auto; left: auto; right: auto; bottom: auto;
+    min-height: 24px;
 }
 
 .booking-block .booking-client { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -456,5 +472,7 @@ body {
 
 @media (max-width: 768px) {
     .form-row { grid-template-columns: 1fr; }
-    .header { flex-direction: column; gap: 15px; }
+    .header { flex-direction: column; gap: 15px; position: static; }
+    .view-controls { position: static; }
+    .corner-cell, .time-slot-header { position: static; }
 }

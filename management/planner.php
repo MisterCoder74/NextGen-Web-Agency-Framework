@@ -6,8 +6,8 @@
     <title>NextGen Agency Planner</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="css/planner.css">
+    <link rel="stylesheet" href="css/global.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/planner.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="noise"></div>
@@ -20,16 +20,17 @@
                 <div class="logo-text">NextGen <em>Agency Planner</em></div>
             </div>
             <div class="header-controls">
+                <a href="dashboard.html" class="nav-btn" style="text-decoration: none;">Back to Dashboard</a>
                 <button id="prevMonth" class="nav-btn">◀</button>
                 <div class="month-selector">
                     <span id="currentMonth"></span>
                 </div>
                 <button id="nextMonth" class="nav-btn">▶</button>
-                <button id="todayBtn" class="today-btn">Oggi</button>
+                <button id="todayBtn" class="today-btn">Today</button>
             </div>
         </header>
 
-        <!-- Controlli Visualizzazione -->
+        <!-- View Controls -->
         <div class="view-controls">
             <div class="control-group">
                 <label>Start Hour</label>
@@ -47,22 +48,22 @@
                     <option value="60">60</option>
                 </select>
             </div>
-            <button id="applyTimeSettings" class="apply-btn">Applica</button>
+            <button id="applyTimeSettings" class="apply-btn">Apply</button>
         </div>
 
-        <!-- Griglia Prenotazioni -->
+        <!-- Planner Grid -->
         <div class="planner-wrapper">
             <div id="plannerGrid" class="planner-grid">
-                <!-- Contenuto generato dinamicamente via JS -->
+                <!-- Content generated dynamically via JS -->
             </div>
         </div>
     </div>
 
-    <!-- Modal Nuova/Modifica Task -->
+    <!-- New/Edit Task Modal -->
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="modalTitle">Nuova Task</h2>
+            <h2 id="modalTitle">New Task</h2>
             <form id="bookingForm">
                 <input type="hidden" id="bookingId">
                 <input type="hidden" id="bookingDate">
@@ -110,8 +111,8 @@
                     <div class="form-group">
                         <label>Priority *</label>
                         <select id="priority" required>
-                            <option value="normale">Normale</option>
-                            <option value="urgente">Urgente</option>
+                            <option value="normal">Normal</option>
+                            <option value="urgent">Urgent</option>
                         </select>
                     </div>
                 </div>
@@ -122,28 +123,28 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" id="deleteBtn" class="delete-btn" style="display:none;">Elimina</button>
-                    <button type="submit" class="save-btn">Salva Task</button>
-                    <button type="button" class="cancel-btn">Annulla</button>
+                    <button type="button" id="deleteBtn" class="delete-btn" style="display:none;">Delete</button>
+                    <button type="submit" class="save-btn">Save Task</button>
+                    <button type="button" class="cancel-btn">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Dettagli Task -->
+    <!-- Task Details Modal -->
     <div id="detailsModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Task Details</h2>
             <div id="bookingDetails"></div>
             <div class="form-actions">
-                <button id="editBookingBtn" class="save-btn">Modifica</button>
-                <button class="cancel-btn">Chiudi</button>
+                <button id="editBookingBtn" class="save-btn">Edit</button>
+                <button class="cancel-btn">Close</button>
             </div>
         </div>
     </div>
 
-    <script src="js/identity.js"></script>
-    <script src="js/planner.js"></script>
+    <script src="js/identity.js?v=<?php echo time(); ?>"></script>
+    <script src="js/planner.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
