@@ -126,6 +126,7 @@ async function loadProjects() {
 
 function populateProjectSelect() {
     const select = document.getElementById('projectSelect');
+    if (!select) return;
     // Keep first option
     select.innerHTML = '<option value="">Select Project...</option>';
     projects.forEach(project => {
@@ -183,103 +184,85 @@ function updateCalendar() {
         'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
     document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
-    // Genera sidebar giorni
-    generateDaysSidebar();
-
-    // Genera header fasce orarie
-    generateTimeHeader();
-
-    // Genera griglia
-    generateGrid();
-
-    // Renderizza prenotazioni
-    renderBookings();
-}
-
-// Genera sidebar con giorni del mese
-function generateDaysSidebar() {
-    const sidebar = document.getElementById('daysSidebar');
-    sidebar.innerHTML = '';
+    const grid = document.getElementById('plannerGrid');
+    grid.innerHTML = '';
 
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // Configura le colonne della griglia: 80px per sidebar, 100px per All Day, e poi le fasce orarie
+    grid.style.gridTemplateColumns = `80px 100px repeat(${timeSlots.length}, 120px)`;
+    
+    // Corner cell
+    const corner = document.createElement('div');
+    corner.className = 'corner-cell';
+    corner.textContent = 'Day / Time';
+    corner.style.gridRow = '1';
+    corner.style.gridColumn = '1';
+    grid.appendChild(corner);
+
+    // All Day Header
+    const allDayHeader = document.createElement('div');
+    allDayHeader.className = 'time-slot-header';
+    allDayHeader.textContent = 'All Day';
+    allDayHeader.style.gridRow = '1';
+    allDayHeader.style.gridColumn = '2';
+    grid.appendChild(allDayHeader);
+
+    // Time Headers
+    timeSlots.forEach((slot, index) => {
+        const header = document.createElement('div');
+        header.className = 'time-slot-header';
+        header.textContent = slot;
+        header.style.gridRow = '1';
+        header.style.gridColumn = (index + 3).toString();
+        grid.appendChild(header);
+    });
+
     const today = new Date();
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentYear, currentMonth, day);
         const dayOfWeek = date.getDay();
+        const row = day + 1;
 
+        // Day Sidebar Cell
         const dayCell = document.createElement('div');
-        dayCell.className = 'day-cell';
-
-        if (date.toDateString() === today.toDateString()) {
-            dayCell.classList.add('today');
-        }
-
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-            dayCell.classList.add('weekend');
-        }
-
+        dayCell.className = 'day-sidebar-cell';
+        if (date.toDateString() === today.toDateString()) dayCell.classList.add('today');
+        if (dayOfWeek === 0 || dayOfWeek === 6) dayCell.classList.add('weekend');
+        dayCell.style.gridRow = row.toString();
+        dayCell.style.gridColumn = '1';
         dayCell.innerHTML = `
             <span class="day-number">${day}</span>
             <span class="day-name">${dayNames[dayOfWeek]}</span>
         `;
+        grid.appendChild(dayCell);
 
-        sidebar.appendChild(dayCell);
-    }
-}
-
-// Genera header fasce orarie
-function generateTimeHeader() {
-    const header = document.getElementById('timeHeader');
-    header.innerHTML = '';
-    
-    // Extra column for All Day
-    header.style.gridTemplateColumns = `120px repeat(${timeSlots.length}, 1fr)`;
-
-    const allDayHeader = document.createElement('div');
-    allDayHeader.className = 'time-slot-header';
-    allDayHeader.textContent = 'All Day';
-    header.appendChild(allDayHeader);
-
-    timeSlots.forEach(slot => {
-        const slotHeader = document.createElement('div');
-        slotHeader.className = 'time-slot-header';
-        slotHeader.textContent = slot;
-        header.appendChild(slotHeader);
-    });
-}
-
-// Genera griglia celle
-function generateGrid() {
-    const grid = document.getElementById('bookingGrid');
-    grid.innerHTML = '';
-
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-    grid.style.gridTemplateColumns = `120px repeat(${timeSlots.length}, 1fr)`;
-    grid.style.gridTemplateRows = `repeat(${daysInMonth}, 80px)`;
-
-    for (let day = 1; day <= daysInMonth; day++) {
-        // All Day cell
+        // All Day Grid Cell
         const allDayCell = document.createElement('div');
         allDayCell.className = 'grid-cell';
         allDayCell.dataset.day = day;
         allDayCell.dataset.slot = 'all-day';
+        allDayCell.style.gridRow = row.toString();
+        allDayCell.style.gridColumn = '2';
         allDayCell.addEventListener('click', () => openNewBookingModal(day, 'all-day'));
         grid.appendChild(allDayCell);
 
-        for (let slotIndex = 0; slotIndex < timeSlots.length; slotIndex++) {
+        // Time Grid Cells
+        timeSlots.forEach((slot, index) => {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
             cell.dataset.day = day;
-            cell.dataset.slot = timeSlots[slotIndex];
-
-            cell.addEventListener('click', () => openNewBookingModal(day, timeSlots[slotIndex]));
-
+            cell.dataset.slot = slot;
+            cell.style.gridRow = row.toString();
+            cell.style.gridColumn = (index + 3).toString();
+            cell.addEventListener('click', () => openNewBookingModal(day, slot));
             grid.appendChild(cell);
-        }
+        });
     }
+
+    renderBookings();
 }
 
 // Carica prenotazioni
@@ -334,10 +317,42 @@ function addProjectMilestones() {
     });
 }
 
+function getTimeSlotIndex(timeStr, roundUp = false) {
+    const [h, m] = timeStr.split(':').map(Number);
+    const totalMinutes = h * 60 + m;
+    
+    let index = -1;
+    
+    if (roundUp) {
+        // Find the first slot that is >= totalMinutes
+        for (let i = 0; i < timeSlots.length; i++) {
+            const [sh, sm] = timeSlots[i].split(':').map(Number);
+            const slotMinutes = sh * 60 + sm;
+            if (slotMinutes >= totalMinutes) {
+                return i;
+            }
+        }
+        return timeSlots.length; // Beyond last slot
+    } else {
+        // Find the first slot that is <= totalMinutes
+        for (let i = timeSlots.length - 1; i >= 0; i--) {
+            const [sh, sm] = timeSlots[i].split(':').map(Number);
+            const slotMinutes = sh * 60 + sm;
+            if (slotMinutes <= totalMinutes) {
+                return i;
+            }
+        }
+        return 0;
+    }
+}
+
 // Renderizza prenotazioni sulla griglia
 function renderBookings() {
     // Rimuovi blocchi esistenti
     document.querySelectorAll('.booking-block').forEach(block => block.remove());
+
+    const grid = document.getElementById('plannerGrid');
+    if (!grid) return;
 
     bookings.forEach(booking => {
         const bookingDate = parseDateLocal(booking.date);
@@ -345,34 +360,45 @@ function renderBookings() {
 
         if (bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear) {
             const day = bookingDate.getDate();
-            const slot = booking.isAllDay ? 'all-day' : booking.startTime;
-
-            // Trova la cella corrispondente
-            const cell = document.querySelector(`.grid-cell[data-day="${day}"][data-slot="${slot}"]`);
-
-            if (cell) {
-                const block = document.createElement('div');
-                block.className = `booking-block ${booking.priority}`;
-                if (booking.isAllDay) block.classList.add('all-day');
+            const row = day + 1;
+            
+            const block = document.createElement('div');
+            block.className = `booking-block ${booking.priority}`;
+            
+            if (booking.isAllDay) {
+                block.classList.add('all-day');
+                block.style.gridRow = row.toString();
+                block.style.gridColumn = '2';
+            } else {
+                const startIndex = getTimeSlotIndex(booking.startTime, false);
+                let endIndex = getTimeSlotIndex(booking.endTime, true);
                 
-                block.innerHTML = `
-                    <div class="booking-client">${booking.taskName || booking.clientName}</div>
-                    <div class="booking-service">${booking.projectName || 'No Project'}</div>
-                `;
-
-                if (!booking.isVirtual) {
-                    block.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        showBookingDetails(booking);
-                    });
-                } else {
-                    block.style.cursor = 'default';
-                    block.style.opacity = '0.8';
-                }
-
-                cell.appendChild(block);
-                cell.classList.add('has-booking');
+                // Ensure at least one slot
+                if (endIndex <= startIndex) endIndex = startIndex + 1;
+                
+                const startCol = startIndex + 3;
+                const endCol = endIndex + 3;
+                
+                block.style.gridRow = row.toString();
+                block.style.gridColumn = `${startCol} / ${endCol}`;
             }
+            
+            block.innerHTML = `
+                <div class="booking-client">${booking.taskName || booking.clientName}</div>
+                <div class="booking-service">${booking.projectName || 'No Project'}</div>
+            `;
+
+            if (!booking.isVirtual) {
+                block.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showBookingDetails(booking);
+                });
+            } else {
+                block.style.cursor = 'default';
+                block.style.opacity = '0.8';
+            }
+
+            grid.appendChild(block);
         }
     });
 }
@@ -506,8 +532,7 @@ function editBooking(booking) {
 }
 
 function editFromDetails() {
-    const detailsModal = document.getElementById('detailsModal');
-    // Not strictly needed with the way showBookingDetails is implemented
+    // Logic is handled via onclick assignment in showBookingDetails
 }
 
 // Salva prenotazione (crea o modifica)
