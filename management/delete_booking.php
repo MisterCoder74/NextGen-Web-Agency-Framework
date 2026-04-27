@@ -4,25 +4,25 @@ header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $jsonFile = 'bookings.json';
 
-// Leggi i dati POST
+// Read POST data
 $input = file_get_contents('php://input');
 $requestData = json_decode($input, true);
 
 if (!$requestData || empty($requestData['id'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'ID prenotazione mancante'
+        'message' => 'Missing booking ID'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
 $bookingId = $requestData['id'];
 
-// Carica prenotazioni esistenti
+// Load existing bookings
 if (!file_exists($jsonFile)) {
     echo json_encode([
         'success' => false,
-        'message' => 'File prenotazioni non trovato'
+        'message' => 'Bookings file not found'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -33,19 +33,19 @@ $data = json_decode($jsonData, true);
 if ($data === null || !isset($data['bookings'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore nella lettura dei dati'
+        'message' => 'Error reading data'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Trova ed elimina la prenotazione
+// Find and delete the booking
 $found = false;
 $newBookings = [];
 
 foreach ($data['bookings'] as $booking) {
     if ($booking['id'] == $bookingId) {
         $found = true;
-        // Non aggiungere questa prenotazione (la elimina)
+        // Don't add this booking (deletes it)
     } else {
         $newBookings[] = $booking;
     }
@@ -54,24 +54,24 @@ foreach ($data['bookings'] as $booking) {
 if (!$found) {
     echo json_encode([
         'success' => false,
-        'message' => 'Prenotazione non trovata'
+        'message' => 'Booking not found'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Aggiorna l'array di prenotazioni
+// Update the bookings array
 $data['bookings'] = $newBookings;
 
-// Salva nel file JSON
+// Save to JSON file
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     echo json_encode([
         'success' => true,
-        'message' => 'Prenotazione eliminata con successo'
+        'message' => 'Booking deleted successfully'
     ], JSON_PRETTY_PRINT);
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore durante l\'eliminazione'
+        'message' => 'Error during deletion'
     ], JSON_PRETTY_PRINT);
 }
 ?>

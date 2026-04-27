@@ -4,23 +4,23 @@ header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $jsonFile = 'bookings.json';
 
-// Leggi i dati POST
+// Read POST data
 $input = file_get_contents('php://input');
 $updatedBooking = json_decode($input, true);
 
 if (!$updatedBooking || empty($updatedBooking['id'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Dati non validi o ID mancante'
+        'message' => 'Invalid data or missing ID'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Carica prenotazioni esistenti
+// Load existing bookings
 if (!file_exists($jsonFile)) {
     echo json_encode([
         'success' => false,
-        'message' => 'File prenotazioni non trovato'
+        'message' => 'Bookings file not found'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -31,19 +31,19 @@ $data = json_decode($jsonData, true);
 if ($data === null || !isset($data['bookings'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore nella lettura dei dati'
+        'message' => 'Error reading data'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Validazione campi obbligatori
+// Required fields validation
 $taskName = !empty($updatedBooking['taskName']) ? $updatedBooking['taskName'] : (!empty($updatedBooking['clientName']) ? $updatedBooking['clientName'] : '');
 $isAllDay = !empty($updatedBooking['isAllDay']);
 
 if (empty($taskName) || empty($updatedBooking['date'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Campi obbligatori mancanti'
+        'message' => 'Missing required fields'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -51,12 +51,12 @@ if (empty($taskName) || empty($updatedBooking['date'])) {
 if (!$isAllDay && (empty($updatedBooking['startTime']) || empty($updatedBooking['endTime']))) {
     echo json_encode([
         'success' => false,
-        'message' => 'Orario mancante per task non All Day'
+        'message' => 'Missing time for non All Day task'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Trova e aggiorna la prenotazione
+// Find and update the booking
 $found = false;
 foreach ($data['bookings'] as $key => $booking) {
     if ($booking['id'] == $updatedBooking['id']) {
@@ -69,22 +69,22 @@ foreach ($data['bookings'] as $key => $booking) {
 if (!$found) {
     echo json_encode([
         'success' => false,
-        'message' => 'Task non trovata'
+        'message' => 'Task not found'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Salva nel file JSON
+// Save to JSON file
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     echo json_encode([
         'success' => true,
-        'message' => 'Task aggiornata con successo',
+        'message' => 'Task updated successfully',
         'booking' => $updatedBooking
     ], JSON_PRETTY_PRINT);
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore durante l\'aggiornamento'
+        'message' => 'Error during update'
     ], JSON_PRETTY_PRINT);
 }
 ?>
