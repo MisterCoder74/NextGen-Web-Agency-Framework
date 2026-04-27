@@ -13,12 +13,24 @@
     <script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
     <script src="js/core.js?v=<?php echo $version; ?>"></script>
     <style>
+        .main-container {
+            max-width: 95% !important;
+        }
         .viber-container {
             display: grid;
-            grid-template-columns: 450px 1fr;
+            grid-template-columns: 1fr 600px;
             gap: 24px;
             height: calc(100vh - 400px);
             min-height: 500px;
+        }
+        @media (max-width: 1000px) {
+            .viber-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .viber-main {
+                height: 600px;
+            }
         }
         .viber-left-panel {
             display: flex;
@@ -109,8 +121,9 @@
             cursor: pointer;
         }
         .model-selector-container select option {
-            background: var(--bg-card);
+            background: #111;
             color: #fff;
+            padding: 12px;
         }
         
         select {
@@ -230,6 +243,7 @@
                                 <span class="btn-icon-left">☁️</span> Deploy
                             </button>
                         </div>
+                        <div id="deploy-feedback" class="deploy-feedback"></div>
                     </div>
 
                     <div class="viber-main">

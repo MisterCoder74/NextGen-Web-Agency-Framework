@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const executeBtn = document.getElementById('executeBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const deployBtn = document.getElementById('deployBtn');
+    const deployFeedback = document.getElementById('deploy-feedback');
     const modelSelect = document.getElementById('modelSelect');
     const statusBadge = document.getElementById('status-badge');
     const autoExecuteCheck = document.getElementById('autoExecute');
@@ -191,15 +192,25 @@ document.addEventListener('DOMContentLoaded', () => {
     deployBtn.onclick = async () => {
         if (!currentFinalHtml) return alert("Nothing to deploy yet!");
         
+        deployBtn.disabled = true;
+        deployFeedback.innerHTML = '<div class="preloader active">Deploying...</div>';
         setStatus('deploying');
+
         const res = await Core.deployProject(currentFinalHtml, '<?php // Vibe Coder Backend ?>');
+        
         setStatus('idle');
+        deployBtn.disabled = false;
         
         if (res.success) {
-            alert("Project deployed successfully!\nURL: " + res.url);
+            deployFeedback.innerHTML = `
+                <div class="success-message">
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${res.url}" target="_blank" class="deploy-link">Apri App</a>
+                </div>`;
             window.open(res.url, '_blank');
         } else {
-            alert("Deployment failed: " + res.message);
+            deployFeedback.innerHTML = `<div class="error-message">Deployment failed: ${res.message}</div>`;
         }
     };
 
