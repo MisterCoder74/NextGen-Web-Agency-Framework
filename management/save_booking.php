@@ -4,19 +4,19 @@ header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $jsonFile = 'bookings.json';
 
-// Leggi i dati POST
+// Read POST data
 $input = file_get_contents('php://input');
 $newBooking = json_decode($input, true);
 
 if (!$newBooking) {
     echo json_encode([
         'success' => false,
-        'message' => 'Dati non validi'
+        'message' => 'Invalid data'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Carica prenotazioni esistenti
+// Load existing bookings
 if (!file_exists($jsonFile)) {
     $data = ['bookings' => []];
 } else {
@@ -27,7 +27,7 @@ if (!file_exists($jsonFile)) {
     }
 }
 
-// Validazione campi obbligatori
+// Required fields validation
 // Support both old (clientName/serviceType) and new (taskName/description) for transition
 $taskName = !empty($newBooking['taskName']) ? $newBooking['taskName'] : (!empty($newBooking['clientName']) ? $newBooking['clientName'] : '');
 $description = !empty($newBooking['description']) ? $newBooking['description'] : (!empty($newBooking['serviceType']) ? $newBooking['serviceType'] : '');
@@ -37,7 +37,7 @@ $isAllDay = !empty($newBooking['isAllDay']);
 if (empty($taskName) || empty($newBooking['date'])) {
     echo json_encode([
         'success' => false,
-        'message' => 'Campi obbligatori mancanti'
+        'message' => 'Missing required fields'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -45,30 +45,30 @@ if (empty($taskName) || empty($newBooking['date'])) {
 if (!$isAllDay && (empty($newBooking['startTime']) || empty($newBooking['endTime']))) {
     echo json_encode([
         'success' => false,
-        'message' => 'Orario mancante per task non All Day'
+        'message' => 'Missing time for non All Day task'
     ], JSON_PRETTY_PRINT);
     exit;
 }
 
-// Genera ID se non presente
+// Generate ID if not present
 if (empty($newBooking['id'])) {
     $newBooking['id'] = time() . rand(1000, 9999);
 }
 
-// Aggiungi la prenotazione
+// Add the booking
 $data['bookings'][] = $newBooking;
 
-// Salva nel file JSON
+// Save to JSON file
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     echo json_encode([
         'success' => true,
-        'message' => 'Task salvata con successo',
+        'message' => 'Task saved successfully',
         'booking' => $newBooking
     ], JSON_PRETTY_PRINT);
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Errore durante il salvataggio'
+        'message' => 'Error during saving'
     ], JSON_PRETTY_PRINT);
 }
 ?>

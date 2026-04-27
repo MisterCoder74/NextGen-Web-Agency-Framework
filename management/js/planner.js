@@ -189,7 +189,7 @@ function updateCalendar() {
 
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
-    // Configure grid columns: 80px for day sidebar, 100px for All Day, and then time slots
+    // Configure grid columns: 80px for day cell, 100px for All Day, and then time slots
     grid.style.gridTemplateColumns = `80px 100px repeat(${timeSlots.length}, 120px)`;
     
     // Corner cell
@@ -226,12 +226,12 @@ function updateCalendar() {
         const dayOfWeek = date.getDay();
         const row = day + 1;
 
-        // Day Sidebar Cell
+        // Day Cell
         const dayCell = document.createElement('div');
-        dayCell.className = 'day-sidebar-cell';
+        dayCell.className = 'day-cell';
         if (date.toDateString() === today.toDateString()) dayCell.classList.add('today');
         if (dayOfWeek === 0 || dayOfWeek === 6) dayCell.classList.add('weekend');
-        dayCell.style.gridRow = row.toString();
+        dayCell.style.gridRow = `${row} / ${row + 1}`;
         dayCell.style.gridColumn = '1';
         dayCell.innerHTML = `
             <span class="day-number">${day}</span>
@@ -244,7 +244,7 @@ function updateCalendar() {
         allDayCell.className = 'grid-cell';
         allDayCell.dataset.day = day;
         allDayCell.dataset.slot = 'all-day';
-        allDayCell.style.gridRow = row.toString();
+        allDayCell.style.gridRow = `${row} / ${row + 1}`;
         allDayCell.style.gridColumn = '2';
         allDayCell.addEventListener('click', () => openNewBookingModal(day, 'all-day'));
         grid.appendChild(allDayCell);
@@ -255,7 +255,7 @@ function updateCalendar() {
             cell.className = 'grid-cell';
             cell.dataset.day = day;
             cell.dataset.slot = slot;
-            cell.style.gridRow = row.toString();
+            cell.style.gridRow = `${row} / ${row + 1}`;
             cell.style.gridColumn = (index + 3).toString();
             cell.addEventListener('click', () => openNewBookingModal(day, slot));
             grid.appendChild(cell);
@@ -364,7 +364,7 @@ function renderBookings() {
             
             if (booking.isAllDay) {
                 block.classList.add('all-day');
-                block.style.gridRow = row.toString();
+                block.style.gridRow = `${row} / ${row + 1}`;
                 block.style.gridColumn = '2';
             } else {
                 const startIndex = getTimeSlotIndex(booking.startTime, false);
@@ -376,7 +376,7 @@ function renderBookings() {
                 const startCol = startIndex + 3;
                 const endCol = endIndex + 3;
                 
-                block.style.gridRow = row.toString();
+                block.style.gridRow = `${row} / ${row + 1}`;
                 block.style.gridColumn = `${startCol} / ${endCol}`;
             }
             
