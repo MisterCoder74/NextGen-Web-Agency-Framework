@@ -27,27 +27,51 @@ function getSetupConfig() {
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    echo file_get_contents($file);
+    $username = $_GET['u'] ?? 'Anonymous';
+    $config = getSetupConfig();
+    $allTasks = json_decode(file_get_contents($file), true) ?: [];
+    
+    $role = getUserRole($username);
+    if (strtolower($config['mode'] ?? '') === 'control' && $role === 'technician') {
+        $filteredTasks = array_filter($allTasks, function($task) use ($username) {
+            return isset($task['created_by']) && $task['created_by'] === $username;
+        });
+        echo json_encode(array_values($filteredTasks));
+    } else {
+        echo json_encode($allTasks);
+    }
 } elseif ($method === 'POST') {
     $rawInput = file_get_contents('php://input');
     $data = json_decode($rawInput, true);
     
     if ($data !== null) {
         $username = $data['username'] ?? 'Anonymous';
-        
-        // Permission Check
         $config = getSetupConfig();
-        if (strtolower($config['mode'] ?? '') === 'control' && getUserRole($username) === 'technician') {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Permission denied: Managers only in CONTROL mode']);
-            exit;
-        }
+        $role = getUserRole($username);
+        
+        // Extract incoming tasks
+        $incomingTasks = isset($data['tasks']) && is_array($data['tasks']) ? $data['tasks'] : $data;
 
-        // Extract tasks
-        if (isset($data['tasks']) && is_array($data['tasks'])) {
-            $tasksToSave = $data['tasks'];
+        // Determine save strategy
+        if (strtolower($config['mode'] ?? '') === 'control' && $role === 'technician') {
+            // Merge-on-save for technicians in control mode
+            $masterTasks = json_decode(file_get_contents($file), true) ?: [];
+            
+            // Keep all tasks not created by this technician (including legacy tasks)
+            $otherUsersTasks = array_filter($masterTasks, function($task) use ($username) {
+                return !isset($task['created_by']) || $task['created_by'] !== $username;
+            });
+            
+            // Force created_by on all incoming tasks to be current user
+            foreach ($incomingTasks as &$task) {
+                $task['created_by'] = $username;
+            }
+            
+            // Combine
+            $tasksToSave = array_merge(array_values($otherUsersTasks), array_values($incomingTasks));
         } else {
-            $tasksToSave = $data;
+            // Manager or SYNC mode: full overwrite
+            $tasksToSave = $incomingTasks;
         }
 
         if (file_put_contents($file, json_encode($tasksToSave, JSON_PRETTY_PRINT))) {
