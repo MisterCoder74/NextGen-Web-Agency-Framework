@@ -1,6 +1,0 @@
-<?php
-return [
-'OPENAI_API_KEY' => 'sk-proj-....',
-'MODEL' => 'gpt-4o-mini'
-];
-?>
