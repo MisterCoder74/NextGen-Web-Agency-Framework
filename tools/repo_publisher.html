@@ -6,12 +6,13 @@ $version = time();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GitHub Publisher — NextGen Framework</title>
+<title>Repo Publisher — NextGen Framework</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
 <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
 <style>
         .main-container  {
             height: 100vh;
@@ -112,26 +113,28 @@ overflow-Y: auto;
 
 <div class="noise"></div>
 
-<header class="site-header">
-    <div class="header-inner">
-        <div class="logo">
-            <span class="logo-mark">⚡</span>
-            <span class="logo-text">GitHub <em>Publisher</em></span>
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🐙</div>
+        <div class="page-header-text">
+            <h1>Repo <em>Publisher</em></h1>
+            <p>Publish micro-apps to GitHub repositories</p>
         </div>
-        <div class="header-meta">
+        <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
             <button class="btn-icon" onclick="openGitHubSettings()" title="GitHub Settings">⚙️</button>
-            <a href="dashboard.html" class="btn btn-secondary btn-small">🏠 Dashboard</a>
         </div>
     </div>
-</header>
 
-<main class="main-container">
-    <div class="publisher-container">
-        <div class="hero" style="padding: 40px 0;">
-            <div class="hero-label">Micro-App Deployment</div>
-            <h1 class="hero-title">Push to <em>GitHub</em></h1>
-            <p class="hero-sub">Select a deployed micro-app and publish it to a new GitHub repository instantly.</p>
-        </div>
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <main class="main-container">
+            <div class="publisher-container">
+                <div class="hero" style="padding: 20px 0;">
+                    <div class="hero-label">Micro-App Deployment</div>
+                    <h2 class="hero-title" style="font-size: 2.5rem;">Push to <em>GitHub</em></h2>
+                    <p class="hero-sub">Select a deployed micro-app and publish it to a new GitHub repository instantly.</p>
+                </div>
 
         <div class="card" id="publisherForm">
             <div class="form-group">
@@ -175,8 +178,9 @@ overflow-Y: auto;
             <a href="#" id="repoLink" target="_blank" class="deploy-link" style="padding: 12px 24px; font-size: 1rem;">View Repository on GitHub ↗</a>
             <button class="btn btn-ghost" style="margin-top: 20px; width: 100%;" onclick="resetForm()">Publish Another App</button>
         </div>
+    </main>
     </div>
-</main>
+</div>
 
 <!-- GitHub Settings Modal -->
 <div id="ghSettingsModal" class="modal-overlay">
