@@ -10,9 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const deployBtn = document.getElementById('deployBtn');
     const modelSelect = document.getElementById('modelSelect');
     const statusBadge = document.getElementById('status-badge');
+    const autoExecuteCheck = document.getElementById('autoExecute');
     
     const memSaved = localStorage.getItem('vivacity_chatMemory');
     if (memSaved) chatMemory = JSON.parse(memSaved);
+
+    if (autoExecuteCheck) {
+        autoExecuteCheck.checked = localStorage.getItem('vivacity_autoExecute') === 'true';
+        autoExecuteCheck.addEventListener('change', () => {
+            localStorage.setItem('vivacity_autoExecute', autoExecuteCheck.checked);
+        });
+    }
+
     const delay = ms => new Promise(r => setTimeout(r, ms));
     
     // === gestione modale editing tasks ===
@@ -88,6 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
             artifactFrame.srcdoc = '';
             
             executeBtn.disabled = false;
+
+            if (autoExecuteCheck && autoExecuteCheck.checked) {
+                setTimeout(() => executeBtn.click(), 500);
+            }
         } else {
             taskOutput.textContent = '❌ No tasks found.';
         }
