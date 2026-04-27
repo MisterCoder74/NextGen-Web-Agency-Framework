@@ -115,6 +115,7 @@
                     <div id="build-menu" class="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 5px; background: #111520; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; z-index: 1000; min-width: 180px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden;">
                         <a href="#" id="link-webforge" style="display: block; padding: 12px 15px; color: #fff; text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;">WebForge (Pipeline)</a>
                         <a href="#" id="link-collabra" style="display: block; padding: 12px 15px; color: #fff; text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;">Collabra (Dual-Agent)</a>
+                        <a href="#" id="link-viber" style="display: block; padding: 12px 15px; color: #fff; text-decoration: none; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;">Vibe Coder</a>
                         <a href="#" id="link-builder" style="display: block; padding: 12px 15px; color: #fff; text-decoration: none; font-size: 0.85rem; transition: background 0.2s;">Website Builder Plus</a>
                     </div>
                 </div>
@@ -255,6 +256,7 @@
                     const clientID = result.data.cliente_id;
                     document.getElementById('link-webforge').href = `webforge.html?client_id=${clientID}&project_id=${projectId}`;
                     document.getElementById('link-collabra').href = `collabra.html?client_id=${clientID}&project_id=${projectId}`;
+                    document.getElementById('link-viber').href = `viber_coder.html?client_id=${clientID}&project_id=${projectId}`;
                     document.getElementById('link-builder').href = `website_builder_plus.html?client_id=${clientID}&project_id=${projectId}`;
 
                     setupClientView(clientID);

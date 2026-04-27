@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // === ELEMENTI PRINCIPALI ===
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('client_id') || '';
+    const projectId = urlParams.get('project_id') || '';
+
     window.chatMemory = [];
     const taskOutput = document.getElementById('taskOutput');
     const codeOutput = document.getElementById('codeOutput');
@@ -196,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deployFeedback.innerHTML = '<div class="preloader active">Deploying...</div>';
         setStatus('deploying');
 
-        const res = await Core.deployProject(currentFinalHtml, '<?php // Vibe Coder Backend ?>');
+        const res = await Core.deployProject(currentFinalHtml, '<?php // Vibe Coder Backend ?>', clientId, projectId);
         
         setStatus('idle');
         deployBtn.disabled = false;
