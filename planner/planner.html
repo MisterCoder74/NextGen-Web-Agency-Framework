@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenotazioni</title>
+    <link rel="stylesheet" href="style.css?v=1.016">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Prenotazioni</h1>
+            <div class="header-controls">
+                <button id="prevMonth" class="nav-btn">◀</button>
+                <div class="month-selector">
+                    <span id="currentMonth"></span>
+                </div>
+                <button id="nextMonth" class="nav-btn">▶</button>
+                <button id="todayBtn" class="today-btn">Oggi</button>
+            </div>
+        </header>
+
+        <!-- Controlli Visualizzazione -->
+        <div class="view-controls">
+            <label>Orario inizio: <input type="time" id="startHour" value="08:00"></label>
+            <label>Orario fine: <input type="time" id="endHour" value="20:00"></label>
+            <label>Intervallo (min): 
+                <select id="intervalMinutes">
+                    <option value="15">15</option>
+                    <option value="30" selected>30</option>
+                    <option value="60">60</option>
+                </select>
+            </label>
+            <button id="applyTimeSettings" class="apply-btn">Applica</button>
+        </div>
+
+        <!-- Griglia Prenotazioni -->
+
+        <div class="booking-grid-container">
+                        <div class="days-sidebar" id="daysSidebar">
+                <!-- Giorni del mese generati dinamicamente -->
+            </div>
+            <div class="time-grid-wrapper">
+                <div class="time-header" id="timeHeader">
+                    <!-- Fasce orarie generate dinamicamente -->
+                </div>
+                <div class="booking-grid" id="bookingGrid">
+                    <!-- Celle generate dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuova/Modifica Prenotazione -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Nuova Prenotazione</h2>
+            <form id="bookingForm">
+                <input type="hidden" id="bookingId">
+                <input type="hidden" id="bookingDate">
+                <input type="hidden" id="bookingTime">
+                
+                <div class="form-group">
+                    <label>Nome Cliente *</label>
+                    <input type="text" id="clientName" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefono</label>
+                        <input type="tel" id="clientPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="clientEmail">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo Servizio *</label>
+                    <input type="text" id="serviceType" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ora Inizio *</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ora Fine *</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Priorità *</label>
+                    <select id="priority" required>
+                        <option value="normale">Normale</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Note</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="deleteBtn" class="delete-btn" style="display:none;">Elimina</button>
+                    <button type="submit" class="save-btn">Salva</button>
+                    <button type="button" class="cancel-btn">Annulla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Dettagli Prenotazione -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Dettagli Prenotazione</h2>
+            <div id="bookingDetails"></div>
+            <div class="form-actions">
+                <button id="editBookingBtn" class="save-btn">Modifica</button>
+                <button class="cancel-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=1.009"></script>
+</body>
+</html>
+
