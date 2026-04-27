@@ -440,7 +440,7 @@ if ($app_mode !== 'CONTROL') {
                 return;
             }
 
-            localStorage.setItem('webforge_api_key', apiKey);
+            localStorage.setItem('openaikey', apiKey);
 
             const resultsContainer = document.getElementById('ai-results');
             resultsContainer.innerHTML = `
@@ -524,7 +524,7 @@ Use bullet points and bold text for technicians and project names.`;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('webforge_api_key');
+            const savedKey = localStorage.getItem('openaikey');
             if (savedKey) {
                 document.getElementById('apiKey').value = savedKey;
             }
