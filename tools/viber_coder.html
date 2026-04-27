@@ -1,0 +1,216 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vivacity Vibe Coder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>" />
+    <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>" />
+    <script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+    <script src="js/core.js?v=<?php echo $version; ?>"></script>
+    <style>
+        .viber-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: calc(100vh - 180px);
+        }
+        .viber-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        .viber-main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #artifactFrame {
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: #fff;
+        }
+        .task-list {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .task-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #taskOutput {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            flex-grow: 1;
+            color: var(--accent-cyan, #00f2ff);
+        }
+        #codeSection {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        #codeOutput {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            flex-grow: 1;
+            color: #ccc;
+        }
+        .model-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .model-selector-container select {
+            background: transparent;
+            color: #fff;
+            border: none;
+            outline: none;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .action-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #userPrompt {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            padding: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .modal-body textarea {
+            width: 100%;
+            height: 300px;
+            background: #111;
+            color: var(--accent-cyan);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">⚡</div>
+            <div class="page-header-text">
+                <h1>Vivacity <em>Vibe Coder</em></h1>
+                <p>Task-based AI Code Generator & Project Builder</p>
+            </div>
+            <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+                <div class="model-selector-container">
+                    <span>🤖</span>
+                    <select id="modelSelect">
+                        <option value="gpt-4o-mini">gpt-4o-mini</option>
+                        <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+                        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+                        <option value="gpt-4o">gpt-4o</option>
+                    </select>
+                </div>
+                <span class="badge" id="status-badge">IDLE</span>
+            </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="scroll-area">
+            <main class="main-container">
+                <section class="viber-container">
+                    <div class="viber-sidebar">
+                        <div class="request-card">
+                            <div class="request-card-label">PROJECT BRIEF</div>
+                            <textarea id="userPrompt" placeholder="Describe the feature or app you want to build..."></textarea>
+                            <div class="action-group">
+                                <button class="btn-primary" id="decomposeBtn" style="flex: 1;">
+                                    <span class="btn-icon-left">🧩</span> Decompose
+                                </button>
+                                <button class="btn-secondary" id="executeBtn" disabled style="flex: 1;">
+                                    <span class="btn-icon-left">🚀</span> Execute
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="task-list">
+                            <div class="task-list-header">
+                                <div class="request-card-label" style="margin-bottom: 0;">TASKS</div>
+                                <button class="btn-view" id="editTasksIcon" style="padding: 2px 8px; font-size: 10px;">EDIT</button>
+                            </div>
+                            <pre id="taskOutput">(no tasks yet)</pre>
+                        </div>
+
+                        <div id="codeSection">
+                            <div class="request-card-label">GENERATED CODE</div>
+                            <pre id="codeOutput">(no code yet)</pre>
+                        </div>
+
+                        <div class="action-group">
+                            <button class="btn-secondary" id="downloadBtn" style="flex: 1;">
+                                <span class="btn-icon-left">📥</span> Download
+                            </button>
+                            <button class="btn-primary" id="deployBtn" style="flex: 1;">
+                                <span class="btn-icon-left">☁️</span> Deploy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="viber-main">
+                        <iframe id="artifactFrame"></iframe>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit Tasks Modal -->
+    <div id="editTasksModal" class="modal-overlay" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;">
+        <div class="modal-content" style="background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid #333; width: 600px; max-width: 90%; position: relative;">
+            <h3 style="font-family: 'Syne', sans-serif; margin-bottom: 20px;">Edit Decomposed Tasks</h3>
+            <div class="modal-body">
+                <textarea id="tasksEditor"></textarea>
+            </div>
+            <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                <button class="btn-secondary" id="cancelTasks">Cancel</button>
+                <button class="btn-primary" id="saveTasks">Save Tasks</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/viber_coder.js?v=<?php echo $version; ?>"></script>
+</body>
+</html>
