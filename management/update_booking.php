@@ -37,11 +37,21 @@ if ($data === null || !isset($data['bookings'])) {
 }
 
 // Validazione campi obbligatori
-if (empty($updatedBooking['clientName']) || empty($updatedBooking['serviceType']) || 
-    empty($updatedBooking['date']) || empty($updatedBooking['startTime']) || empty($updatedBooking['endTime'])) {
+$taskName = !empty($updatedBooking['taskName']) ? $updatedBooking['taskName'] : (!empty($updatedBooking['clientName']) ? $updatedBooking['clientName'] : '');
+$isAllDay = !empty($updatedBooking['isAllDay']);
+
+if (empty($taskName) || empty($updatedBooking['date'])) {
     echo json_encode([
         'success' => false,
         'message' => 'Campi obbligatori mancanti'
+    ], JSON_PRETTY_PRINT);
+    exit;
+}
+
+if (!$isAllDay && (empty($updatedBooking['startTime']) || empty($updatedBooking['endTime']))) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Orario mancante per task non All Day'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -59,7 +69,7 @@ foreach ($data['bookings'] as $key => $booking) {
 if (!$found) {
     echo json_encode([
         'success' => false,
-        'message' => 'Prenotazione non trovata'
+        'message' => 'Task non trovata'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -68,7 +78,7 @@ if (!$found) {
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     echo json_encode([
         'success' => true,
-        'message' => 'Prenotazione aggiornata con successo',
+        'message' => 'Task aggiornata con successo',
         'booking' => $updatedBooking
     ], JSON_PRETTY_PRINT);
 } else {
@@ -78,4 +88,3 @@ if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     ], JSON_PRETTY_PRINT);
 }
 ?>
-
