@@ -20,8 +20,8 @@
             display: grid;
             grid-template-columns: 1fr 600px;
             gap: 24px;
-            height: calc(100vh - 400px);
-            min-height: 500px;
+            height: auto;
+            margin-bottom: 50px;
         }
         @media (max-width: 1000px) {
             .viber-container {
@@ -29,25 +29,24 @@
                 height: auto;
             }
             .viber-main {
-                height: 600px;
+                min-height: 600px;
+                height: auto;
             }
         }
         .viber-left-panel {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            overflow-y: auto;
-            padding-right: 5px;
         }
         .viber-main {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            min-height: 0;
         }
         #artifactFrame {
             width: 100%;
             flex-grow: 1;
+            height: 800px;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: #ffffff;
@@ -72,7 +71,6 @@
             font-family: var(--font-mono);
             font-size: 0.85rem;
             white-space: pre-wrap;
-            overflow-y: auto;
             flex-grow: 1;
             color: var(--cyan);
             background: rgba(0,0,0,0.3);
@@ -85,7 +83,8 @@
             border-radius: 8px;
             padding: 18px;
             border: 1px solid var(--border);
-            height: 250px;
+            min-height: 250px;
+            height: auto;
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -94,7 +93,6 @@
             font-family: var(--font-mono);
             font-size: 0.8rem;
             white-space: pre-wrap;
-            overflow-y: auto;
             flex-grow: 1;
             color: #ccc;
             background: rgba(0,0,0,0.3);
