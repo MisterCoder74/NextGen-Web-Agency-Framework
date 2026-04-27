@@ -28,11 +28,24 @@ if (!file_exists($jsonFile)) {
 }
 
 // Validazione campi obbligatori
-if (empty($newBooking['clientName']) || empty($newBooking['serviceType']) || 
-    empty($newBooking['date']) || empty($newBooking['startTime']) || empty($newBooking['endTime'])) {
+// Support both old (clientName/serviceType) and new (taskName/description) for transition
+$taskName = !empty($newBooking['taskName']) ? $newBooking['taskName'] : (!empty($newBooking['clientName']) ? $newBooking['clientName'] : '');
+$description = !empty($newBooking['description']) ? $newBooking['description'] : (!empty($newBooking['serviceType']) ? $newBooking['serviceType'] : '');
+
+$isAllDay = !empty($newBooking['isAllDay']);
+
+if (empty($taskName) || empty($newBooking['date'])) {
     echo json_encode([
         'success' => false,
         'message' => 'Campi obbligatori mancanti'
+    ], JSON_PRETTY_PRINT);
+    exit;
+}
+
+if (!$isAllDay && (empty($newBooking['startTime']) || empty($newBooking['endTime']))) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Orario mancante per task non All Day'
     ], JSON_PRETTY_PRINT);
     exit;
 }
@@ -49,7 +62,7 @@ $data['bookings'][] = $newBooking;
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     echo json_encode([
         'success' => true,
-        'message' => 'Prenotazione salvata con successo',
+        'message' => 'Task salvata con successo',
         'booking' => $newBooking
     ], JSON_PRETTY_PRINT);
 } else {
@@ -59,4 +72,3 @@ if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
     ], JSON_PRETTY_PRINT);
 }
 ?>
-
