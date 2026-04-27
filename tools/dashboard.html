@@ -243,6 +243,22 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
     </div>
 </div>
 
+<!-- Details Modal -->
+<div id="detailsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <div class="modal-title">🚀 Micro-App <em>Details</em></div>
+            <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="detailsContent" style="padding: 24px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8;">
+            <!-- Content will be injected here -->
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="closeDetailsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
 <script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
 <script src="js/core.js?v=<?php echo $version; ?>"></script>
 <script src="../management/js/messaging.js?v=<?php echo $version; ?>"></script>
@@ -252,6 +268,10 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
         const saveBtn = document.getElementById('btnSaveKey');
         const status = document.getElementById('apiKeyStatus');
         const APP_MODE = '<?php echo $app_mode; ?>';
+
+        let allApps = [];
+        let allProjects = [];
+        let allClients = [];
 
         // Load existing key
         const savedKey = Core.getApiKey();
@@ -290,7 +310,8 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 });
                 const result = await response.json();
                 if (result.success) {
-                    renderProjects(result.data);
+                    allProjects = result.data;
+                    renderProjects(allProjects);
                 } else {
                     projectsList.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">${result.message}</td></tr>`;
                 }
@@ -331,7 +352,46 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
 
         // --- Micro-App Manager Logic ---
         const appsList = document.getElementById('appsList');
-        let allClients = [];
+
+        window.showDetails = (id) => {
+            const app = allApps.find(a => a.id === id);
+            if (!app) return;
+
+            const client = allClients.find(c => c.id === app.client_id);
+            const project = allProjects.find(p => p.id === app.project_id);
+
+            const content = `
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px;">
+                    <div style="color: var(--text-muted);">App ID:</div>
+                    <div style="color: var(--cyan);">${app.id}</div>
+                    
+                    <div style="color: var(--text-muted);">Name:</div>
+                    <div>${app.name}</div>
+                    
+                    <div style="color: var(--text-muted);">Creator:</div>
+                    <div>${app.created_by || 'Unknown'}</div>
+                    
+                    <div style="color: var(--text-muted);">Date:</div>
+                    <div>${app.date}</div>
+                    
+                    <div style="color: var(--text-muted);">Client:</div>
+                    <div>${client ? client.nominativo : (app.client_id || 'None')}</div>
+                    
+                    <div style="color: var(--text-muted);">Project:</div>
+                    <div>${project ? project.nome_progetto : (app.project_id || 'None')}</div>
+                    
+                    <div style="color: var(--text-muted);">URL:</div>
+                    <div><a href="${app.url}" target="_blank" style="color: var(--cyan); text-decoration: none;">${app.url} ↗</a></div>
+                </div>
+            `;
+
+            document.getElementById('detailsContent').innerHTML = content;
+            document.getElementById('detailsModal').classList.add('open');
+        };
+
+        window.closeDetailsModal = () => {
+            document.getElementById('detailsModal').classList.remove('open');
+        };
 
         async function fetchClients() {
             try {
@@ -355,7 +415,8 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 const username = localStorage.getItem('sync_username') || 'Anonymous';
                 const response = await fetch(`api/microapps.php?action=list&u=${encodeURIComponent(username)}`);
                 const apps = await response.json();
-                renderApps(apps);
+                allApps = apps;
+                renderApps(allApps);
             } catch (error) {
                 console.error('Error fetching apps:', error);
                 appsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">Error loading apps</td></tr>';
@@ -383,9 +444,13 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                         ${clientOptions}
                     </select>`;
 
-                const actionsCell = isRestricted ? '' : `
-                    <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
+                const actionsCell = `
+                    <a href="${app.url}" target="_blank" class="btn btn-primary btn-small">Preview</a>
+                    <button class="btn btn-secondary btn-small" onclick="showDetails('${app.id}')">Details</button>
+                    ${isRestricted ? '' : `
+                        <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
+                    `}
                 `;
 
                 return `
