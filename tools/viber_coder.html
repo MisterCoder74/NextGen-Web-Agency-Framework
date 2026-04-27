@@ -15,111 +15,149 @@
     <style>
         .viber-container {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-            height: calc(100vh - 180px);
+            grid-template-columns: 450px 1fr;
+            gap: 24px;
+            height: calc(100vh - 400px);
+            min-height: 500px;
         }
-        .viber-sidebar {
+        .viber-left-panel {
             display: flex;
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
+            padding-right: 5px;
         }
         .viber-main {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
+            min-height: 0;
         }
         #artifactFrame {
             width: 100%;
-            height: 100%;
-            border: 1px solid rgba(255,255,255,0.1);
+            flex-grow: 1;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            background: #fff;
+            background: #ffffff;
         }
         .task-list {
-            background: rgba(0,0,0,0.2);
+            background: var(--bg-card);
             border-radius: 8px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.05);
+            padding: 18px;
+            border: 1px solid var(--border);
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .task-list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         #taskOutput {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.85rem;
             white-space: pre-wrap;
             overflow-y: auto;
             flex-grow: 1;
-            color: var(--accent-cyan, #00f2ff);
+            color: var(--cyan);
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,212,255,0.1);
         }
         #codeSection {
-            background: rgba(0,0,0,0.2);
+            background: var(--bg-card);
             border-radius: 8px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.05);
-            height: 300px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            height: 250px;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         #codeOutput {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.8rem;
             white-space: pre-wrap;
             overflow-y: auto;
             flex-grow: 1;
             color: #ccc;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .model-selector-container {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,255,255,0.05);
+            background: var(--bg-card);
             padding: 5px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
         }
         .model-selector-container select {
             background: transparent;
             color: #fff;
             border: none;
             outline: none;
-            font-family: 'Syne', sans-serif;
+            font-family: var(--font-display);
             font-weight: 600;
             cursor: pointer;
         }
+        .model-selector-container select option {
+            background: var(--bg-card);
+            color: #fff;
+        }
+        
+        select {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4px 8px;
+        }
+        option {
+            background: var(--bg-card);
+            color: var(--text);
+        }
+
         .action-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-top: 10px;
         }
         #userPrompt {
             width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
             border-radius: 8px;
             color: #fff;
             padding: 15px;
             font-family: inherit;
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
+            font-size: 1.05rem;
+            transition: var(--transition);
+        }
+        #userPrompt:focus {
+            outline: none;
+            border-color: var(--cyan);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 15px var(--cyan-dim);
         }
         .modal-body textarea {
             width: 100%;
             height: 300px;
             background: #111;
-            color: var(--accent-cyan);
+            color: var(--cyan);
             border: 1px solid #333;
             border-radius: 4px;
             padding: 10px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
         }
     </style>
 </head>
@@ -151,25 +189,30 @@
 
         <div class="scroll-area">
             <main class="main-container">
-                <section class="viber-container">
-                    <div class="viber-sidebar">
-                        <div class="request-card">
-                            <div class="request-card-label">PROJECT BRIEF</div>
-                            <textarea id="userPrompt" placeholder="Describe the feature or app you want to build..."></textarea>
-                            <div class="action-group">
-                                <button class="btn-primary" id="decomposeBtn" style="flex: 1;">
-                                    <span class="btn-icon-left">🧩</span> Decompose
-                                </button>
-                                <button class="btn-secondary" id="executeBtn" disabled style="flex: 1;">
-                                    <span class="btn-icon-left">🚀</span> Execute
-                                </button>
-                            </div>
-                        </div>
+                <div class="request-card" style="margin-bottom: 24px;">
+                    <div class="request-card-label">PROJECT BRIEF</div>
+                    <textarea id="userPrompt" placeholder="Describe the feature or app you want to build..."></textarea>
+                    <div class="action-group" style="align-items: center;">
+                        <button class="btn-primary" id="decomposeBtn" style="min-width: 160px;">
+                            <span class="btn-icon-left">🧩</span> Decompose
+                        </button>
+                        <button class="btn-secondary" id="executeBtn" disabled style="min-width: 160px;">
+                            <span class="btn-icon-left">🚀</span> Execute
+                        </button>
+                        
+                        <label style="display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 0.85rem; cursor: pointer; margin-left: 15px; user-select: none;">
+                            <input type="checkbox" id="autoExecute" style="width: 18px; height: 18px; accent-color: var(--cyan);"> 
+                            Auto-Execute after Decompose
+                        </label>
+                    </div>
+                </div>
 
+                <section class="viber-container">
+                    <div class="viber-left-panel">
                         <div class="task-list">
                             <div class="task-list-header">
                                 <div class="request-card-label" style="margin-bottom: 0;">TASKS</div>
-                                <button class="btn-view" id="editTasksIcon" style="padding: 2px 8px; font-size: 10px;">EDIT</button>
+                                <button class="btn-view" id="editTasksIcon" style="padding: 2px 8px; font-size: 10px; width: auto;">EDIT</button>
                             </div>
                             <pre id="taskOutput">(no tasks yet)</pre>
                         </div>
@@ -190,6 +233,7 @@
                     </div>
 
                     <div class="viber-main">
+                        <div class="request-card-label">PREVIEW</div>
                         <iframe id="artifactFrame"></iframe>
                     </div>
                 </section>
