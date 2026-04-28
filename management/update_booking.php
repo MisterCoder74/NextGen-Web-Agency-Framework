@@ -76,6 +76,8 @@ if (!$found) {
 
 // Save to JSON file
 if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
+    $username = $updatedBooking['username'] ?? 'Anonymous';
+    logEvent("Booking Updated: " . ($taskName), $username);
     echo json_encode([
         'success' => true,
         'message' => 'Task updated successfully',
@@ -86,5 +88,22 @@ if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
         'success' => false,
         'message' => 'Error during update'
     ], JSON_PRETTY_PRINT);
+}
+
+function logEvent($action, $username = 'Anonymous') {
+    $logFile = __DIR__ . '/../audit_log.json';
+    $entry = [
+        'timestamp' => date('Y-m-d H:i:s'),
+        'action'    => $action,
+        'user'      => $username,
+        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
+        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
+    ];
+    $logs = [];
+    if (file_exists($logFile)) {
+        $logs = json_decode(file_get_contents($logFile), true) ?: [];
+    }
+    $logs[] = $entry;
+    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
 }
 ?>

@@ -37,6 +37,8 @@ $filesToBackup = [
     'management/projects.json' => 'management/projects.json',
     'management/quotes.json' => 'management/quotes.json',
     'management/setup.json' => 'management/setup.json',
+    'management/bookings.json' => 'management/bookings.json',
+    'management/kanban.json' => 'management/kanban.json',
     'tools/api/microapps.json' => 'tools/api/microapps.json'
 ];
 
