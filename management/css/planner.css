@@ -197,7 +197,7 @@ body {
 /* Planner Grid Wrapper */
 .planner-wrapper {
     flex: 1;
-    padding: 20px;
+    padding: 4px;
 }
 
 .planner-grid {
