@@ -289,7 +289,7 @@ function addProjectMilestones() {
             bookings.push({
                 id: `proj_start_${project.id}`,
                 date: project.data_inizio,
-                taskName: `🚀 Project Start: ${project.nome_progetto}`,
+                taskName: `🚀 ${project.nome_progetto}`,
                 projectName: project.nome_progetto,
                 projectId: project.id,
                 description: `Official start of ${project.nome_progetto}`,
@@ -303,7 +303,7 @@ function addProjectMilestones() {
             bookings.push({
                 id: `proj_end_${project.id}`,
                 date: project.data_fine,
-                taskName: `🏁 Project Deadline: ${project.nome_progetto}`,
+                taskName: `🏁 ${project.nome_progetto}`,
                 projectName: project.nome_progetto,
                 projectId: project.id,
                 description: `Deadline for ${project.nome_progetto}`,
