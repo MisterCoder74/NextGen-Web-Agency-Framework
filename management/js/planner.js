@@ -189,7 +189,7 @@ function updateCalendar() {
 
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
-    // Configure grid columns: 70px for day cell, 90px for All Day, and 85px for time slots
+    // Configure grid columns: 70px 90px repeat(${timeSlots.length}, 85px)
     grid.style.gridTemplateColumns = `70px 90px repeat(${timeSlots.length}, 85px)`;
     
     // Corner cell
@@ -380,18 +380,23 @@ function renderBookings() {
                 block.style.gridColumn = `${startCol} / ${endCol}`;
             }
             
-            block.innerHTML = `
-                <div class="booking-client">${booking.taskName || booking.clientName}</div>
-                <div class="booking-service">${booking.projectName || 'No Project'}</div>
-            `;
-
-            if (!booking.isVirtual) {
-                block.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showBookingDetails(booking);
-                });
+            if (booking.isVirtual) {
+                block.innerHTML = `
+                    <div class="booking-client">${booking.taskName || booking.clientName}</div>
+                `;
             } else {
-                block.style.cursor = 'default';
+                block.innerHTML = `
+                    <div class="booking-client">${booking.taskName || booking.clientName}</div>
+                    <div class="booking-service">${booking.projectName || 'No Project'}</div>
+                `;
+            }
+
+            block.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showBookingDetails(booking);
+            });
+
+            if (booking.isVirtual) {
                 block.style.opacity = '0.8';
             }
 
@@ -491,7 +496,14 @@ function showBookingDetails(booking) {
         </div>
     `;
 
-    document.getElementById('editBookingBtn').onclick = () => {
+    const editBtn = document.getElementById('editBookingBtn');
+    if (booking.isVirtual) {
+        editBtn.style.display = 'none';
+    } else {
+        editBtn.style.display = 'block';
+    }
+
+    editBtn.onclick = () => {
         closeModal();
         editBooking(booking);
     };
