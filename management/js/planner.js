@@ -407,6 +407,9 @@ function renderBookings() {
 
 // Open New Booking Modal
 function openNewBookingModal(day, slot) {
+    const role = localStorage.getItem('sync_role') || 'technician';
+    if (role === 'technician') return;
+
     const modal = document.getElementById('bookingModal');
     const form = document.getElementById('bookingForm');
 
@@ -497,7 +500,8 @@ function showBookingDetails(booking) {
     `;
 
     const editBtn = document.getElementById('editBookingBtn');
-    if (booking.isVirtual) {
+    const role = localStorage.getItem('sync_role') || 'technician';
+    if (booking.isVirtual || role === 'technician') {
         editBtn.style.display = 'none';
     } else {
         editBtn.style.display = 'block';
@@ -513,6 +517,9 @@ function showBookingDetails(booking) {
 
 // Edit Booking
 function editBooking(booking) {
+    const role = localStorage.getItem('sync_role') || 'technician';
+    if (role === 'technician') return;
+
     const modal = document.getElementById('bookingModal');
     
     document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -547,6 +554,12 @@ function editFromDetails() {
 // Save Booking (create or modify)
 async function saveBooking(e) {
     e.preventDefault();
+
+    const role = localStorage.getItem('sync_role') || 'technician';
+    if (role === 'technician') {
+        alert('Access denied: Technicians cannot create or edit tasks.');
+        return;
+    }
 
     const bookingId = document.getElementById('bookingId').value;
     const projectSelect = document.getElementById('projectSelect');
@@ -594,6 +607,12 @@ async function saveBooking(e) {
 
 // Delete Booking
 async function deleteBooking() {
+    const role = localStorage.getItem('sync_role') || 'technician';
+    if (role === 'technician') {
+        alert('Access denied: Technicians cannot delete tasks.');
+        return;
+    }
+
     if (!confirm('Are you sure you want to delete this task?')) {
         return;
     }
