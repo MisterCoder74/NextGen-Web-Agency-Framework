@@ -577,7 +577,8 @@ async function saveBooking(e) {
         endTime: document.getElementById('endTime').value,
         priority: document.getElementById('priority').value,
         notes: document.getElementById('notes').value,
-        creator: document.getElementById('creator').value
+        creator: document.getElementById('creator').value,
+        username: localStorage.getItem('sync_username') || 'Anonymous'
     };
 
     try {
@@ -625,7 +626,10 @@ async function deleteBooking() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ id: bookingId }),
+            body: JSON.stringify({ 
+                id: bookingId,
+                username: localStorage.getItem('sync_username') || 'Anonymous'
+            }),
             cache: 'no-store'
         });
 
