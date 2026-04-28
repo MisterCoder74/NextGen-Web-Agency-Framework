@@ -244,7 +244,7 @@ body {
 }
 
 /* Sidebar Days */
-.day-sidebar-cell {
+.day-cell {
     position: sticky;
     left: 0;
     z-index: 30;
@@ -257,13 +257,13 @@ body {
     justify-content: center;
     font-family: var(--font-mono);
         text-align: center;
-    min-height: 44px;
+    min-height: 70px;
 }
 
-.day-sidebar-cell .day-number { font-size: 18px; font-weight: 700; text-align: center; }
-.day-sidebar-cell .day-name { font-size: 10px; color: var(--text-muted); text-transform: uppercase; text-align: center; }
-.day-sidebar-cell.today { background: var(--cyan-dim); color: var(--cyan); }
-.day-sidebar-cell.weekend { background: rgba(255,255,255,0.02); }
+.day-cell .day-number { font-size: 18px; font-weight: 700; text-align: center; }
+.day-cell .day-name { font-size: 10px; color: var(--text-muted); text-transform: uppercase; text-align: center; }
+.day-cell.today { background: var(--cyan-dim); color: var(--cyan); }
+.day-cell.weekend { background: rgba(255,255,255,0.02); }
 
 /* Grid Cells */
 .grid-cell {
@@ -271,7 +271,7 @@ body {
     border-bottom: 1px solid var(--border);
     position: relative;
     transition: background 0.1s;
-    min-height: 44px;
+    min-height: 70px;
         text-align: center;
 }
 
