@@ -190,7 +190,7 @@ function updateCalendar() {
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
     // Configure grid columns: 80px for day cell, 100px for All Day, and then time slots
-    grid.style.gridTemplateColumns = `80px 100px repeat(${timeSlots.length}, 120px)`;
+    grid.style.gridTemplateColumns = `70px 90px repeat(${timeSlots.length}, 85px)`;
     
     // Corner cell
     const corner = document.createElement('div');
