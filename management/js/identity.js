@@ -54,6 +54,27 @@
                 logout();
             });
         });
+
+        // Redirect "Back to Dashboard" links for technicians in management area
+        const userRole = localStorage.getItem('sync_role');
+        if (userRole === 'technician' && window.location.pathname.includes('/management/')) {
+            const dashboardLinks = document.querySelectorAll('a[href="dashboard.html"], a[href="./dashboard.html"]');
+            dashboardLinks.forEach(link => {
+                link.href = '../tools/dashboard.html';
+            });
+            
+            // Robust selector: Also check for links containing "Back to Dashboard" text
+            const allLinks = document.querySelectorAll('a');
+            allLinks.forEach(link => {
+                const text = link.textContent.trim().toLowerCase();
+                if (text.includes('back to dashboard')) {
+                    const currentHref = link.getAttribute('href');
+                    if (currentHref === 'dashboard.html' || currentHref === './dashboard.html' || !currentHref) {
+                        link.href = '../tools/dashboard.html';
+                    }
+                }
+            });
+        }
     });
 
     /**
