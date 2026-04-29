@@ -201,13 +201,24 @@
                             case '1': echo "Invalid credentials. Please try again."; break;
                             case '2': echo "System error: User archive not found."; break;
                             case '3': echo "Please fill in all fields."; break;
+                            case '5': echo "This workspace has been suspended. Please contact support."; break;
                             default: echo "An error occurred during login.";
                         }
                     ?>
                 </div>
             <?php endif; ?>
 
+            <?php $tenantParam = isset($_GET['tenant']) ? htmlspecialchars($_GET['tenant']) : ''; ?>
+            <?php if ($tenantParam): ?>
+                <input type="hidden" name="tenant" value="<?php echo $tenantParam; ?>">
+                <div style="text-align: center; margin-bottom: 16px; font-size: 0.72rem; color: rgba(255,255,255,0.4); background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.15); border-radius: 8px; padding: 6px 12px;">
+                    Tenant: <strong style="color: #5eead4;"><?php echo $tenantParam; ?></strong>
+                </div>
+            <?php endif; ?>
             <form action="login.php" method="POST">
+                <?php if ($tenantParam): ?>
+                    <input type="hidden" name="tenant" value="<?php echo $tenantParam; ?>">
+                <?php endif; ?>
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autocomplete="off">

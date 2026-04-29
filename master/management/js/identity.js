@@ -1,6 +1,6 @@
 /**
- * Identity Layer for Vivacity NextGen SYNC
- * Handles user persistence across sessions (global version)
+ * Identity Layer for Vivacity NextGen SYNC - Tenant Edition
+ * Handles user persistence across sessions within a tenant context
  */
 
 (function() {
@@ -43,22 +43,19 @@
         window.history.replaceState({}, document.title, newUrl);
     }
 
-    // Initialize UI elements when DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
         const username = localStorage.getItem('sync_username') || 'Anonymous';
         const tenant = localStorage.getItem('sync_tenant');
 
-        // Update "Welcome" message if element exists
         const welcomeElement = document.getElementById('welcome-user');
         if (welcomeElement) {
-            let text = `Welcome, ${username}`;
+            let welcomeText = `Welcome, ${username}`;
             if (tenant) {
-                text += ` (${tenant})`;
+                welcomeText += ` (${tenant})`;
             }
-            welcomeElement.textContent = text;
+            welcomeElement.textContent = welcomeText;
         }
 
-        // Add Logout functionality to logout buttons
         const logoutButtons = document.querySelectorAll('.logout-btn');
         logoutButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -67,15 +64,15 @@
             });
         });
 
-        // Redirect "Back to Dashboard" links for technicians in management area
         const userRole = localStorage.getItem('sync_role');
         if (userRole === 'technician' && window.location.pathname.includes('/management/')) {
             const dashboardLinks = document.querySelectorAll('a[href="dashboard.html"], a[href="./dashboard.html"]');
             dashboardLinks.forEach(link => {
-                link.href = '../tools/dashboard.html';
+                if (!link.href.includes('/tools/')) {
+                    link.href = '../tools/dashboard.html';
+                }
             });
-            
-            // Robust selector: Also check for links containing "Back to Dashboard" text
+
             const allLinks = document.querySelectorAll('a');
             allLinks.forEach(link => {
                 const text = link.textContent.trim().toLowerCase();
@@ -88,15 +85,11 @@
             });
         }
 
-        // Add tenant indicator to page title
         if (tenant) {
             document.title = `[${tenant}] ` + document.title;
         }
     });
 
-    /**
-     * Clear local storage and redirect to login
-     */
     function logout() {
         const tenant = localStorage.getItem('sync_tenant');
         localStorage.removeItem('sync_username');
@@ -112,21 +105,14 @@
         }
     }
 
-    // Export logout to window object
     window.syncLogout = logout;
 
-    /**
-     * Get the base path for API calls (respects tenant context)
-     */
     window.getTenantBase = function() {
         const tenant = localStorage.getItem('sync_tenant');
         if (!tenant) return '';
         return '../../';
     };
 
-    /**
-     * Make an API call that respects tenant context
-     */
     window.apiCall = async function(endpoint, data = {}) {
         const tenant = localStorage.getItem('sync_tenant');
         const base = window.getTenantBase() || '';

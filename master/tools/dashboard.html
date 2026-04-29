@@ -1,0 +1,81 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant Tools Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+</head>
+<body>
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">🛠️</div>
+            <div class="page-header-text">
+                <h1>Tenant <em>Tools Suite</em></h1>
+                <p>AI-powered web development tools for your workspace</p>
+            </div>
+            <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+                <span class="badge" id="welcome-user">Welcome</span>
+                <a href="../index.php" class="btn btn-secondary logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="scroll-area">
+            <div class="card" style="margin-bottom: 10px;">
+                <div class="section-title">Available Tools</div>
+                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Select a tool to start working. All tools use AI to accelerate your workflow.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <a href="webforge.html" class="tool-card">
+                    <div class="tool-icon">⚡</div>
+                    <h2>WebForge AI</h2>
+                    <p>Multi-agent pipeline that generates production-ready web apps through AI agents.</p>
+                </a>
+
+                <a href="website_builder_plus.html" class="tool-card">
+                    <div class="tool-icon">🎨</div>
+                    <h2>Website Builder Plus</h2>
+                    <p>AI-powered website generator with preset styles for rapid prototyping.</p>
+                </a>
+
+                <a href="repo_analyzer.html" class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <h2>Repository Analyzer</h2>
+                    <p>Analyze GitHub repositories to understand codebase structure and technologies.</p>
+                </a>
+
+                <a href="interface_analyzer.html" class="tool-card">
+                    <div class="tool-icon">🖼️</div>
+                    <h2>Interface Analyzer</h2>
+                    <p>Analyze UI screenshots or URLs to evaluate design patterns and UX.</p>
+                </a>
+
+                <a href="web_restyler.html" class="tool-card">
+                    <div class="tool-icon">✨</div>
+                    <h2>Web Restyler</h2>
+                    <p>Restyle existing HTML/CSS according to specified design preferences.</p>
+                </a>
+
+                <a href="md_converter.html" class="tool-card">
+                    <div class="tool-icon">📝</div>
+                    <h2>Markdown Converter</h2>
+                    <p>Bidirectional converter between README.md and styled HTML documentation.</p>
+                </a>
+
+                <a href="collabra.html" class="tool-card">
+                    <div class="tool-icon">🤝</div>
+                    <h2>Collabra</h2>
+                    <p>Collaborative development tool with dual-agent frontend/backend workflow.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
