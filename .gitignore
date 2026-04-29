@@ -28,3 +28,10 @@ audit_log.json
 # Security - Backup files
 *.bak
 *.tmp
+
+# Multi-tenant isolated workspaces (generated at runtime)
+tenants/
+
+# Tenant metadata files (generated at runtime)
+master/.activated
+master/.setup.json
