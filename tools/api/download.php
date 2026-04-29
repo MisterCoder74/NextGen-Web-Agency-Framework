@@ -21,6 +21,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+/* --- Rate limiting (20 downloads per minute) --- */
+require_once __DIR__ . '/security_helper.php';
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateLimit = SecurityHelper::checkRateLimit('dl_' . $clientIp, 20, 60);
+
+if (!$rateLimit['allowed']) {
+    http_response_code(429);
+    header('Retry-After: ' . $rateLimit['retry_after']);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'error' => 'Rate limit exceeded. Please wait before downloading again.',
+        'retry_after' => $rateLimit['retry_after']
+    ]);
+    exit;
+}
+
 /* --- Read input --- */
 $filesJson   = isset($_POST['files'])        ? $_POST['files']        : '';
 $projectName = isset($_POST['project_name']) ? $_POST['project_name'] : 'project';

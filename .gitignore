@@ -17,3 +17,14 @@ projects/
 # Logs
 logs/
 *.log
+
+# Security - Rate limiting data
+tools/.rate_limit/
+
+# Security - Audit logs (never commit these)
+audit_log.json
+*.log
+
+# Security - Backup files
+*.bak
+*.tmp
