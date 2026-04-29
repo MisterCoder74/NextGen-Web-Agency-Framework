@@ -2,7 +2,10 @@
 /**
  * Vivacity AI — Image Generation Proxy
  * Receives JSON body, forwards to OpenAI-compatible Image Generation API.
+ * Includes security hardening: API key validation, rate limiting, request size limits.
  */
+
+require_once __DIR__ . '/security_helper.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -24,31 +27,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw  = file_get_contents('php://input');
 $body = json_decode($raw, true);
 
-/**
- * Log an event to the audit log.
- */
-function logEvent($action, $username, $params) {
-    $logFile = __DIR__ . '/../../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'params'    => $params,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
-
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+/* --- Validate request size (max 1MB) --- */
+$sizeCheck = SecurityHelper::validateRequestSize($raw, 1048576);
+if (!$sizeCheck['valid']) {
+    http_response_code(413);
+    echo json_encode(['error' => $sizeCheck['error']]);
+    exit;
 }
 
 if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid JSON body.']);
+    exit;
+}
+
+/* --- Rate limiting (10 requests per minute for image generation - more expensive) --- */
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateLimit = SecurityHelper::checkRateLimit('img_' . $clientIp, 10, 60);
+
+if (!$rateLimit['allowed']) {
+    http_response_code(429);
+    header('Retry-After: ' . $rateLimit['retry_after']);
+    echo json_encode([
+        'error' => 'Rate limit exceeded for image generation. Please wait before making more requests.',
+        'retry_after' => $rateLimit['retry_after']
+    ]);
     exit;
 }
 
@@ -59,15 +62,28 @@ $model    = isset($body['model'])    ? trim($body['model'])    : 'gpt-image-1';
 $size     = !empty($body['size'])    ? trim($body['size'])     : '1024x1024';
 $quality  = isset($body['quality'])  ? trim($body['quality'])  : 'medium';
 
-if (empty($apiKey)) {
+/* --- Validate API key format and length --- */
+$keyValidation = SecurityHelper::validateApiKey($apiKey);
+if (!$keyValidation['valid']) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing api_key.']);
+    echo json_encode(['error' => $keyValidation['error']]);
+    SecurityHelper::logEvent("Invalid API key format attempt (Image)", $username, [
+        'model' => $model,
+        'error' => $keyValidation['error']
+    ]);
     exit;
 }
 
 if (empty($prompt)) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing prompt.']);
+    exit;
+}
+
+/* --- Validate prompt length (prevent abuse) --- */
+if (strlen($prompt) > 4000) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Prompt exceeds maximum length of 4000 characters.']);
     exit;
 }
 
@@ -82,17 +98,31 @@ if (!in_array($model, $allowedModels, true)) {
     $model = 'gpt-image-1';
 }
 
+/* --- Whitelist allowed sizes --- */
+$allowedSizes = ['256x256', '512x512', '1024x1024', '1024x1792', '1792x1024'];
+if (!in_array($size, $allowedSizes, true)) {
+    $size = '1024x1024';
+}
+
+/* --- Whitelist allowed quality --- */
+$allowedQualities = ['low', 'medium', 'high'];
+if (!in_array($quality, $allowedQualities, true)) {
+    $quality = 'medium';
+}
+
 /* --- Append mandatory padding instruction --- */
 $mandatoryPadding = " MANDATORY: make sure the image content is not cut, and is all included inside the borders of the image with a little internal padding.";
 if (stripos($prompt, $mandatoryPadding) === false) {
     $prompt .= $mandatoryPadding;
 }
 
-logEvent("Image Generation Request", $username, [
+/* --- Log request (sanitized - no API key) --- */
+SecurityHelper::logEvent("Image Generation Request", $username, [
     'model' => $model,
     'size' => $size,
     'quality' => $quality,
-    'prompt_length' => strlen($prompt)
+    'prompt_length' => strlen($prompt),
+    'rate_limit_remaining' => $rateLimit['remaining'] ?? 'unknown'
 ]);
 
 /* --- Build OpenAI request --- */
@@ -154,6 +184,11 @@ if ($result === false && in_array($curlErrNo, [CURLE_SSL_CACERT, CURLE_SSL_PEER_
     $httpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
     $curlErr  = curl_error($ch2);
     curl_close($ch2);
+    
+    SecurityHelper::logEvent("SSL Fallback Used (Image)", $username, [
+        'model' => $model,
+        'reason' => 'SSL verification failed'
+    ]);
 }
 
 if ($result === false || $result === '') {

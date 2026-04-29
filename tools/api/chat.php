@@ -2,7 +2,10 @@
 /**
  * WebForge AI — OpenAI Chat Proxy
  * Receives JSON body, forwards to OpenAI Chat Completions API.
+ * Includes security hardening: API key validation, rate limiting, request size limits.
  */
+
+require_once __DIR__ . '/security_helper.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -24,25 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $raw  = file_get_contents('php://input');
 $body = json_decode($raw, true);
 
-/**
- * Log an event to the audit log.
- */
-function logEvent($action, $username = 'Anonymous') {
-    $logFile = __DIR__ . '/../../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
-
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+/* --- Validate request size (max 1MB) --- */
+$sizeCheck = SecurityHelper::validateRequestSize($raw, 1048576);
+if (!$sizeCheck['valid']) {
+    http_response_code(413);
+    echo json_encode(['error' => $sizeCheck['error']]);
+    exit;
 }
 
 if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
@@ -51,20 +41,36 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     exit;
 }
 
-$apiKey   = isset($body['api_key'])    ? trim($body['api_key'])    : '';
-$username = isset($body['username'])   ? trim($body['username'])   : 'Anonymous';
-$model    = isset($body['model'])      ? trim($body['model'])      : 'gpt-4.1-nano';
-$messages = isset($body['messages'])   ? $body['messages']         : [];
-$maxTok   = isset($body['max_tokens']) ? (int)$body['max_tokens']  : 28000;
-$temp     = isset($body['temperature'])? (float)$body['temperature']: 0.3;
+/* --- Rate limiting (30 requests per minute per IP) --- */
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateLimit = SecurityHelper::checkRateLimit($clientIp, 30, 60);
 
-if (!empty($messages)) {
-    logEvent("AI Chat Request (Model: $model)", $username);
+if (!$rateLimit['allowed']) {
+    http_response_code(429);
+    header('Retry-After: ' . $rateLimit['retry_after']);
+    echo json_encode([
+        'error' => 'Rate limit exceeded. Please wait before making more requests.',
+        'retry_after' => $rateLimit['retry_after']
+    ]);
+    exit;
 }
 
-if (empty($apiKey)) {
+$apiKey   = isset($body['api_key'])      ? trim($body['api_key'])    : '';
+$username = isset($body['username'])     ? trim($body['username'])   : 'Anonymous';
+$model    = isset($body['model'])        ? trim($body['model'])      : 'gpt-4.1-nano';
+$messages = isset($body['messages'])     ? $body['messages']         : [];
+$maxTok   = isset($body['max_tokens'])   ? (int)$body['max_tokens']  : 28000;
+$temp     = isset($body['temperature'])  ? (float)$body['temperature']: 0.3;
+
+/* --- Validate API key format and length --- */
+$keyValidation = SecurityHelper::validateApiKey($apiKey);
+if (!$keyValidation['valid']) {
     http_response_code(400);
-    echo json_encode(['error' => 'Missing api_key.']);
+    echo json_encode(['error' => $keyValidation['error']]);
+    SecurityHelper::logEvent("Invalid API key format attempt", $username, [
+        'model' => $model,
+        'error' => $keyValidation['error']
+    ]);
     exit;
 }
 
@@ -84,6 +90,21 @@ $allowedModels = [
 if (!in_array($model, $allowedModels, true)) {
     $model = 'gpt-4.1-nano';
 }
+
+/* --- Validate messages array size (prevent abuse) --- */
+if (count($messages) > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Too many messages. Maximum 100 messages allowed.']);
+    exit;
+}
+
+/* --- Log request (sanitized - no API key) --- */
+SecurityHelper::logEvent("AI Chat Request", $username, [
+    'model' => $model,
+    'message_count' => count($messages),
+    'max_tokens' => $maxTok,
+    'rate_limit_remaining' => $rateLimit['remaining'] ?? 'unknown'
+]);
 
 /* --- Build OpenAI request --- */
 $payload = json_encode([
@@ -114,8 +135,8 @@ $curlOpts = [
 $caBundlePaths = [
     '/etc/ssl/certs/ca-certificates.crt',          // Debian/Ubuntu
     '/etc/pki/tls/certs/ca-bundle.crt',            // RHEL/CentOS
-    '/etc/ssl/cert.pem',                            // macOS / Alpine
-    ini_get('curl.cainfo'),                         // php.ini override
+    '/etc/ssl/cert.pem',                           // macOS / Alpine
+    ini_get('curl.cainfo'),                        // php.ini override
 ];
 foreach ($caBundlePaths as $ca) {
     if (!empty($ca) && file_exists($ca)) {
@@ -143,6 +164,11 @@ if ($result === false && in_array($curlErrNo, [CURLE_SSL_CACERT, CURLE_SSL_PEER_
     $httpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
     $curlErr  = curl_error($ch2);
     curl_close($ch2);
+    
+    SecurityHelper::logEvent("SSL Fallback Used", $username, [
+        'model' => $model,
+        'reason' => 'SSL verification failed'
+    ]);
 }
 
 if ($result === false || $result === '') {

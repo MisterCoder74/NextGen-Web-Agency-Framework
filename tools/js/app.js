@@ -63,15 +63,32 @@ bindEvents();
 });
 
 function loadApiKey() {
-const saved = localStorage.getItem('wf_api_key');
+const saved = Core.getApiKey();
 if (saved) {
 STATE.apiKey = saved;
 DOM.apiKeyInput.value = saved;
 DOM.keyStatus.textContent = '✓ API key loaded from storage.';
 DOM.keyStatus.className = 'field-hint ok';
+// Migrate legacy key if present
+const legacyKey = localStorage.getItem('wf_api_key');
+if (legacyKey && legacyKey !== saved) {
+localStorage.setItem('openaikey', legacyKey);
+localStorage.removeItem('wf_api_key');
+}
+} else {
+// Check for legacy key
+const legacyKey = localStorage.getItem('wf_api_key');
+if (legacyKey) {
+localStorage.setItem('openaikey', legacyKey);
+localStorage.removeItem('wf_api_key');
+STATE.apiKey = legacyKey;
+DOM.apiKeyInput.value = legacyKey;
+DOM.keyStatus.textContent = '✓ API key migrated from legacy storage.';
+DOM.keyStatus.className = 'field-hint ok';
 } else {
 DOM.keyStatus.textContent = 'No key stored.';
 DOM.keyStatus.className = 'field-hint';
+}
 }
 }
 
@@ -90,7 +107,9 @@ DOM.keyStatus.className = 'field-hint err';
 return;
 }
 STATE.apiKey = val;
-localStorage.setItem('wf_api_key', val);
+Core.setApiKey(val);
+// Clean legacy storage
+localStorage.removeItem('wf_api_key');
 DOM.keyStatus.textContent = '✓ Key saved.';
 DOM.keyStatus.className = 'field-hint ok';
 DOM.settingsPanel.classList.remove('open');
@@ -641,7 +660,7 @@ throw new Error(`API Error (HTTP ${response.status}): ${errMsg}`);
 
 const content = data?.choices?.[0]?.message?.content;
 if (!content) throw new Error('Empty response from OpenAI API.');
-console.log(content);
+// API response returned successfully - no logging of sensitive data
 return content;
 }
 

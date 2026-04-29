@@ -4,27 +4,22 @@
  * Creates a ZIP archive of all JSON data files and logs the action.
  */
 
+require_once __DIR__ . '/security_helper.php';
+
 header('Access-Control-Allow-Origin: *');
 
-/**
- * Log an event to the audit log.
- */
-function logEvent($action, $username = 'Anonymous') {
-    $logFile = __DIR__ . '/../../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
+/* --- Rate limiting (5 backups per minute - expensive operation) --- */
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateLimit = SecurityHelper::checkRateLimit('backup_' . $clientIp, 5, 60);
 
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+if (!$rateLimit['allowed']) {
+    http_response_code(429);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'error' => 'Rate limit exceeded. Please wait before creating another backup.',
+        'retry_after' => $rateLimit['retry_after']
+    ]);
+    exit;
 }
 
 // List of files to backup relative to this script's directory
@@ -43,14 +38,14 @@ $filesToBackup = [
 ];
 
 $username = $_POST['username'] ?? $_GET['username'] ?? $_GET['u'] ?? 'Anonymous';
-logEvent('System Backup Requested', $username);
+SecurityHelper::logEvent('System Backup Requested', $username);
 
 if (class_exists('ZipArchive')) {
     $tmpFile = tempnam(sys_get_temp_dir(), 'backup_') . '.zip';
     $zip     = new ZipArchive();
 
     if ($zip->open($tmpFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        logEvent('System Backup Failed: Could not create ZIP', $username);
+        SecurityHelper::logEvent('System Backup Failed: Could not create ZIP', $username);
         http_response_code(500);
         echo json_encode(['error' => 'Failed to create ZIP archive.']);
         exit;
@@ -66,13 +61,13 @@ if (class_exists('ZipArchive')) {
     $zip->close();
 
     if (!file_exists($tmpFile) || filesize($tmpFile) === 0) {
-        logEvent('System Backup Failed: ZIP file is empty or missing', $username);
+        SecurityHelper::logEvent('System Backup Failed: ZIP file is empty or missing', $username);
         http_response_code(500);
         echo json_encode(['error' => 'ZIP file creation failed.']);
         exit;
     }
 
-    logEvent('System Backup Successful', $username);
+    SecurityHelper::logEvent('System Backup Successful', $username);
 
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="system_backup_' . date('Ymd_His') . '.zip"');
@@ -84,7 +79,7 @@ if (class_exists('ZipArchive')) {
     unlink($tmpFile);
     exit;
 } else {
-    logEvent('System Backup Failed: ZipArchive missing');
+    SecurityHelper::logEvent('System Backup Failed: ZipArchive missing', $username);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'ZipArchive extension not available.']);
     exit;
