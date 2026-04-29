@@ -1,0 +1,538 @@
+<?php 
+$version = time(); 
+$setup_file = 'setup.json';
+$app_mode = 'SYNC';
+if (file_exists($setup_file)) {
+    $setup_data = json_decode(file_get_contents($setup_file), true);
+    if (isset($setup_data['mode'])) {
+        $app_mode = strtoupper($setup_data['mode']);
+    }
+}
+if ($app_mode !== 'CONTROL') {
+    die("Access denied. This tool is only available in CONTROL mode.");
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivacity NextGen Workload Auditor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+    <script src="js/identity.js?v=<?php echo $version; ?>"></script>
+    <style>
+        .auditor-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .stress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stress-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stress-card:hover {
+            border-color: rgba(20, 184, 166, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stress-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 10px 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stress-low { color: #10b981; }
+        .stress-medium { color: #f59e0b; }
+        .stress-high { color: #ef4444; }
+        .stress-critical { color: #ff0000; text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+
+        .tech-name {
+            font-weight: 700;
+            color: #5eead4;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .tech-role {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+        }
+
+        .project-table-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .priority-urgent { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .priority-high { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .priority-medium { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .priority-low { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        .ai-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ai-results {
+            background: rgba(167, 139, 250, 0.05);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ai-results h3 {
+            color: #a78bfa;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-ai {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 10px;
+            opacity: 0.7;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(167, 139, 250, 0.2);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .api-key-container {
+            margin-bottom: 10px;
+        }
+
+        .api-key-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
+        .btn-ai {
+            width: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-ai:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+        }
+
+        /* Markdown-ish styling for AI results */
+        .ai-results ul { padding-left: 20px; margin-bottom: 10px; }
+        .ai-results li { margin-bottom: 5px; }
+        .ai-results p { margin-bottom: 10px; }
+        .ai-results strong { color: #5eead4; }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <div class="page">
+        <div class="page-header">
+            <div class="icon-badge">⚖️</div>
+            <div class="page-header-text">
+                <h1>Vivacity <em>Agency Workload Auditor</em></h1>
+                <p>Technician Stress Analysis & Workload Balancing</p>
+            </div>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+                <a href="dashboard.html" style="color: #5eead4; text-decoration: none; font-size: 0.8rem; font-weight: 600;">← Back to Dashboard</a>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="scroll-area">
+            <div class="auditor-container">
+                <div class="main-content">
+                    <div class="section-title">Technician Stress Overview</div>
+                    <div class="stress-grid" id="stress-grid">
+                        <!-- Cards will be injected here -->
+                    </div>
+
+                    <div class="section-title">Detailed Project Breakdown</div>
+                    <div class="project-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Technician</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Stress Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-table-body">
+                                <!-- Rows will be injected here -->
+                            </tbody>
+                        </table>
+                        <div id="empty-projects" class="empty-state" style="display: none;">
+                            No active projects found.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-sidebar">
+                    <div class="card" style="flex: none;">
+                        <div class="section-title">AI Configuration</div>
+                        <div class="api-key-container">
+                            <label style="font-size: 0.7rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 5px;">OpenAI API Key</label>
+                            <input type="password" id="apiKey" class="api-key-input" placeholder="sk-...">
+                        </div>
+                        <button id="btnRunAI" class="btn-ai">
+                            <span>✨ Run AI Analysis</span>
+                        </button>
+                    </div>
+
+                    <div class="section-title">AI Recommendations</div>
+                    <div class="ai-results" id="ai-results">
+                        <div class="loading-ai" id="ai-placeholder">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🤖</div>
+                            <p style="text-align: center; font-size: 0.8rem;">Click the button above to generate workload balancing recommendations based on current stress indices.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weights = {
+            'urgent': 4,
+            'high': 3,
+            'medium': 2,
+            'low': 1
+        };
+
+        let technicians = [];
+        let projects = [];
+        let stressData = {};
+
+        async function loadData() {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                
+                // Fetch Technicians
+                const techResp = await fetch('project_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list_technicians', username })
+                });
+                const techData = await techResp.json();
+                technicians = techData.success ? techData.data : [];
+
+                // Fetch Projects
+                const projResp = await fetch('project_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', username })
+                });
+                const projData = await projResp.json();
+                projects = projData.success ? projData.data : [];
+
+                calculateStress();
+                renderUI();
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function calculateStress() {
+            stressData = {};
+            
+            // Initialize stress for each technician
+            technicians.forEach(t => {
+                stressData[t.username] = {
+                    score: 0,
+                    projects: []
+                };
+            });
+
+            // Add "Unassigned"
+            stressData['Unassigned'] = {
+                score: 0,
+                projects: []
+            };
+
+            // Process projects
+            projects.forEach(p => {
+                // Filter for active projects (not completed or cancelled)
+                if (p.stato === 'completed' || p.stato === 'cancelled') return;
+
+                const weight = weights[p.priorita] || 2;
+                const assignedTo = p.assigned_to || 'Unassigned';
+
+                if (!stressData[assignedTo]) {
+                    stressData[assignedTo] = { score: 0, projects: [] };
+                }
+
+                stressData[assignedTo].score += weight;
+                stressData[assignedTo].projects.push(p);
+            });
+        }
+
+        function getStressClass(score) {
+            if (score === 0) return '';
+            if (score <= 4) return 'stress-low';
+            if (score <= 8) return 'stress-medium';
+            if (score <= 12) return 'stress-high';
+            return 'stress-critical';
+        }
+
+        function renderUI() {
+            const grid = document.getElementById('stress-grid');
+            grid.innerHTML = '';
+
+            // Sort technicians by stress score descending
+            const sortedTechs = Object.keys(stressData).sort((a, b) => stressData[b].score - stressData[a].score);
+
+            sortedTechs.forEach(tech => {
+                const data = stressData[tech];
+                const card = document.createElement('div');
+                card.className = 'stress-card';
+                
+                const stressClass = getStressClass(data.score);
+                
+                card.innerHTML = `
+                    <div class="tech-name">${tech}</div>
+                    <div class="tech-role">${tech === 'Unassigned' ? 'Backlog' : 'Technician'}</div>
+                    <div class="stress-value ${stressClass}">${data.score}</div>
+                    <div style="font-size: 0.7rem; opacity: 0.6;">${data.projects.length} Active Projects</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            const tableBody = document.getElementById('project-table-body');
+            tableBody.innerHTML = '';
+            
+            const activeProjects = projects.filter(p => p.stato !== 'completed' && p.stato !== 'cancelled');
+            
+            if (activeProjects.length === 0) {
+                document.getElementById('empty-projects').style.display = 'block';
+            } else {
+                document.getElementById('empty-projects').style.display = 'none';
+                activeProjects.forEach(p => {
+                    const row = document.createElement('tr');
+                    const weight = weights[p.priorita] || 2;
+                    
+                    row.innerHTML = `
+                        <td style="font-weight: 600;">${p.nome_progetto}</td>
+                        <td style="color: #5eead4;">${p.assigned_to || '<span style="opacity:0.5">Unassigned</span>'}</td>
+                        <td><span style="opacity:0.7">${p.stato}</span></td>
+                        <td><span class="priority-badge priority-${p.priorita}">${p.priorita}</span></td>
+                        <td style="font-family: monospace; font-weight: 700;">+${weight}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        async function getAIRecommendations() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert('Please enter your OpenAI API Key');
+                return;
+            }
+
+            localStorage.setItem('openaikey', apiKey);
+
+            const resultsContainer = document.getElementById('ai-results');
+            resultsContainer.innerHTML = `
+                <div class="loading-ai">
+                    <div class="spinner"></div>
+                    <p>AI is analyzing workload patterns...</p>
+                </div>
+            `;
+
+            document.getElementById('btnRunAI').disabled = true;
+
+            // Prepare data for AI
+            let dataSummary = "Agency Workload Data:\n";
+            Object.keys(stressData).forEach(tech => {
+                const data = stressData[tech];
+                // Only include Unassigned if there are projects
+                if (tech === 'Unassigned' && data.projects.length === 0) return;
+                
+                dataSummary += `- ${tech}: Stress Index ${data.score} (${data.projects.map(p => `${p.nome_progetto} [${p.priorita}]`).join(', ')})\n`;
+            });
+
+            const hasUnassigned = stressData['Unassigned'] && stressData['Unassigned'].projects.length > 0;
+            const prompt = `As an Agency Operations AI, analyze this workload data:
+${dataSummary}
+
+Identify overloaded technicians (Stress Index > 8) and suggest how to redistribute projects to those with lower indices. 
+'Unassigned' projects are those without an 'assigned_to' technician.${hasUnassigned ? '\nConsider "Unassigned" projects as high priority to be assigned.' : ''}
+Provide specific project move recommendations in a clear, professional tone. 
+Use bullet points and bold text for technicians and project names.`;
+
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch('../tools/api/chat.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_key: apiKey,
+                        username: username,
+                        model: 'gpt-4.1-mini',
+                        messages: [
+                            { role: 'system', content: 'You are an expert Agency Operations Consultant.' },
+                            { role: 'user', content: prompt }
+                        ]
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error.message || result.error);
+                }
+
+                const aiContent = result.choices[0].message.content;
+                renderAIResponse(aiContent);
+
+            } catch (error) {
+                resultsContainer.innerHTML = `
+                    <div style="color: #ef4444; padding: 10px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px;">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            } finally {
+                document.getElementById('btnRunAI').disabled = false;
+            }
+        }
+
+        function renderAIResponse(text) {
+            const container = document.getElementById('ai-results');
+            
+            // Simple markdown-to-html conversion for the response
+            let html = text
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^- (.*?)<br>/gm, '<li>$1</li>')
+                .replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>')
+                .replace(/<\/ul><ul>/g, '');
+
+            container.innerHTML = `<h3>✨ Analysis & Recommendations</h3><p>${html}</p>`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('openaikey');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+
+            loadData();
+
+            document.getElementById('btnRunAI').addEventListener('click', getAIRecommendations);
+        });
+    </script>
+</body>
+</html>

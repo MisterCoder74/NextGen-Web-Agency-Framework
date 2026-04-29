@@ -1,0 +1,366 @@
+<?php 
+$version = time(); 
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repo Publisher — NextGen Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+        .main-container  {
+            height: 100vh;
+overflow-Y: auto;
+    }
+    .publisher-container {
+        max-width: 800px;
+        margin: 40px auto;
+    }
+    .app-selector {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 12px;
+        font-family: var(--font-display);
+        font-size: 1rem;
+        margin-bottom: 20px;
+        outline: none;
+    }
+    .app-selector option {
+        background: var(--bg-card);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .form-group input, .form-group textarea {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 12px;
+        font-family: var(--font-display);
+        font-size: 0.9rem;
+        outline: none;
+        transition: var(--transition);
+    }
+    .form-group input:focus, .form-group textarea:focus {
+        border-color: var(--cyan);
+        box-shadow: 0 0 10px var(--cyan-dim);
+    }
+    .status-card {
+        background: var(--bg-card);
+        border-left: 4px solid var(--cyan);
+        padding: 20px;
+        margin-top: 30px;
+        display: none;
+    }
+    .status-card.active {
+        display: block;
+    }
+    .preloader {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--cyan-dim);
+        border-radius: 50%;
+        border-top-color: var(--cyan);
+        animation: spin 1s linear infinite;
+        vertical-align: middle;
+        margin-right: 10px;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .success-feedback {
+        text-align: center;
+        padding: 40px;
+        background: var(--bg-card);
+        border: 1px solid var(--green);
+        border-radius: var(--radius-lg);
+        margin-top: 30px;
+        display: none;
+    }
+    .success-feedback.active {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🐙</div>
+        <div class="page-header-text">
+            <h1>Repo <em>Publisher</em></h1>
+            <p>Publish micro-apps to GitHub repositories</p>
+        </div>
+        <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <button class="btn-icon" onclick="openGitHubSettings()" title="GitHub Settings">⚙️</button>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <main class="main-container">
+            <div class="publisher-container">
+                <div class="hero" style="padding: 20px 0;">
+                    <div class="hero-label">Micro-App Deployment</div>
+                    <h2 class="hero-title" style="font-size: 2.5rem;">Push to <em>GitHub</em></h2>
+                    <p class="hero-sub">Select a deployed micro-app and publish it to a new GitHub repository instantly.</p>
+                </div>
+
+        <div class="card" id="publisherForm">
+            <div class="form-group">
+                <label>Select Micro-App</label>
+                <select id="appSelect" class="app-selector">
+                    <option value="">Loading apps...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Repository Name</label>
+                <input type="text" id="repoName" placeholder="my-awesome-app">
+            </div>
+
+            <div class="form-group">
+                <label>Description (Optional)</label>
+                <textarea id="repoDescription" rows="3" placeholder="A cool micro-app built with NextGen Framework"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="isPrivate" checked style="width: auto;">
+                    <span style="font-size: 0.85rem; color: var(--text-dim);">Private Repository</span>
+                </label>
+            </div>
+
+            <button class="btn btn-primary btn-lg" id="btnPublish" style="width: 100%; justify-content: center;">
+                🚀 Publish to GitHub
+            </button>
+        </div>
+
+        <div class="status-card" id="deployStatus">
+            <div class="preloader"></div>
+            <span id="statusText" style="font-family: var(--font-mono); font-size: 0.85rem;">Initializing deployment...</span>
+        </div>
+
+        <div class="success-feedback" id="successFeedback">
+            <div style="font-size: 40px; margin-bottom: 15px;">✅</div>
+            <h2 style="margin-bottom: 10px;">Deployment Successful!</h2>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Your micro-app has been successfully pushed to GitHub.</p>
+            <a href="#" id="repoLink" target="_blank" class="deploy-link" style="padding: 12px 24px; font-size: 1rem;">View Repository on GitHub ↗</a>
+            <button class="btn btn-ghost" style="margin-top: 20px; width: 100%;" onclick="resetForm()">Publish Another App</button>
+        </div>
+    </main>
+    </div>
+</div>
+
+<!-- GitHub Settings Modal -->
+<div id="ghSettingsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">🐙 GitHub <em>Settings</em></div>
+            <button class="modal-close" onclick="closeGitHubSettings()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            <div class="field-group" style="max-width: 100%;">
+                <label>Personal Access Token (Classic)</label>
+                <div class="input-row">
+                    <input type="password" id="ghTokenInput" placeholder="ghp_..." style="width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 12px;">
+                </div>
+                <p class="field-hint" style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">
+                    Need a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--cyan);">Generate one here</a>.<br>
+                    Ensure it has <strong>repo</strong> scope.
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-secondary" onclick="closeGitHubSettings()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveGitHubSettings()">Save Token</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const appSelect = document.getElementById('appSelect');
+        const repoNameInput = document.getElementById('repoName');
+        const repoDescInput = document.getElementById('repoDescription');
+        const isPrivateCheckbox = document.getElementById('isPrivate');
+        const btnPublish = document.getElementById('btnPublish');
+        const publisherForm = document.getElementById('publisherForm');
+        const deployStatus = document.getElementById('deployStatus');
+        const statusText = document.getElementById('statusText');
+        const successFeedback = document.getElementById('successFeedback');
+        const repoLink = document.getElementById('repoLink');
+
+        let allApps = [];
+
+        // Load apps
+        async function fetchApps() {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`api/microapps.php?action=list&u=${encodeURIComponent(username)}`);
+                allApps = await response.json();
+                
+                if (allApps.length === 0) {
+                    appSelect.innerHTML = '<option value="">No apps found</option>';
+                    btnPublish.disabled = true;
+                    return;
+                }
+
+                appSelect.innerHTML = '<option value="">-- Choose an App --</option>' + 
+                    allApps.map(app => `<option value="${app.id}">${app.name} (${app.id})</option>`).join('');
+            } catch (error) {
+                console.error('Error fetching apps:', error);
+                appSelect.innerHTML = '<option value="">Error loading apps</option>';
+            }
+        }
+
+        appSelect.addEventListener('change', () => {
+            const selectedApp = allApps.find(a => a.id === appSelect.value);
+            if (selectedApp) {
+                // Auto-suggest repo name
+                repoNameInput.value = selectedApp.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            }
+        });
+
+        btnPublish.addEventListener('click', async () => {
+            const appId = appSelect.value;
+            const repoName = repoNameInput.value.trim();
+            const description = repoDescInput.value.trim();
+            const isPrivate = isPrivateCheckbox.checked;
+            const token = Core.getGitHubToken();
+
+            if (!token) {
+                alert('GitHub token is missing. Please set it in Settings.');
+                openGitHubSettings();
+                return;
+            }
+
+            if (!appId || !repoName) {
+                alert('Please select an app and enter a repository name.');
+                return;
+            }
+
+            // Simple validation for repo name
+            if (!/^[a-z0-9_.-]+$/i.test(repoName)) {
+                alert('Repository name can only contain alphanumeric characters, hyphens, underscores, and dots.');
+                return;
+            }
+
+            // UI Feedback
+            publisherForm.style.opacity = '0.5';
+            publisherForm.style.pointerEvents = 'none';
+            deployStatus.classList.add('active');
+            btnPublish.disabled = true;
+            statusText.textContent = 'Creating repository and uploading files...';
+
+            try {
+                const response = await fetch('api/github_bridge.php', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-GitHub-Token': token
+                    },
+                    body: JSON.stringify({
+                        action: 'deploy',
+                        app_id: appId,
+                        repo_name: repoName,
+                        description: description,
+                        private: isPrivate
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    publisherForm.style.display = 'none';
+                    deployStatus.classList.remove('active');
+                    successFeedback.classList.add('active');
+                    repoLink.href = result.repo_url;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                publisherForm.style.opacity = '1';
+                publisherForm.style.pointerEvents = 'all';
+                deployStatus.classList.remove('active');
+                btnPublish.disabled = false;
+            }
+        });
+
+        window.resetForm = () => {
+            publisherForm.style.display = 'block';
+            publisherForm.style.opacity = '1';
+            publisherForm.style.pointerEvents = 'all';
+            successFeedback.classList.remove('active');
+            btnPublish.disabled = false;
+            appSelect.value = '';
+            repoNameInput.value = '';
+            repoDescInput.value = '';
+        };
+
+        // GitHub Settings logic (replicated for standalone use)
+        window.openGitHubSettings = () => {
+            const token = Core.getGitHubToken();
+            document.getElementById('ghTokenInput').value = token;
+            document.getElementById('ghSettingsModal').classList.add('open');
+        };
+
+        window.closeGitHubSettings = () => {
+            document.getElementById('ghSettingsModal').classList.remove('open');
+        };
+
+        window.saveGitHubSettings = () => {
+            const token = document.getElementById('ghTokenInput').value.trim();
+            Core.setGitHubToken(token);
+            closeGitHubSettings();
+            if (token) {
+                alert('GitHub token saved successfully!');
+            }
+        };
+
+        fetchApps();
+
+        // Check if token is set
+        if (!Core.getGitHubToken()) {
+            setTimeout(() => {
+                if (confirm('GitHub Token not found. Would you like to set it now?')) {
+                    openGitHubSettings();
+                }
+            }, 1000);
+        }
+    });
+</script>
+</body>
+</html>

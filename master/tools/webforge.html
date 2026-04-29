@@ -1,0 +1,809 @@
+<?php
+$setupData = file_exists('../management/setup.json') ? file_get_contents('../management/setup.json') : '{}';
+$clientsData = file_exists('../management/clients.json') ? file_get_contents('../management/clients.json') : '[]';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vivacity NextGen AI WebForger</title>
+        <?php $version = time(); ?>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>" />
+  <link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>" />
+  <script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+  <style>
+    /* Specific overrides for WebForge style integration */
+    .btn-back-dashboard { margin-right: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="noise"></div>
+
+  <div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🛠️</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Webforge</em></h1>
+            <p>Virtual Web Agency Pipeline — Collaborative AI Development</p>
+        </div>
+        <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <span class="badge" id="status-badge">IDLE</span>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+      <!-- MAIN -->
+      <main class="main-container">
+
+
+    <!-- REQUEST FORM -->
+    <section class="request-section">
+      <div class="request-card">
+        <div class="request-card-label">PROJECT BRIEF</div>
+        <div class="presets-bar" id="presets-bar">
+          <span class="presets-label">Presets:</span>
+        </div>
+        <textarea id="user-request" rows="5" placeholder="e.g. A SaaS task management app with user authentication, project boards, real-time collaboration, and a freemium subscription model..."></textarea>
+        <div class="request-actions">
+          <span class="char-count" id="char-count">0 chars</span>
+          <div style="display: flex; gap: 10px;">
+            <input type="file" id="screenshot-upload" accept="image/*" style="display: none;">
+            <button class="btn-secondary" id="upload-btn" title="Upload Screenshot">
+              <span class="btn-icon-left">📷</span>
+              Upload Screenshot
+            </button>
+            <button class="btn-primary" id="run-pipeline-btn">
+              <span class="btn-icon-left">▶</span>
+              Launch Pipeline
+            </button>
+          </div>
+        </div>
+        <div id="screenshot-preview-container" style="display:none; margin-top: 15px; position: relative; width: fit-content;">
+            <img id="screenshot-preview" style="max-width: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <button id="remove-screenshot" style="position: absolute; top: -10px; right: -10px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✕</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="pipeline-section" id="pipeline-section">
+      <div class="pipeline-header">
+        <div class="pipeline-title">AGENT PIPELINE</div>
+        <div class="pipeline-progress-bar"><div class="pipeline-progress-fill" id="pipeline-progress-fill"></div></div>
+      </div>
+      <div class="pipeline-flow">
+
+        <div class="agent-card" id="card-1" data-bot="1">
+          <div class="agent-card-header">
+            <div class="agent-index">01</div>
+            <div class="agent-info">
+              <div class="agent-name">Idea Strategist</div>
+              <div class="agent-role">Strategic Planning &amp; Architecture</div>
+            </div>
+            <div class="agent-status-dot" id="dot-1"></div>
+          </div>
+          <div class="agent-card-body">
+            <div class="agent-status-text" id="status-1">Waiting...</div>
+            <div class="agent-progress-bar"><div class="agent-progress-fill" id="progress-1"></div></div>
+            <div class="agent-outputs">
+              <div class="output-chip" id="chip-1-json"><span class="chip-icon">◈</span> Strategic Plan (JSON)</div>
+            </div>
+          </div>
+          <div class="agent-card-footer">
+            <button class="btn-view" id="view-btn-1" disabled>View Output</button>
+          </div>
+        </div>
+
+        <div class="pipeline-connector">
+          <div class="connector-line" id="line-1"></div>
+          <div class="connector-pulse" id="pulse-1"></div>
+          <div class="connector-arrow">→</div>
+        </div>
+
+        <div class="agent-card" id="card-2" data-bot="2">
+          <div class="agent-card-header">
+            <div class="agent-index">02</div>
+            <div class="agent-info">
+              <div class="agent-name">Frontend DevBot</div>
+              <div class="agent-role">HTML · CSS · JavaScript · SEO</div>
+            </div>
+            <div class="agent-status-dot" id="dot-2"></div>
+          </div>
+          <div class="agent-card-body">
+            <div class="agent-status-text" id="status-2">Waiting...</div>
+            <div class="agent-progress-bar"><div class="agent-progress-fill" id="progress-2"></div></div>
+            <div class="agent-outputs">
+              <div class="output-chip" id="chip-2-html"><span class="chip-icon">◈</span> HTML</div>
+              <div class="output-chip" id="chip-2-css"><span class="chip-icon">◈</span> CSS</div>
+              <div class="output-chip" id="chip-2-js"><span class="chip-icon">◈</span> JavaScript</div>
+            </div>
+          </div>
+          <div class="agent-card-footer">
+            <button class="btn-view" id="view-btn-2" disabled>View Output</button>
+          </div>
+        </div>
+
+        <div class="pipeline-connector">
+          <div class="connector-line" id="line-2"></div>
+          <div class="connector-pulse" id="pulse-2"></div>
+          <div class="connector-arrow">→</div>
+        </div>
+
+        <div class="agent-card" id="card-3" data-bot="3">
+          <div class="agent-card-header">
+            <div class="agent-index">03</div>
+            <div class="agent-info">
+              <div class="agent-name">Backend DevBot</div>
+              <div class="agent-role">PHP · JSON · Data Persistence</div>
+            </div>
+            <div class="agent-status-dot" id="dot-3"></div>
+          </div>
+          <div class="agent-card-body">
+            <div class="agent-status-text" id="status-3">Waiting...</div>
+            <div class="agent-progress-bar"><div class="agent-progress-fill" id="progress-3"></div></div>
+            <div class="agent-outputs">
+              <div class="output-chip" id="chip-3-php"><span class="chip-icon">◈</span> PHP Files</div>
+              <div class="output-chip" id="chip-3-json"><span class="chip-icon">◈</span> Data Schema (JSON)</div>
+            </div>
+          </div>
+          <div class="agent-card-footer">
+            <button class="btn-view" id="view-btn-3" disabled>View Output</button>
+          </div>
+        </div>
+
+        <div class="pipeline-connector">
+          <div class="connector-line" id="line-3"></div>
+          <div class="connector-pulse" id="pulse-3"></div>
+          <div class="connector-arrow">→</div>
+        </div>
+
+        <div class="agent-card agent-card--final" id="card-4" data-bot="4">
+          <div class="agent-card-header">
+            <div class="agent-index">04</div>
+            <div class="agent-info">
+              <div class="agent-name">Final Validator</div>
+              <div class="agent-role">Review · Fix · Integrate · Deliver</div>
+            </div>
+            <div class="agent-status-dot" id="dot-4"></div>
+          </div>
+          <div class="agent-card-body">
+            <div class="agent-status-text" id="status-4">Waiting...</div>
+            <div class="agent-progress-bar"><div class="agent-progress-fill" id="progress-4"></div></div>
+            <div class="agent-outputs">
+              <div class="output-chip" id="chip-4-final"><span class="chip-icon">◈</span> Final Codebase</div>
+              <div class="output-chip" id="chip-4-preview"><span class="chip-icon">◈</span> Preview HTML</div>
+            </div>
+          </div>
+          <div class="agent-card-footer">
+            <button class="btn-view" id="view-btn-4" disabled>View Output</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="results-section" id="results-section" style="display:none;">
+      <div class="results-header">
+        <div class="results-check">✓</div>
+        <div>
+          <div class="results-title">Pipeline Complete</div>
+          <div class="results-sub">Your production-ready codebase is ready.</div>
+        </div>
+      </div>
+      <div class="results-actions">
+        <div class="button-group">
+          <button class="btn-primary btn-lg" id="preview-btn"><span>⊞</span> Preview Website</button>
+          <button class="btn-secondary btn-lg" id="download-btn"><span>↓</span> Download ZIP</button>
+          <button class="btn-secondary btn-lg" id="download-html-btn"><span>↓</span> HTML</button>
+          <button class="btn-secondary btn-lg" id="download-php-btn"><span>↓</span> PHP</button>
+          <button class="btn-success btn-lg" id="deploy-btn"><span>🚀</span> Deploy App</button>
+          <button class="btn-doc" id="doc-btn">📄 Documentation</button>
+          <button class="btn-ghost btn-lg" id="reset-btn">↺ New Project</button>
+        </div>
+      </div>
+      <div id="deploy-feedback" class="deploy-feedback"></div>
+    </section>
+
+      </main>
+    </div><!-- .scroll-area -->
+  </div><!-- .page -->
+
+  <!-- TOAST -->
+  <div class="toast" id="error-toast">
+    <span class="toast-icon">⚠</span>
+    <span id="toast-message">An error occurred.</span>
+    <button class="toast-close" id="toast-close">✕</button>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Agent Output Modal -->
+  <div class="modal-overlay" id="output-modal">
+    <div class="modal modal--output">
+      <div class="modal-header">
+        <div class="modal-title" id="output-modal-title">Agent Output</div>
+        <button class="modal-close" id="output-modal-close">✕</button>
+      </div>
+      <div class="modal-tabs" id="output-modal-tabs"></div>
+      <div class="modal-body">
+        <pre class="code-output" id="output-modal-content"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div class="modal-overlay modal-overlay--fullscreen" id="preview-modal">
+    <div class="modal modal--preview">
+      <div class="modal-header">
+        <div class="modal-title">Preview — <em id="preview-project-name">Website</em></div>
+        <div class="preview-toolbar">
+          <button class="toolbar-btn" id="preview-desktop">⊡ Desktop</button>
+          <button class="toolbar-btn" id="preview-tablet">▣ Tablet</button>
+          <button class="toolbar-btn" id="preview-mobile">▢ Mobile</button>
+        </div>
+        <button class="modal-close" id="preview-modal-close">✕</button>
+      </div>
+      <div class="preview-frame-wrapper" id="preview-wrapper">
+        <iframe id="preview-iframe"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documentation Modal -->
+  <div class="modal-overlay" id="doc-modal">
+    <div class="modal modal--output" style="max-width:720px;width:95%;">
+      <div class="modal-header">
+        <div class="modal-title" id="doc-modal-title">Project Documentation</div>
+        <button class="modal-close" id="doc-modal-close">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <pre class="code-output doc-content" id="doc-content" style="max-height:60vh;overflow-y:auto;padding:1.25rem 1.5rem;"></pre>
+      </div>
+      <div class="doc-actions">
+        <button class="btn-secondary" id="doc-download-md">↓ Download .md</button>
+        <button class="btn-secondary" id="doc-download-html">↓ Download .html</button>
+      </div>
+    </div>
+  </div>
+
+   <script src="js/core.js?v=<?php echo $version; ?>"></script>
+  <script>
+'use strict';
+
+const PRESETS = [
+  { label: '👤 Digital Identity', text: `Create a minimalist personal portfolio website for a digital professional. Include a hero section with a brief bio, a skills section, a simple projects gallery, and a functional contact form. Use a clean, modern aesthetic with plenty of white space.` },
+  { label: '🚀 Product Landing', text: `Develop a high-converting SaaS landing page. Features should include a compelling hero section with a call-to-action, a feature grid (with icons), a transparent pricing table (3 tiers), and an accordion-style FAQ section. Design should be sleek and tech-focused.` },
+  { label: '🏢 Corporate One-Pager', text: `Build a professional one-page website for a consultancy firm. It needs sections for: Services provided, 'About Us' company history, Client Case Studies (using a slider or grid), and a clear Contact section with a map placeholder and office details.` },
+  { label: '🎨 Minimal Portfolio', text: `Design a visual-first minimal portfolio for a creative artist or photographer. The main focus should be a large, masonry-style image grid for projects. Use minimal text, elegant typography, and a simple navigation menu. Include a simple 'About' and 'Contact' footer.` },
+];
+
+const origin = window.location.origin;
+const pathname = window.location.pathname;
+const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+const urlWithoutFile = origin + folderPath;
+const agencyData = <?php echo $setupData; ?>;
+const clientsData = <?php echo $clientsData; ?>;
+
+const STATE = {
+  userRequest: '',
+  running: false,
+  outputs: { bot1: null, bot2: null, bot3: null, bot4: null },
+  projectName: 'Website',
+  screenshot: null,
+  clientId: new URLSearchParams(window.location.search).get('client_id') || '',
+  projectId: new URLSearchParams(window.location.search).get('project_id') || '',
+};
+
+const $ = (id) => document.getElementById(id);
+const DOM = {
+statusBadge:        $('status-badge'),
+userRequest:        $('user-request'),
+charCount:          $('char-count'),
+runPipelineBtn:     $('run-pipeline-btn'),
+pipelineProgress:   $('pipeline-progress-fill'),
+resultsSection:     $('results-section'),
+previewBtn:         $('preview-btn'),
+downloadBtn:        $('download-btn'),
+docBtn:             $('doc-btn'),
+resetBtn:           $('reset-btn'),
+viewBtn1:           $('view-btn-1'),
+viewBtn2:           $('view-btn-2'),
+viewBtn3:           $('view-btn-3'),
+viewBtn4:           $('view-btn-4'),
+toast:              $('error-toast'),
+toastMessage:       $('toast-message'),
+toastClose:         $('toast-close'),
+outputModal:        $('output-modal'),
+outputModalTitle:   $('output-modal-title'),
+outputModalContent: $('output-modal-content'),
+outputModalTabs:    $('output-modal-tabs'),
+outputModalClose:   $('output-modal-close'),
+previewModal:       $('preview-modal'),
+previewModalClose:  $('preview-modal-close'),
+previewIframe:      $('preview-iframe'),
+previewProjectName: $('preview-project-name'),
+previewDesktop:     $('preview-desktop'),
+previewTablet:      $('preview-tablet'),
+previewMobile:      $('preview-mobile'),
+previewWrapper:     $('preview-wrapper'),
+deployBtn:          $('deploy-btn'),
+deployFeedback:     $('deploy-feedback'),
+downloadHtmlBtn:    $('download-html-btn'),
+downloadPhpBtn:     $('download-php-btn'),
+docModal:           $('doc-modal'),
+docContent:         $('doc-content'),
+docModalClose:      $('doc-modal-close'),
+docDownloadMd:      $('doc-download-md'),
+docDownloadHtml:    $('doc-download-html'),
+presetsBar:         $('presets-bar'),
+screenshotUpload:   $('screenshot-upload'),
+uploadBtn:          $('upload-btn'),
+screenshotPreview:  $('screenshot-preview'),
+screenshotPreviewContainer: $('screenshot-preview-container'),
+removeScreenshot:   $('remove-screenshot'),
+};
+
+function showToast(msg) {
+  DOM.toastMessage.textContent = msg;
+  DOM.toast.classList.add('visible');
+  setTimeout(() => DOM.toast.classList.remove('visible'), 5000);
+}
+
+async function callAI(messages, options = {}) {
+    const data = await Core.callAI(messages, 'gpt-4o-mini', options);
+    return data.choices[0].message.content;
+}
+
+function parseJSON(raw, botName) {
+  let text = Core.cleanResponse(raw);
+  // Remove any leading/trailing non-JSON characters like markdown labels
+  text = text.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+  
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // Try to find the first { and last }
+    const s = raw.indexOf('{');
+    const e2 = raw.lastIndexOf('}');
+    if (s !== -1 && e2 > s) {
+      const candidate = raw.slice(s, e2 + 1);
+      try {
+        return JSON.parse(candidate);
+      } catch (innerE) {
+        console.error("JSON Parse Error details:", innerE, "Attempted to parse:", candidate);
+      }
+    }
+    throw new Error(`${botName} returned invalid JSON format. Please try again.`);
+  }
+}
+
+async function startPipeline() {
+  if (STATE.running) return;
+  const request = DOM.userRequest.value.trim();
+  if (!request) { showToast('Please describe your project.'); return; }
+  
+  STATE.running = true;
+  STATE.userRequest = request;
+  DOM.runPipelineBtn.disabled = true;
+  setStatusBadge('running', 'RUNNING');
+  resetCards();
+
+  try {
+    const bot1Output = await runBot1();
+    const bot2Output = await runBot2(bot1Output);
+    const bot3Output = await runBot3(bot1Output, bot2Output);
+    await runBot4(bot1Output, bot2Output, bot3Output);
+    showResults();
+  } catch (err) {
+    console.error("Pipeline Error:", err);
+    showToast(err.message);
+    setStatusBadge('error', 'ERROR');
+  } finally {
+    STATE.running = false;
+    DOM.runPipelineBtn.disabled = false;
+  }
+}
+
+async function runBot1() {
+  setCardState(1, 'running', 'Planning...');
+  const sys = `You are the Idea Strategist for a web agency.
+Your task is to analyze the user's request and create a detailed strategic plan.
+Focus on: project name, core features, UX flow, and design aesthetic.
+If a screenshot is provided, perform a deep-dive visual analysis of the layout, hierarchy, and design system.
+All frontend code will be single-file (internal CSS/JS).
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
+
+Return ONLY a valid JSON object with this structure:
+{
+  "project_name": "Name",
+  "summary": "Brief description",
+  "visual_analysis": "Detailed breakdown of UI/UX, layout, and components from the screenshot (if provided)",
+  "features": ["feature 1", "feature 2"],
+  "design_guidelines": { "colors": [], "typography": "", "style": "" },
+  "backend_needs": "Description of data/PHP needs"
+}`;
+  
+  let userContent = STATE.userRequest;
+  if (STATE.screenshot) {
+      userContent = [
+          { type: 'text', text: `Project Request: ${STATE.userRequest}` },
+          { type: 'image_url', image_url: { url: STATE.screenshot } }
+      ];
+  }
+
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userContent }
+   ], { max_tokens: 4000 });
+  
+  STATE.outputs.bot1 = parseJSON(raw, 'Bot 1');
+  setCardState(1, 'done', 'Plan ready');
+  activateConnector(1);
+  return STATE.outputs.bot1;
+}
+
+async function runBot2(plan) {
+  setCardState(2, 'running', 'Designing...');
+  const sys = `You are the Frontend DevBot. 
+Based on the Strategic Plan and its Visual Analysis, create a production-ready, single-file HTML5 application.
+
+Requirements:
+- Use internal <style> and <script> tags.
+- Use Google Fonts and Font Awesome if needed.
+- Ensure it is responsive and matches the design guidelines and visual analysis.
+- Include all UI components defined in the features.
+- IMPORTANT: Your JavaScript must be fully functional and complete. 
+- NEVER use 'TODO', 'placeholder', or 'logic goes here' comments. Write the actual production-ready logic.
+- All scripts must be internal and fully working for immediate deployment.
+
+IMAGES:
+You have the following image definitions to work with:
+${urlWithoutFile}placeholder_profile_woman.png,
+${urlWithoutFile}placeholder_profile_man.png,
+${urlWithoutFile}placeholder_team.png,
+${urlWithoutFile}placeholder_horizontal.png,
+${urlWithoutFile}placeholder_vertical.png,
+${urlWithoutFile}placeholder_hero_image.png.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
+
+Return ONLY a valid JSON object:
+{
+  "html": "<!DOCTYPE html>...full code..."
+}`;
+
+  let userContent = `Strategic Plan: ${JSON.stringify(plan)}\n\nOriginal Request: ${STATE.userRequest}`;
+  if (STATE.screenshot) {
+      userContent = [
+          { type: 'text', text: userContent },
+          { type: 'image_url', image_url: { url: STATE.screenshot } }
+      ];
+  }
+
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userContent }
+  ], { max_tokens: 10000 });
+  
+  STATE.outputs.bot2 = parseJSON(raw, 'Bot 2');
+  setCardState(2, 'done', 'Frontend ready');
+  activateConnector(2);
+  return STATE.outputs.bot2;
+}
+
+async function runBot3(plan, frontend) {
+  setCardState(3, 'running', 'Building Backend...');
+  const sys = `You are the Backend DevBot.
+Based on the Strategic Plan and the Frontend code, create necessary PHP files and data schemas.
+The frontend likely expects certain API endpoints or data formats.
+
+Return ONLY a valid JSON object:
+{
+  "files": [
+    { "name": "api.php", "content": "<" + "?php ..." },
+    { "name": "data.json", "content": "{...}" }
+  ]
+}`;
+
+  const userPrompt = `Strategic Plan: ${JSON.stringify(plan)}\n\nFrontend Code: ${frontend.html}\n\nOriginal Request: ${STATE.userRequest}`;
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userPrompt }
+  ], { max_tokens: 12000 });
+  
+  STATE.outputs.bot3 = parseJSON(raw, 'Bot 3');
+  setCardState(3, 'done', 'Backend ready');
+  activateConnector(3);
+  return STATE.outputs.bot3;
+}
+
+async function runBot4(plan, frontend, backend) {
+  setCardState(4, 'running', 'Validating...');
+  const sys = `You are the Final Validator & Integrator. 
+Your goal is to package the final codebase. 
+You must ensure the 'index.html' is present and correctly links/interacts with the backend files.
+
+Requirements:
+1. Review the Frontend and Backend work.
+2. Integrate them into a coherent project.
+3. Ensure the main HTML file is named 'index.html'.
+4. Provide a summary of the work.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}
+
+Return ONLY a valid JSON object:
+{
+  "files": [
+    { "name": "index.html", "content": "..." },
+    { "name": "...", "content": "..." }
+  ],
+  "summary": "Project overview and instructions",
+  "project_name": "Clean Name"
+}`;
+
+  const userPrompt = `Original Request: ${STATE.userRequest}\n\nStrategic Plan: ${JSON.stringify(plan)}\n\nFrontend HTML: ${frontend.html}\n\nBackend Files: ${JSON.stringify(backend.files)}`;
+  const raw = await callAI([
+      { role:'system', content: sys }, 
+      { role:'user', content: userPrompt }
+  ], { max_tokens: 15000 }); // Increase tokens for final output
+  
+  STATE.outputs.bot4 = parseJSON(raw, 'Bot 4');
+  
+  // Build preview safely
+  let previewContent = "<h1>Error: No HTML found in final output</h1>";
+  if (STATE.outputs.bot4 && Array.isArray(STATE.outputs.bot4.files)) {
+      const htmlFile = STATE.outputs.bot4.files.find(f => f && f.name && f.name.toLowerCase() === 'index.html') || 
+                       STATE.outputs.bot4.files.find(f => f && f.name && f.name.endsWith('.html'));
+      if (htmlFile && htmlFile.content) {
+          previewContent = htmlFile.content;
+      }
+  }
+                   
+  STATE.outputs.bot4.preview_html = previewContent;
+  if (STATE.outputs.bot4.project_name) STATE.projectName = STATE.outputs.bot4.project_name;
+
+  setCardState(4, 'done', 'Ready!');
+  setPipelineProgress(100);
+}
+
+function setCardState(n, s, t) {
+    const card = $(`card-${n}`);
+    card.className = `agent-card ${s}`;
+    $(`status-${n}`).textContent = t;
+    if (s === 'done') {
+        $(`progress-${n}`).style.width = '100%';
+        $(`view-btn-${n}`).disabled = false;
+        $(`card-${n}`).querySelectorAll('.output-chip').forEach(c => c.classList.add('ready'));
+    }
+}
+
+function activateConnector(n) {
+    $(`line-${n}`).classList.add('active');
+    $(`pulse-${n}`).classList.add('animating');
+}
+
+function setPipelineProgress(p) { DOM.pipelineProgress.style.width = p+'%'; }
+function setStatusBadge(s, t) { DOM.statusBadge.className = `badge ${s}`; DOM.statusBadge.textContent = t; }
+
+function showResults() {
+  DOM.resultsSection.style.display = 'flex';
+  DOM.deployFeedback.innerHTML = '';
+  setStatusBadge('done', 'DONE');
+}
+
+function resetCards() {
+  for (let i=1; i<=4; i++) {
+    const card = $(`card-${i}`);
+    card.className = 'agent-card' + (i === 4 ? ' agent-card--final' : '');
+    $(`status-${i}`).textContent = 'Waiting...';
+    $(`progress-${i}`).style.width = '0%';
+    $(`view-btn-${i}`).disabled = true;
+    card.querySelectorAll('.output-chip').forEach(c => c.classList.remove('ready'));
+    if(i<4) { $(`line-${i}`).classList.remove('active'); $(`pulse-${i}`).classList.remove('animating'); }
+  }
+}
+
+// Event Listeners
+DOM.uploadBtn.onclick = () => DOM.screenshotUpload.click();
+
+DOM.screenshotUpload.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            STATE.screenshot = event.target.result;
+            DOM.screenshotPreview.src = STATE.screenshot;
+            DOM.screenshotPreviewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+DOM.removeScreenshot.onclick = () => {
+    STATE.screenshot = null;
+    DOM.screenshotUpload.value = '';
+    DOM.screenshotPreviewContainer.style.display = 'none';
+};
+
+DOM.runPipelineBtn.onclick = startPipeline;
+DOM.downloadBtn.onclick = () => Core.downloadZip(STATE.outputs.bot4.files, STATE.projectName);
+
+DOM.downloadHtmlBtn.onclick = () => {
+    if (!STATE.outputs.bot4 || !STATE.outputs.bot4.files) {
+        showToast('No project files generated yet.');
+        return;
+    }
+    const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html'));
+    if (file) {
+        Core.downloadFile(file.content, file.name);
+    } else {
+        showToast('No HTML file found in the output.');
+    }
+};
+
+DOM.downloadPhpBtn.onclick = () => {
+    if (!STATE.outputs.bot4 || !STATE.outputs.bot4.files) {
+        showToast('No project files generated yet.');
+        return;
+    }
+    const file = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php'));
+    if (file) {
+        Core.downloadFile(file.content, file.name, 'application/x-httpd-php');
+    } else {
+        showToast('No PHP file found in the output.');
+    }
+};
+
+DOM.deployBtn.onclick = async () => {
+    DOM.deployBtn.disabled = true;
+    DOM.deployFeedback.innerHTML = '<div class="preloader active">Deploying...</div>';
+    
+    const htmlFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.html')) || { content: '' };
+    const phpFile = STATE.outputs.bot4.files.find(f => f.name.endsWith('.php')) || { content: '<' + '?php // Default backend' };
+    
+    const result = await Core.deployProject(htmlFile.content, phpFile.content, STATE.clientId, STATE.projectId);
+    
+    if (result.success) {
+        DOM.deployFeedback.innerHTML = `
+            <div class="success-message">
+                🚀 Deploy completato con successo!
+                <br>
+                <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+            </div>`;
+    } else {
+        DOM.deployFeedback.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
+    }
+    DOM.deployBtn.disabled = false;
+};
+
+DOM.previewBtn.onclick = () => {
+    DOM.previewIframe.srcdoc = STATE.outputs.bot4.preview_html;
+    DOM.previewModal.classList.add('open');
+    DOM.previewDesktop.click();
+};
+
+DOM.docBtn.onclick = () => {
+    if (STATE.outputs.bot4 && STATE.outputs.bot4.summary) {
+        DOM.docContent.textContent = STATE.outputs.bot4.summary;
+        DOM.docModal.classList.add('open');
+    }
+};
+
+DOM.previewDesktop.onclick = () => {
+    DOM.previewIframe.style.width = '100%';
+    DOM.previewDesktop.classList.add('active');
+    DOM.previewTablet.classList.remove('active');
+    DOM.previewMobile.classList.remove('active');
+};
+
+DOM.previewTablet.onclick = () => {
+    DOM.previewIframe.style.width = '768px';
+    DOM.previewTablet.classList.add('active');
+    DOM.previewDesktop.classList.remove('active');
+    DOM.previewMobile.classList.remove('active');
+};
+
+DOM.previewMobile.onclick = () => {
+    DOM.previewIframe.style.width = '375px';
+    DOM.previewMobile.classList.add('active');
+    DOM.previewDesktop.classList.remove('active');
+    DOM.previewTablet.classList.remove('active');
+};
+
+const showOutput = (title, files) => {
+    DOM.outputModalTitle.textContent = title;
+    DOM.outputModalTabs.innerHTML = '';
+    DOM.outputModalContent.textContent = '';
+
+    if (Array.isArray(files)) {
+        files.forEach((file, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `modal-tab ${idx === 0 ? 'active' : ''}`;
+            btn.textContent = file.name;
+            btn.onclick = () => {
+                DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                DOM.outputModalContent.textContent = file.content || '';
+            };
+            DOM.outputModalTabs.appendChild(btn);
+            if (idx === 0) DOM.outputModalContent.textContent = file.content || '';
+        });
+    } else if (files && typeof files === 'object') {
+        const keys = Object.keys(files);
+        keys.forEach((key, idx) => {
+            if (key === 'preview_html') return; // skip internal preview
+            const btn = document.createElement('button');
+            btn.className = `modal-tab ${idx === 0 ? 'active' : ''}`;
+            btn.textContent = key.toUpperCase();
+            btn.onclick = () => {
+                DOM.outputModalTabs.querySelectorAll('.modal-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const content = files[key];
+                DOM.outputModalContent.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+            };
+            DOM.outputModalTabs.appendChild(btn);
+            if (idx === 0) {
+                const content = files[key];
+                DOM.outputModalContent.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+            }
+        });
+    }
+    DOM.outputModal.classList.add('open');
+};
+
+DOM.viewBtn1.onclick = () => showOutput('Idea Strategist Output', STATE.outputs.bot1);
+DOM.viewBtn2.onclick = () => showOutput('Frontend DevBot Output', STATE.outputs.bot2);
+DOM.viewBtn3.onclick = () => showOutput('Backend DevBot Output', STATE.outputs.bot3 ? STATE.outputs.bot3.files : []);
+DOM.viewBtn4.onclick = () => showOutput('Final Validator Output', STATE.outputs.bot4 ? STATE.outputs.bot4.files : []);
+
+DOM.resetBtn.onclick = () => {
+    DOM.userRequest.value = '';
+    STATE.outputs = { bot1: null, bot2: null, bot3: null, bot4: null };
+    STATE.screenshot = null;
+    DOM.screenshotPreviewContainer.style.display = 'none';
+    DOM.screenshotUpload.value = '';
+    setPipelineProgress(0);
+    resetCards();
+    DOM.resultsSection.style.display = 'none';
+    setStatusBadge('idle', 'IDLE');
+};
+
+DOM.docModalClose.onclick = () => DOM.docModal.classList.remove('open');
+DOM.outputModalClose.onclick = () => DOM.outputModal.classList.remove('open');
+DOM.previewModalClose.onclick = () => DOM.previewModal.classList.remove('open');
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+    PRESETS.forEach(p => {
+        const chip = document.createElement('button');
+        chip.className = 'preset-chip';
+        chip.textContent = p.label;
+        chip.onclick = () => { DOM.userRequest.value = p.text; };
+        DOM.presetsBar.appendChild(chip);
+    });
+});
+
+</script>
+</body>
+</html>

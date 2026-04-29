@@ -1,0 +1,274 @@
+<?php
+$version = time();
+$setupData = file_exists('../management/setup.json') ? file_get_contents('../management/setup.json') : '{}';
+$clientsData = file_exists('../management/clients.json') ? file_get_contents('../management/clients.json') : '[]';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vivacity NextGen Collabra</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+    .collab-container {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .pipeline-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .agent-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.05);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-family: monospace;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+    }
+    .dot.active { background: #14b8a6; box-shadow: 0 0 8px #14b8a6; }
+    .dot.be { background: #a78bfa; }
+    .dot.be.active { box-shadow: 0 0 8px #a78bfa; }
+
+    #logArea {
+        height: 120px;
+    }
+
+    .results-area {
+        display: none;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .results-area.active { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🤝</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Collabra</em></h1>
+            <p>Dual-agent collaborative workflow for rapid frontend and backend generation</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <div class="collab-container">
+            <div class="pipeline-status">
+                <div class="agent-status"><div class="dot" id="dotFE"></div> Frontend Agent</div>
+                <div style="color: rgba(255,255,255,0.3);">→</div>
+                <div class="agent-status"><div class="dot be" id="dotBE"></div> Backend PHP Agent</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">🚀 Project Requirements</div>
+                <textarea id="userPrompt" rows="4" placeholder="Describe the feature or page you want to build (e.g., A contact form with validation and PHP confirmation email)..."></textarea>
+                <button class="btn btn-primary" id="runBtn" style="width: 100%; margin-top: 12px;">▶ Launch Pipeline</button>
+            </div>
+
+            <div class="section-title">📜 Pipeline Log</div>
+            <div id="logArea"></div>
+
+            <div class="results-area" id="results">
+                <div class="card">
+                    <div class="section-title">📂 Generated Code</div>
+                    <div class="input-tabs">
+                        <button class="tab-btn active" data-tab="html">index.html</button>
+                        <button class="tab-btn" data-tab="php">backend.php</button>
+                    </div>
+                    <div class="tab-content active" id="tabHtml">
+                        <pre id="codeHtml" class="code-view" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; overflow: auto; max-height: 300px; color: #a5b4fc;"></pre>
+                    </div>
+                    <div class="tab-content" id="tabPhp">
+                        <pre id="codePhp" class="code-view" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; overflow: auto; max-height: 300px; color: #fca5a5;"></pre>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 12px;">
+                        <button class="btn btn-success" id="btnDownloadZip">📦 Download ZIP</button>
+                        <button class="btn btn-secondary" id="btnDownloadHtml">↓ HTML</button>
+                        <button class="btn btn-secondary" id="btnDownloadPhp">↓ PHP</button>
+                        <button class="btn btn-primary" id="btnDeploy" style="flex: 1;">🚀 Deploy App</button>
+                    </div>
+                    <div id="deploy-feedback" class="deploy-feedback"></div>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">👁 Live Preview (Frontend)</div>
+                    <iframe id="previewFrame" style="width: 100%; height: 500px; background: white; border-radius: 10px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('client_id') || '';
+    const projectId = urlParams.get('project_id') || '';
+
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+    const urlWithoutFile = origin + folderPath;
+    const agencyData = <?php echo $setupData; ?>;
+    const clientsData = <?php echo $clientsData; ?>;
+
+    let generatedHtml = '';
+    let generatedPhp = '';
+
+    function appendLog(msg, type = 'sys') {
+        const log = document.getElementById('logArea');
+        const line = document.createElement('div');
+        line.style.marginBottom = '4px';
+        line.style.color = type === 'fe' ? '#14b8a6' : (type === 'be' ? '#a78bfa' : 'rgba(255,255,255,0.5)');
+        line.textContent = `[${Core.getFormattedTime()}] ${msg}`;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // TABS
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`tab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+        });
+    });
+
+    async function runPipeline() {
+        const prompt = document.getElementById('userPrompt').value.trim();
+        if (!prompt) return;
+
+        const btn = document.getElementById('runBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+        document.getElementById('logArea').innerHTML = '';
+        document.getElementById('results').classList.remove('active');
+        document.getElementById('deploy-feedback').innerHTML = '';
+        
+        try {
+            // Frontend Agent
+            document.getElementById('dotFE').classList.add('active');
+            appendLog('Frontend Agent started...', 'fe');
+            const feSystem = `You are an expert frontend developer. Given a feature request, output ONLY a complete, self-contained index.html file with embedded CSS and vanilla JavaScript. No frameworks. No markdown fences. No explanation. Output raw HTML only, starting with <!DOCTYPE html>.
+
+IMAGES:
+You have the following image definitions to work with:
+${urlWithoutFile}placeholder_profile_woman.png,
+${urlWithoutFile}placeholder_profile_man.png,
+${urlWithoutFile}placeholder_team.png,
+${urlWithoutFile}placeholder_horizontal.png,
+${urlWithoutFile}placeholder_vertical.png,
+${urlWithoutFile}placeholder_hero_image.png.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}`;
+            const feData = await Core.callAI([{ role: 'system', content: feSystem }, { role: 'user', content: prompt }]);
+            generatedHtml = Core.cleanResponse(feData.choices[0].message.content);
+            appendLog(`index.html generated (${generatedHtml.length} chars)`, 'fe');
+            document.getElementById('dotFE').classList.remove('active');
+
+            // Backend Agent
+            document.getElementById('dotBE').classList.add('active');
+            appendLog('Backend Agent started...', 'be');
+            const beSystem = `You are an expert backend PHP developer. Given a description and reference HTML, output ONLY a complete backend.php file. Vanilla PHP, no frameworks, no composer. Include proper headers, input validation, sanitization, and JSON responses. No markdown fences. No explanation. Output raw PHP only, starting with ${'<' + '?php'}.
+
+AGENCY DATA:
+${JSON.stringify(agencyData)}
+
+CLIENTS DATA:
+${JSON.stringify(clientsData)}`;
+            const beData = await Core.callAI([{ role: 'system', content: beSystem }, { role: 'user', content: `Feature: ${prompt}\n\nFrontend HTML:\n${generatedHtml.slice(0, 4000)}` }]);
+            generatedPhp = Core.cleanResponse(beData.choices[0].message.content);
+            appendLog(`backend.php generated (${generatedPhp.length} chars)`, 'be');
+            document.getElementById('dotBE').classList.remove('active');
+
+            // Finalize
+            document.getElementById('codeHtml').textContent = generatedHtml;
+            document.getElementById('codePhp').textContent = generatedPhp;
+            document.getElementById('previewFrame').srcdoc = generatedHtml;
+            document.getElementById('results').classList.add('active');
+            appendLog('Pipeline completed successfully!', 'sys');
+            
+        } catch (error) {
+            appendLog('Error: ' + error.message, 'be');
+            alert(error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '▶ Launch Pipeline';
+        }
+    }
+
+    document.getElementById('runBtn').onclick = runPipeline;
+
+    document.getElementById('btnDownloadZip').onclick = () => {
+        Core.downloadZip([
+            { name: 'index.html', content: generatedHtml },
+            { name: 'backend.php', content: generatedPhp }
+        ], 'collabra_project');
+    };
+
+    document.getElementById('btnDownloadHtml').onclick = () => {
+        Core.downloadFile(generatedHtml, 'index.html');
+    };
+
+    document.getElementById('btnDownloadPhp').onclick = () => {
+        Core.downloadFile(generatedPhp, 'backend.php', 'application/x-httpd-php');
+    };
+
+    document.getElementById('btnDeploy').onclick = async () => {
+        const btn = document.getElementById('btnDeploy');
+        const feedback = document.getElementById('deploy-feedback');
+        btn.disabled = true;
+        feedback.innerHTML = '<div class="preloader active">Deploying...</div>';
+        
+        const result = await Core.deployProject(generatedHtml, generatedPhp, clientId, projectId);
+        if (result.success) {
+            appendLog(`Deploy successful: ${result.url}`, 'sys');
+            feedback.innerHTML = `
+                <div class="success-message" style="margin-top: 10px;">
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+                </div>
+            `;
+        } else {
+            feedback.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
+        }
+        btn.disabled = false;
+    };
+</script>
+</body>
+</html>

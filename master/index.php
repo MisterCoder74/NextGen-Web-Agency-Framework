@@ -3,11 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Workspace - Login</title>
+    <title>NextGen Web Agency Framework - Login</title>
+    <?php 
+    $version = time(); 
+    $setup_file = 'management/setup.json';
+    $app_mode = 'SYNC';
+    if (file_exists($setup_file)) {
+        $setup_data = json_decode(file_get_contents($setup_file), true);
+        if (isset($setup_data['mode'])) {
+            $app_mode = strtoupper($setup_data['mode']);
+        }
+    }
+    $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
+    ?>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="tools/css/global.css?v=<?php echo time(); ?>">
+    <script src="management/js/identity.js?v=<?php echo $version; ?>"></script>
+    <link rel="stylesheet" href="tools/css/global.css?v=<?php echo $version; ?>">
     <style>
         body {
             display: flex;
@@ -21,6 +34,47 @@
             font-family: 'Syne', sans-serif;
         }
 
+        .hero-section {
+            text-align: center;
+            padding: 30px 16px;
+            max-width: 980px;
+        }
+
+        .hero-section h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #14b8a6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            font-family: 'Instrument Serif', serif;
+            font-style: italic;
+        }
+            
+        .middle-container {
+            display: flex;
+            justify-content: center;
+            gap: 0 20px;
+            align-items: center;
+        }
+
+        .middle-container img {
+            width: 400px;
+            height: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);    
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;    
+        }     
+            
         .login-card {
             width: 400px;
             padding: 48px;
@@ -29,7 +83,7 @@
             border-radius: 20px;
             backdrop-filter: blur(12px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            margin: 60px 0;
+            margin-bottom: 40px;
         }
 
         .login-card h2 {
@@ -38,20 +92,6 @@
             color: #5eead4;
             margin-bottom: 24px;
             text-align: center;
-        }
-
-        .tenant-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            background: rgba(20, 184, 166, 0.2);
-            border: 1px solid rgba(20, 184, 166, 0.3);
-            color: #5eead4;
-            padding: 4px 12px;
-            border-radius: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .form-group {
@@ -114,49 +154,100 @@
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.4);
         }
+
+        .footer-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #5eead4;
+        }
+
+        .footer-details {
+            margin-top: 10px;
+        }
+
+        .footer-details strong {
+            color: rgba(255, 255, 255, 0.7);
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="tenant-badge">Tenant Workspace</div>
-        <h2>Access Your Workspace</h2>
-
-        <?php if (isset($_GET['error'])): ?>
-            <div class="error-msg">
-                <?php
-                    switch($_GET['error']) {
-                        case '1': echo "Invalid credentials. Please try again."; break;
-                        case '2': echo "System error: User archive not found."; break;
-                        case '3': echo "Please fill in all fields."; break;
-                        case '5': echo "This workspace has been suspended."; break;
-                        default: echo "An error occurred during login.";
-                    }
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <?php $tenantParam = isset($_GET['tenant']) ? '&tenant=' . urlencode($_GET['tenant']) : ''; ?>
-        <?php $tenantValue = isset($_GET['tenant']) ? htmlspecialchars($_GET['tenant']) : ''; ?>
-
-        <form action="login.php" method="POST">
-            <?php if ($tenantValue): ?>
-                <input type="hidden" name="tenant" value="<?php echo $tenantValue; ?>">
+    <div class="hero-section">
+        <h1>NextGen Web Agency<br><small>Framework</small><span class="mode-label <?php echo $mode_class; ?>"><?php echo $app_mode; ?></span></h1>
+        <p>Empower your workflow with next-generation generative artificial intelligence.</p>
+        <div class="middle-container">        
+        <div class="login-card">
+            <h2>Access the Suite</h2>
+            
+            <?php if (isset($_GET['error'])): ?>
+                <div class="error-msg">
+                    <?php
+                        switch($_GET['error']) {
+                            case '1': echo "Invalid credentials. Please try again."; break;
+                            case '2': echo "System error: User archive not found."; break;
+                            case '3': echo "Please fill in all fields."; break;
+                            case '5': echo "This workspace has been suspended. Please contact support."; break;
+                            default: echo "An error occurred during login.";
+                        }
+                    ?>
+                </div>
             <?php endif; ?>
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required autocomplete="off">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autocomplete="new-password">
-            </div>
-            <button type="submit" class="btn btn-primary btn-login">Enter Your Workspace</button>
-        </form>
+
+            <?php $tenantParam = isset($_GET['tenant']) ? htmlspecialchars($_GET['tenant']) : ''; ?>
+            <?php if ($tenantParam): ?>
+                <input type="hidden" name="tenant" value="<?php echo $tenantParam; ?>">
+                <div style="text-align: center; margin-bottom: 16px; font-size: 0.72rem; color: rgba(255,255,255,0.4); background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.15); border-radius: 8px; padding: 6px 12px;">
+                    Tenant: <strong style="color: #5eead4;"><?php echo $tenantParam; ?></strong>
+                </div>
+            <?php endif; ?>
+            <form action="login.php" method="POST">
+                <?php if ($tenantParam): ?>
+                    <input type="hidden" name="tenant" value="<?php echo $tenantParam; ?>">
+                <?php endif; ?>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">Enter the Future</button>
+            </form>
+         </div>       
+            <img src="NextGen_WAF.jpg?v=<?php echo $version; ?>"> 
+         </div>
     </div>
 
     <footer>
-        <strong>Vivacity Design</strong> — NextGen Web Agency Framework
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+            <div class="footer-details">
+                &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. All rights reserved.<br>
+                The intellectual property of this framework and all the code that constitutes it remains the exclusive property of Vivacity Design.<br>
+                <strong>Data Controller:</strong> Alessandro Demontis | <strong>Contact:</strong> info@vivacitydesign.net<br>
+                The framework does not use sessions or cookies of any kind, therefore it is exempt from GDPR Compliance.
+            </div>
+        </div>
     </footer>
 
 </body>

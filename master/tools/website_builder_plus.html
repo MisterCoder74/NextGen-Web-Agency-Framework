@@ -1,0 +1,322 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vivacity NextGen AI Website Builder</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+    .userinput {
+        display: flex;
+        gap: 14px;
+        flex: 1;
+        min-height: 0;
+    }
+    .left-column {
+        flex: 0 0 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+    }
+    .right-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+    }
+    #chathistory {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-right: 4px;
+    }
+    .message-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 14px;
+        padding: 16px;
+    }
+    .user-message {
+        border-left: 3px solid #14b8a6;
+    }
+    .ai-message {
+        border-left: 3px solid #a78bfa;
+    }
+    .message-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: rgba(255,255,255,0.5);
+    }
+    .preview-container {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        height: 500px;
+    }
+    .preview-frame {
+        flex: 2;
+        background: white;
+        border-radius: 10px;
+        border: none;
+    }
+    .code-view {
+        flex: 1;
+        background: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 0.75rem;
+        overflow-y: auto;
+        color: #a5b4fc;
+    }
+    #typing-indicator {
+        font-size: 0.8rem;
+        color: #14b8a6;
+        font-style: italic;
+    }
+    @media (max-width: 900px) {
+        .userinput { flex-direction: column; overflow: visible; }
+        .left-column { flex: none; width: 100%; }
+        .preview-container { flex-direction: column; height: auto; }
+        .preview-frame { height: 400px; }
+        .code-view { height: 300px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🏗️</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Website Builder</em></h1>
+            <p>Generate complete websites with your favorite styles and integrated backend</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="userinput">
+        <div class="left-column">
+            <div class="card">
+                <div class="section-title">🎨 Page Style</div>
+                <div class="radio-group" style="grid-template-columns: 1fr;">
+                    <label><input type="radio" name="style" value="professional" checked> <span>Professional</span></label>
+                    <label><input type="radio" name="style" value="minimal"> <span>Minimal</span></label>
+                    <label><input type="radio" name="style" value="hightech"> <span>High-Tech</span></label>
+                    <label><input type="radio" name="style" value="creative"> <span>Creative</span></label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">✍️ Description</div>
+                <textarea id="prompt" rows="6" placeholder="Describe the kind of landing page you want to generate..."></textarea>
+                <button class="btn btn-primary" id="btnSend" style="width: 100%; margin-top: 12px;">🚀 Generate Site</button>
+            </div>
+
+            <div id="actionButtons" style="display: none; flex-direction: column; gap: 10px;">
+                <div class="button-group">
+                    <button class="btn btn-success" id="btnDownloadZip" style="flex: 1;">📦 Download ZIP</button>
+                    <button class="btn btn-secondary" id="btnDownloadHtml">↓ HTML</button>
+                    <button class="btn btn-secondary" id="btnDownloadPhp">↓ PHP</button>
+                </div>
+                <button class="btn btn-primary" id="btnDeploy" style="width: 100%;">🚀 Deploy App</button>
+            </div>
+
+            <div id="statusArea"></div>
+        </div>
+
+        <div class="right-column">
+            <div id="chathistory">
+                <div class="message-card ai-message">
+                    <div class="message-header">VivacityGPT</div>
+                    <p>Hello! Describe the website you'd like me to build, choose a style, and I'll generate a complete project with HTML, CSS, and PHP backend for you.</p>
+                </div>
+            </div>
+            <div id="typing-indicator" style="display: none;">🏗️ Generating your website...</div>
+        </div>
+    </div>
+</div>
+
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('client_id') || '';
+    const projectId = urlParams.get('project_id') || '';
+
+    let currentFrontend = "";
+    let currentBackend = "";
+    let chatMemory = [];
+
+    const styleConfigs = {
+        professional: { verbosity: "low", spacing: "wide", cards_style: "rounded, shaded, bordered" },
+        minimal: { verbosity: "medium", spacing: "medium", cards_style: "shaded, bordered" },
+        hightech: { verbosity: "low", spacing: "narrow", cards_style: "rounded, shaded, bordered, glassmorphed" },
+        creative: { verbosity: "high", spacing: "wide", cards_style: "rounded, shaded, glassmorphed, gradiented" }
+    };
+
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    const folderPath = pathname.substring(0, pathname.lastIndexOf("/") + 1);
+    const urlWithoutFile = origin + folderPath;
+
+    async function sendMessage() {
+        const promptInput = document.getElementById('prompt');
+        const userInput = promptInput.value.trim();
+        if (!userInput) return;
+
+        const style = document.querySelector('input[name="style"]:checked').value;
+        const config = styleConfigs[style];
+
+        // UI Updates
+        appendMessage('Guest', userInput);
+        promptInput.value = '';
+        document.getElementById('typing-indicator').style.display = 'block';
+        document.getElementById('btnSend').disabled = true;
+
+        const systemPrompt = `You are a web designer and developer bot. Your output is made of code to satisfy the received request.
+You will not greet or thank the user. Produce a website layout design as complete code with internal CSS and JS.
+
+---- start of frontend section ----
+(Complete HTML code including internal CSS and JavaScript)
+---- end of frontend section ----
+
+---- start of backend section ----
+(Complete PHP code)
+---- end of backend section ----
+
+GENERAL CODE:
+Never use markdown formatting or fencing.
+
+IMAGES:
+You have the following image definitions to work with:
+${urlWithoutFile}placeholder_profile_woman.png,
+${urlWithoutFile}placeholder_profile_man.png,
+${urlWithoutFile}placeholder_team.png,
+${urlWithoutFile}placeholder_horizontal.png,
+${urlWithoutFile}placeholder_vertical.png,
+${urlWithoutFile}placeholder_hero_image.png.
+
+STYLE:
+You will create the page strictly according to the ${style} style.
+Text content will have ${config.verbosity} verbosity; card will be ${config.cards_style}; spacing between elements ${config.spacing}. 
+All backend contents and calls must be referenced to 'backend.php'.
+NEVER use markdown in your responses.`;
+
+        if (chatMemory.length === 0) {
+            chatMemory.push({ role: 'system', content: systemPrompt });
+        }
+        chatMemory.push({ role: 'user', content: userInput });
+
+        try {
+            const data = await Core.callAI(chatMemory);
+            let response = data.choices[0].message.content;
+            
+            // Parse response
+            const frontendMatch = response.match(/---- start of frontend section ----([\s\S]*?)---- end of frontend section ----/i);
+            const backendMatch = response.match(/---- start of backend section ----([\s\S]*?)---- end of backend section ----/i);
+            
+            currentFrontend = frontendMatch ? frontendMatch[1].trim() : Core.cleanResponse(response);
+            currentBackend = backendMatch ? backendMatch[1].trim() : "<" + "?php\n// Default Backend\nheader('Content-Type: application/json');\necho json_encode(['status' => 'ok']);";
+
+            appendMessage('VivacityGPT', currentFrontend, true);
+            chatMemory.push({ role: 'assistant', content: response });
+
+            document.getElementById('actionButtons').style.display = 'flex';
+        } catch (error) {
+            console.error(error);
+            appendMessage('System', 'Error: ' + error.message);
+        } finally {
+            document.getElementById('typing-indicator').style.display = 'none';
+            document.getElementById('btnSend').disabled = false;
+        }
+    }
+
+    function appendMessage(sender, content, isAI = false) {
+        const history = document.getElementById('chathistory');
+        const card = document.createElement('div');
+        card.className = `message-card ${isAI ? 'ai-message' : 'user-message'}`;
+        
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        header.textContent = `${Core.getFormattedTime()} — ${sender}`;
+        card.appendChild(header);
+
+        if (isAI) {
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'preview-container';
+            
+            const iframe = document.createElement('iframe');
+            iframe.className = 'preview-frame';
+            iframe.srcdoc = content;
+            
+            const codeView = document.createElement('div');
+            codeView.className = 'code-view';
+            codeView.textContent = content;
+
+            previewContainer.appendChild(iframe);
+            previewContainer.appendChild(codeView);
+            card.appendChild(previewContainer);
+        } else {
+            const p = document.createElement('p');
+            p.textContent = content;
+            card.appendChild(p);
+        }
+
+        history.appendChild(card);
+        history.scrollTop = history.scrollHeight;
+    }
+
+    document.getElementById('btnSend').onclick = sendMessage;
+    document.getElementById('prompt').onkeydown = (e) => { if(e.key === 'Enter' && e.ctrlKey) sendMessage(); };
+
+    document.getElementById('btnDownloadZip').onclick = () => {
+        Core.downloadZip([
+            { name: 'index.html', content: currentFrontend },
+            { name: 'backend.php', content: currentBackend }
+        ], 'ai_website_project');
+    };
+
+    document.getElementById('btnDownloadHtml').onclick = () => {
+        Core.downloadFile(currentFrontend, 'index.html');
+    };
+
+    document.getElementById('btnDownloadPhp').onclick = () => {
+        Core.downloadFile(currentBackend, 'backend.php', 'application/x-httpd-php');
+    };
+
+    document.getElementById('btnDeploy').onclick = async () => {
+        const btn = document.getElementById('btnDeploy');
+        const statusArea = document.getElementById('statusArea');
+        btn.disabled = true;
+        statusArea.innerHTML = '<div class="preloader active">Deploying...</div>';
+        
+        const result = await Core.deployProject(currentFrontend, currentBackend, clientId, projectId);
+        if (result.success) {
+            statusArea.innerHTML = `
+                <div class="success-message" style="margin-top: 10px;">
+                    🚀 Deploy completato con successo!
+                    <br>
+                    <a href="${result.url}" target="_blank" class="deploy-link">Apri App</a>
+                </div>
+            `;
+        } else {
+            statusArea.innerHTML = `<div class="error-message">Error: ${result.message}</div>`;
+        }
+        btn.disabled = false;
+    };
+</script>
+</body>
+</html>

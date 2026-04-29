@@ -1,0 +1,163 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vivacity NextGen Markdown Converter</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+    .main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
+    .col-left { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    
+    #editor {
+        width: 100%;
+        flex: 1;
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-family: monospace;
+        padding: 14px;
+        resize: none;
+        outline: none;
+    }
+    #editor:focus { border-color: #a78bfa; }
+
+    #output-container {
+        flex: 1;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .preview-html { color: #fff; }
+    .preview-html h1, .preview-html h2, .preview-html h3 { color: #a78bfa; margin-top: 1em; margin-bottom: 0.5em; }
+    .preview-html p { margin-bottom: 1em; line-height: 1.6; }
+    .preview-html code { background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; }
+    
+    @media (max-width: 800px) {
+        .main-cols { flex-direction: column; }
+        .col-left { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">📝</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen MD/HTML Converter</em></h1>
+            <p>Bidirectional converter between MD and styled HTML</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="main-cols">
+        <div class="col-left">
+            <div class="card">
+                <div class="section-title">📂 Upload File</div>
+                <div class="file-drop-zone">
+                    <input type="file" id="fileInput" accept=".md,.markdown,.html,.htm">
+                    <div style="font-size: 1.5rem;">📄</div>
+                    <div style="font-size: 0.8rem;">Drop file or click to browse</div>
+                </div>
+                <div id="vfeedback" style="font-size: 0.75rem; margin-top: 8px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">⚙️ Actions</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="btnMdToHtml" class="btn" disabled>Markdown ➔ HTML</button>
+                    <button id="btnHtmlToMd" class="btn" disabled>HTML ➔ Markdown</button>
+                    <button id="btnDownload" class="btn btn-success" disabled>⬇️ Download Output</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-right">
+            <div class="section-title">✍️ Editor</div>
+            <textarea id="editor" placeholder="Paste your content here..."></textarea>
+            
+            <div class="section-title" style="margin-top: 14px;">👁 Preview</div>
+            <div id="output-container">
+                <div id="outputText" class="preview-html" style="color: rgba(255,255,255,0.3);">No preview available</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    const editor = document.getElementById('editor');
+    const outputText = document.getElementById('outputText');
+    const fileInput = document.getElementById('fileInput');
+    const btnMdToHtml = document.getElementById('btnMdToHtml');
+    const btnHtmlToMd = document.getElementById('btnHtmlToMd');
+    const btnDownload = document.getElementById('btnDownload');
+    let currentMode = 'md';
+
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            editor.value = evt.target.result;
+            detectAndEnable();
+        };
+        reader.readAsText(file);
+    };
+
+    editor.oninput = detectAndEnable;
+
+    function detectAndEnable() {
+        const val = editor.value.trim();
+        if (!val) {
+            btnMdToHtml.disabled = btnHtmlToMd.disabled = btnDownload.disabled = true;
+            return;
+        }
+        if (val.startsWith('<')) {
+            btnMdToHtml.disabled = true;
+            btnHtmlToMd.disabled = false;
+        } else {
+            btnMdToHtml.disabled = false;
+            btnHtmlToMd.disabled = true;
+        }
+    }
+
+    btnMdToHtml.onclick = () => {
+        const html = marked.parse(editor.value);
+        outputText.innerHTML = html;
+        currentMode = 'html';
+        btnDownload.disabled = false;
+    };
+
+    btnHtmlToMd.onclick = () => {
+        const turndownService = new TurndownService();
+        const md = turndownService.turndown(editor.value);
+        outputText.innerText = md;
+        currentMode = 'md';
+        btnDownload.disabled = false;
+    };
+
+    btnDownload.onclick = () => {
+        const content = currentMode === 'html' ? outputText.innerHTML : outputText.innerText;
+        const ext = currentMode === 'html' ? 'html' : 'md';
+        Core.downloadFile(content, `converted_docs.${ext}`, `text/${ext}`);
+    };
+</script>
+</body>
+</html>

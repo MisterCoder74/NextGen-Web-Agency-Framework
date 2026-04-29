@@ -1,6 +1,7 @@
 <?php
 /**
- * Tenant Login Handler
+ * Vivacity NextGen Web Agency Framework
+ * Login Validation - No Sessions
  * Supports both global and tenant-scoped authentication.
  */
 
@@ -10,85 +11,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tenantSlug = filter_input(INPUT_POST, 'tenant', FILTER_SANITIZE_SPECIAL_CHARS);
 
     if ($username && $password) {
-        // Determine which users file to check
-        $usersFile = 'users.json';
-        $tenantContext = null;
-
-        // If tenant is specified, check tenant's users.json first
+        // If tenant is specified, try tenant authentication first
         if ($tenantSlug) {
-            $tenantPath = __DIR__ . '/tenants/' . preg_replace('/[^a-zA-Z0-9_-]/', '', $tenantSlug);
-            $tenantSlashParts = glob(__DIR__ . '/tenants/*' . preg_replace('/[^a-zA-Z0-9_-]/', '', $tenantSlug));
-            foreach ($tenantSlashParts as $tp) {
-                if (is_dir($tp) && strpos(basename($tp), '___' . preg_replace('/[^a-zA-Z0-9_-]/', '', $tenantSlug)) !== false) {
-                    $tenantPath = $tp;
-                    break;
-                }
-            }
+            $safeSlug = preg_replace('/[^a-zA-Z0-9_-]/', '', $tenantSlug);
+            $tenantsDir = __DIR__ . '/tenants';
 
-            $tenantUsersFile = $tenantPath . '/users.json';
-
-            if (is_dir($tenantPath) && file_exists($tenantUsersFile)) {
-                // Load tenant registry to check status
-                $registryFile = __DIR__ . '/tenants.json';
-                $tenants = [];
-                if (file_exists($registryFile)) {
-                    $tenants = json_decode(file_get_contents($registryFile), true) ?: [];
-                }
-
-                $currentTenant = null;
-                foreach ($tenants as $t) {
-                    if ($t['slug'] === $tenantSlug) {
-                        $currentTenant = $t;
-                        break;
+            if (is_dir($tenantsDir)) {
+                $tenantPath = null;
+                $dh = opendir($tenantsDir);
+                if ($dh) {
+                    while (($entry = readdir($dh)) !== false) {
+                        if ($entry === '.' || $entry === '..') continue;
+                        $fullPath = $tenantsDir . '/' . $entry;
+                        if (!is_dir($fullPath)) continue;
+                        if (strpos($entry, '___' . $safeSlug) === 0) {
+                            $tenantPath = $fullPath;
+                            break;
+                        }
                     }
+                    closedir($dh);
                 }
 
-                if ($currentTenant && $currentTenant['status'] === 'suspended') {
-                    header('Location: index.php?error=5&tenant=' . urlencode($tenantSlug));
-                    exit;
-                }
-
-                $tenantUsers = json_decode(file_get_contents($tenantUsersFile), true) ?: [];
-                $authenticated = false;
-                $role = 'technician';
-
-                foreach ($tenantUsers as $user) {
-                    if ($user['username'] === $username && $user['password'] === $password) {
-                        $authenticated = true;
-                        $role = $user['role'] ?? 'technician';
-                        $tenantContext = $currentTenant;
-                        break;
+                if ($tenantPath) {
+                    // Load registry to check status
+                    $registryFile = __DIR__ . '/tenants.json';
+                    $tenants = [];
+                    if (file_exists($registryFile)) {
+                        $tenants = json_decode(file_get_contents($registryFile), true) ?: [];
                     }
-                }
 
-                if ($authenticated) {
-                    // Check if tenant needs first-login activation
-                    $activatedFile = $tenantPath . '/.activated';
-                    $needsActivation = !file_exists($activatedFile);
-                    $firstLogin = isset($user['first_login']) ? $user['first_login'] : $needsActivation;
+                    $currentTenant = null;
+                    foreach ($tenants as $t) {
+                        if ($t['slug'] === $tenantSlug) {
+                            $currentTenant = $t;
+                            break;
+                        }
+                    }
 
-                    // Mark first login done
-                    if ($needsActivation) {
-                        foreach ($tenantUsers as &$u) {
-                            if ($u['username'] === $username) {
-                                $u['first_login_done'] = true;
+                    if ($currentTenant && ($currentTenant['status'] ?? '') === 'suspended') {
+                        header('Location: index.php?error=5&tenant=' . urlencode($tenantSlug));
+                        exit;
+                    }
+
+                    $tenantUsersFile = $tenantPath . '/users.json';
+
+                    if (file_exists($tenantUsersFile)) {
+                        $tenantUsers = json_decode(file_get_contents($tenantUsersFile), true) ?: [];
+                        $authenticated = false;
+                        $role = 'technician';
+                        $matchedUser = null;
+
+                        foreach ($tenantUsers as $user) {
+                            if ($user['username'] === $username && $user['password'] === $password) {
+                                $authenticated = true;
+                                $role = $user['role'] ?? 'technician';
+                                $matchedUser = $user;
                                 break;
                             }
                         }
-                        file_put_contents($tenantUsersFile, json_encode($tenantUsers, JSON_PRETTY_PRINT));
-                    }
 
-                    $redirect = $tenantPath . '/management/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role) . '&tenant=' . urlencode($tenantSlug);
-                    if ($needsActivation) {
-                        $redirect .= '&first_login=1';
+                        if ($authenticated) {
+                            // Check for first-login activation
+                            $activatedFile = $tenantPath . '/.activated';
+                            $needsActivation = !file_exists($activatedFile);
+
+                            // Update first login flag in users
+                            if ($needsActivation) {
+                                foreach ($tenantUsers as &$u) {
+                                    if ($u['username'] === $username) {
+                                        $u['first_login_done'] = true;
+                                        break;
+                                    }
+                                }
+                                file_put_contents($tenantUsersFile, json_encode($tenantUsers, JSON_PRETTY_PRINT));
+                            }
+
+                            // Redirect to tenant workspace
+                            $redirect = $tenantPath . '/management/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role) . '&tenant=' . urlencode($tenantSlug);
+                            if ($needsActivation) {
+                                $redirect .= '&first_login=1';
+                            }
+                            header('Location: ' . $redirect);
+                            exit;
+                        }
                     }
-                    header('Location: ' . $redirect);
-                    exit;
                 }
             }
         }
 
         // Fall back to global users.json
+        $usersFile = 'users.json';
         if (file_exists($usersFile)) {
             $users = json_decode(file_get_contents($usersFile), true);
 
