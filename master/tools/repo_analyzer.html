@@ -1,0 +1,254 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vivacity NextGen AI Repo Analyzer</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+    .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+    #repoUrl {
+        flex: 1;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+        color: #fff; padding: 10px 14px; font-size: 0.88rem; outline: none;
+    }
+    
+    #results { display: none; flex-direction: column; gap: 14px; }
+    .result-section {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 16px 20px;
+    }
+    .tech-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tech-badge {
+        font-size: 0.75rem; font-weight: 700; padding: 4px 12px;
+        border-radius: 20px; background: rgba(20,184,166,0.1);
+        border: 1px solid rgba(20,184,166,0.3); color: #5eead4;
+    }
+    .file-tree {
+        font-family: monospace; font-size: 0.8rem; color: rgba(255,255,255,0.6);
+        background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;
+        max-height: 250px; overflow-y: auto;
+    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+    .stat-card {
+        background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-value { font-size: 1.2rem; font-weight: 800; color: #14b8a6; }
+    .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+        display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-content {
+        background: #111520; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+        padding: 24px; width: 90%; max-width: 450px;
+    }
+    .input-field {
+        width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px; padding: 10px 12px; color: #fff; font-family: monospace; font-size: 0.9rem;
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">📦</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Repo Analyzer</em></h1>
+            <p>Analyze any GitHub repository to understand its structure and technology</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="section-title" style="margin-bottom: 0;">🔗 Repository URL</div>
+                <button class="btn" id="btnSettings" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; padding: 4px 10px;">⚙️ GitHub Token</button>
+            </div>
+            <div class="input-row">
+                <input type="text" id="repoUrl" placeholder="https://github.com/username/repo">
+                <button class="btn btn-primary" id="btnAnalyze">🔍 Analyze Repo</button>
+            </div>
+        </div>
+
+        <div id="loading" style="display: none; text-align: center; padding: 40px;">
+            <div class="preloader active">Analyzing...</div>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.5);">Fetching data from GitHub and processing with AI</p>
+        </div>
+
+        <div id="results">
+            <div class="result-section" id="visualPreviewSection" style="display: none;">
+                <div class="section-title">🖼 Visual Preview</div>
+                <div id="visualPreview" style="text-align: center;"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">📌 Repository Info</div>
+                <div id="repoInfo"></div>
+            </div>
+            
+            <div class="result-section">
+                <div class="section-title">🤖 AI Analysis</div>
+                <div id="aiAnalysis" style="line-height: 1.6; font-size: 0.9rem;"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">🛠 Tech Stack</div>
+                <div id="techStack" class="tech-stack"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">📊 Stats</div>
+                <div id="stats" class="stats-grid"></div>
+            </div>
+
+            <div class="result-section">
+                <div class="section-title">📂 File Tree (Partial)</div>
+                <div id="fileTree" class="file-tree"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for GitHub Token -->
+<div id="tokenModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="section-title">🔑 GitHub Personal Access Token</div>
+        <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 15px;">
+            A token is required to analyze private repositories and increases rate limits.
+        </p>
+        <input type="password" id="ghTokenInput" class="input-field" style="margin-bottom: 20px;" placeholder="ghp_xxxxxxxxxxxx">
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="btn" id="btnCloseModal">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveToken">Save Token</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    async function analyzeRepo() {
+        const url = document.getElementById('repoUrl').value.trim();
+        if (!url) return;
+
+        const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+        if (!match) { alert('Invalid GitHub URL'); return; }
+        const [_, owner, repo] = match;
+
+        const token = Core.getGitHubToken();
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('visualPreviewSection').style.display = 'none';
+
+        try {
+            // 1. Fetch from GitHub API
+            const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+            if (!repoRes.ok) throw new Error('Repo not found or API rate limit exceeded');
+            const repoData = await repoRes.json();
+
+            const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${repoData.default_branch}?recursive=1`, { headers });
+            const treeData = await treeRes.json();
+
+            const langRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers });
+            const languages = await langRes.json();
+
+            // Search for visual preview
+            const previewFiles = ['screenshot.png', 'preview.png', 'thumbnail.png', 'screenshot.jpg', 'preview.jpg'];
+            const visualFile = treeData.tree.find(f => {
+                const name = f.path.split('/').pop().toLowerCase();
+                return previewFiles.includes(name);
+            });
+
+            if (visualFile) {
+                const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${repoData.default_branch}/${visualFile.path}`;
+                document.getElementById('visualPreview').innerHTML = `<img src="${imgUrl}" style="max-width: 100%; max-height: 400px; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1);">`;
+                document.getElementById('visualPreviewSection').style.display = 'block';
+            }
+
+            // 2. Display basic info
+            document.getElementById('repoInfo').innerHTML = `
+                <h3 style="color: #5eead4;">${repoData.full_name}</h3>
+                <p style="font-size: 0.85rem; margin-top: 5px;">${repoData.description || 'No description'}</p>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: rgba(255,255,255,0.5);">
+                    ⭐ ${repoData.stargazers_count} stars &nbsp;·&nbsp; 🍴 ${repoData.forks_count} forks
+                </div>
+            `;
+
+            const techs = Object.keys(languages);
+            document.getElementById('techStack').innerHTML = techs.map(t => `<span class="tech-badge">${t}</span>`).join('');
+
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${treeData.tree.length}</div><div class="stat-label">Files</div></div>
+                <div class="stat-card"><div class="stat-value">${(repoData.size / 1024).toFixed(1)}</div><div class="stat-label">MB</div></div>
+                <div class="stat-card"><div class="stat-value">${new Date(repoData.created_at).getFullYear()}</div><div class="stat-label">Created</div></div>
+            `;
+
+            let treeHtml = "";
+            treeData.tree.slice(0, 50).forEach(f => {
+                treeHtml += `<div>${f.type === 'tree' ? '📁' : '📄'} ${f.path}</div>`;
+            });
+            document.getElementById('fileTree').innerHTML = treeHtml;
+
+            // 3. AI Analysis
+            const fileList = treeData.tree.slice(0, 100).map(f => f.path).join('\n');
+            const messages = [
+                { role: 'system', content: 'You are a senior technical architect. Provide a high-level, "hint-style" architectural overview. Focus on tech stack choices and core structural logic.' },
+                { role: 'user', content: `Analyze this repo: ${repoData.full_name}\nDescription: ${repoData.description}\nFiles:\n${fileList}\n\nProvide a concise architectural overview (plain text, no markdown).` }
+            ];
+
+            const aiRes = await Core.callAI(messages);
+            document.getElementById('aiAnalysis').innerText = aiRes.choices[0].message.content;
+            document.getElementById('aiAnalysis').style.whiteSpace = 'pre-wrap';
+
+            document.getElementById('results').style.display = 'flex';
+        } catch (error) {
+            alert('Analysis Failed: ' + error.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    document.getElementById('btnAnalyze').onclick = analyzeRepo;
+    document.getElementById('repoUrl').onkeydown = (e) => { if(e.key === 'Enter') analyzeRepo(); };
+
+    // Token Modal Logic
+    const tokenModal = document.getElementById('tokenModal');
+    const ghTokenInput = document.getElementById('ghTokenInput');
+
+    document.getElementById('btnSettings').onclick = () => {
+        ghTokenInput.value = Core.getGitHubToken();
+        tokenModal.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseModal').onclick = () => {
+        tokenModal.style.display = 'none';
+    };
+
+    document.getElementById('btnSaveToken').onclick = () => {
+        Core.setGitHubToken(ghTokenInput.value.trim());
+        tokenModal.style.display = 'none';
+        alert('GitHub Token saved!');
+    };
+</script>
+</body>
+</html>

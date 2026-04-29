@@ -1,0 +1,159 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vivacity NextGen AI Interface Analyzer</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<style>
+    .main-cols { display: flex; gap: 18px; flex: 1; min-height: 0; }
+    .col-left  { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+    .col-right { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+    
+    .file-drop {
+        position: relative; width: 100%;
+        border: 2px dashed rgba(6,182,212,0.3); border-radius: 12px;
+        padding: 20px 14px; text-align: center; cursor: pointer;
+        transition: border-color 0.2s, background 0.2s; background: rgba(6,182,212,0.04);
+    }
+    .file-drop:hover { border-color: rgba(6,182,212,0.6); background: rgba(6,182,212,0.08); }
+    .file-drop input[type="file"] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    
+    #uploaded-image { width: 100%; border-radius: 10px; border: 1px solid rgba(6,182,212,0.2); margin-top: 10px; max-height: 400px; object-fit: contain; }
+    
+    #text-box {
+        flex: 1; overflow-y: auto;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 18px 20px;
+    }
+    .analysis-content h3 { color: #5eead4; margin-top: 16px; margin-bottom: 8px; font-size: 1.1rem; }
+    .analysis-content p { margin-bottom: 12px; line-height: 1.7; color: rgba(255,255,255,0.9); }
+    .analysis-content ul { margin: 15px 0 15px 25px; padding: 0; list-style: disc; }
+    .analysis-content li { margin-bottom: 8px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    
+    @media (max-width: 800px) {
+        .main-cols { flex-direction: column; }
+        .col-left { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🔍</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Interface Analyzer</em></h1>
+            <p>Professional UX/UI review of your web or mobile designs</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <div class="main-cols">
+            <div class="col-left">
+                <div class="card">
+                    <div class="section-title">Interface Type</div>
+                    <select id="choice" style="width: 100%; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 8px;">
+                        <option value="website">Website</option>
+                        <option value="application">Mobile/Desktop App</option>
+                    </select>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">Upload Design</div>
+                    <div class="file-drop">
+                        <input type="file" accept="image/*" id="vfile-input">
+                        <div style="font-size: 2rem;">🖥️</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Drop image or click to browse</div>
+                    </div>
+                    <img id="uploaded-image" style="display: none;">
+                    <button class="btn btn-primary" id="btnAnalyze" style="width: 100%; margin-top: 12px;" disabled>🔍 Analyze Interface</button>
+                </div>
+            </div>
+
+            <div class="col-right">
+                <div class="section-title">Analysis Report</div>
+                <div id="text-box">
+                    <div id="analysisPlaceholder" style="color: rgba(255,255,255,0.2); text-align: center; margin-top: 40px;">
+                        <div style="font-size: 3rem;">📋</div>
+                        <p>Upload a screenshot to get started</p>
+                    </div>
+                    <div id="image-analysis-output" class="analysis-content"></div>
+                </div>
+                <div id="actionButtons" style="display: none; margin-top: 10px;">
+                    <button class="btn btn-success" id="btnDownload">⬇️ Download Report (.txt)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script>
+    let currentImageData = "";
+    let analysisResult = "";
+
+    document.getElementById('vfile-input').onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            const img = document.getElementById('uploaded-image');
+            img.src = url;
+            img.style.display = 'block';
+            document.getElementById('btnAnalyze').disabled = false;
+            
+            const reader = new FileReader();
+            reader.onload = (evt) => { currentImageData = evt.target.result; };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    document.getElementById('btnAnalyze').onclick = async () => {
+        const btn = document.getElementById('btnAnalyze');
+        const type = document.getElementById('choice').value;
+        btn.disabled = true;
+        btn.textContent = '⏳ Analyzing...';
+        document.getElementById('analysisPlaceholder').style.display = 'none';
+        document.getElementById('image-analysis-output').innerHTML = '<div class="preloader active">Processing...</div>';
+
+        try {
+            const messages = [
+                { role: 'system', content: 'You are a senior Web Designer and UX Specialist. Analyze the provided image and provide a professional review.' },
+                { role: 'user', content: [
+                    { type: 'text', text: `Analyze this ${type} layout. You must provide a professional, in-depth review. Focus on 5 specific aspects: Structure, Colors, Typography, Navigation, and UX. STRICT REQUIREMENTS: 1) DON'T ANALYZE aspects that cannot be rendered in static images, like transitions, animations, hover effects, and such; 2) For EACH of these 5 aspects, you must write a minimum of 80 words. Do not provide brief summaries. Provide a rating (1-10) for each aspect and an overall summary (30-50 words maximum) and score (1-10). Format your response using clean HTML tags (h3 for titles, p for paragraphs, ul/li for lists). Do not use markdown.` },
+                    { type: 'image_url', image_url: { url: currentImageData } }
+                ]}
+            ];
+            
+            const data = await Core.callAI(messages, 'gpt-4o-mini');
+            analysisResult = data.choices[0].message.content;
+            document.getElementById('image-analysis-output').innerHTML = analysisResult;
+            document.getElementById('actionButtons').style.display = 'block';
+        } catch (error) {
+            alert('Analysis Error: ' + error.message);
+            document.getElementById('analysisPlaceholder').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analyze Interface';
+        }
+    };
+
+    document.getElementById('btnDownload').onclick = () => {
+        const cleanText = document.getElementById('image-analysis-output').innerText;
+        Core.downloadFile(cleanText, 'interface_analysis.txt', 'text/plain');
+    };
+</script>
+</body>
+</html>

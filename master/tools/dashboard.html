@@ -1,81 +1,597 @@
-<?php $version = time(); ?>
+<?php 
+$version = time(); 
+$setup_file = '../management/setup.json';
+$app_mode = 'SYNC';
+if (file_exists($setup_file)) {
+    $setup_data = json_decode(file_get_contents($setup_file), true);
+    if (isset($setup_data['mode'])) {
+        $app_mode = strtoupper($setup_data['mode']);
+    }
+}
+$mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenant Tools Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vivacity NextGen Tech Dashboard</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+         
+<link rel="stylesheet" href="css/global.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="css/style.css?v=<?php echo $version; ?>">
+<link rel="stylesheet" href="../management/css/messaging.css?v=<?php echo $version; ?>">
+<style>
+    .api-key-card {
+        margin-bottom: 20px;
+    }
+    .api-key-input-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .api-key-input-group input {
+        flex: 1;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: #fff;
+        padding: 10px 13px;
+        font-size: 0.86rem;
+    }
+    /* Manager Table Styles */
+    .manager-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .manager-table th {
+        text-align: left;
+        background: rgba(255,255,255,0.03);
+        padding: 12px 15px;
+        color: rgba(255,255,255,0.5);
+        font-weight: 500;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .manager-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .manager-table tr:last-child td {
+        border-bottom: none;
+    }
+    .app-url {
+        color: #00f2a0;
+        text-decoration: none;
+    }
+    .app-url:hover {
+        text-decoration: underline;
+    }
+    .actions-cell {
+        text-align: right;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 6px;
+    }
+    .btn-danger {
+        background: rgba(255, 107, 107, 0.1);
+        color: #ff6b6b;
+        border: 1px solid rgba(255, 107, 107, 0.2);
+    }
+    .btn-danger:hover {
+        background: #ff6b6b;
+        color: #fff;
+    }
+    /* Client Select Styles */
+    .client-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        outline: none;
+        width: 100%;
+        max-width: 180px;
+    }
+    .client-select option {
+        background: #1a1a1a;
+        color: #fff;
+    }
+</style>
 </head>
 <body>
-    <div class="page">
-        <div class="page-header">
-            <div class="icon-badge">🛠️</div>
-            <div class="page-header-text">
-                <h1>Tenant <em>Tools Suite</em></h1>
-                <p>AI-powered web development tools for your workspace</p>
-            </div>
-            <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-                <span class="badge" id="welcome-user">Welcome</span>
-                <a href="../index.php" class="btn btn-secondary logout-btn">Logout</a>
-            </div>
+
+<div class="page">
+    <div class="page-header">
+        <div class="icon-badge">🚀</div>
+        <div class="page-header-text">
+            <h1>Vivacity <em>NextGen Tech Dashboard</em><sup class="mode-sup <?php echo $mode_class; ?>"><?php echo $app_mode; ?></sup></h1>
+            <p>Integrated Web Agency Framework — AI-Powered Development Suite</p>
         </div>
-
-        <hr class="divider">
-
-        <div class="scroll-area">
-            <div class="card" style="margin-bottom: 10px;">
-                <div class="section-title">Available Tools</div>
-                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">Select a tool to start working. All tools use AI to accelerate your workflow.</p>
-            </div>
-
-            <div class="dashboard-grid">
-                <a href="webforge.html" class="tool-card">
-                    <div class="tool-icon">⚡</div>
-                    <h2>WebForge AI</h2>
-                    <p>Multi-agent pipeline that generates production-ready web apps through AI agents.</p>
-                </a>
-
-                <a href="website_builder_plus.html" class="tool-card">
-                    <div class="tool-icon">🎨</div>
-                    <h2>Website Builder Plus</h2>
-                    <p>AI-powered website generator with preset styles for rapid prototyping.</p>
-                </a>
-
-                <a href="repo_analyzer.html" class="tool-card">
-                    <div class="tool-icon">🔍</div>
-                    <h2>Repository Analyzer</h2>
-                    <p>Analyze GitHub repositories to understand codebase structure and technologies.</p>
-                </a>
-
-                <a href="interface_analyzer.html" class="tool-card">
-                    <div class="tool-icon">🖼️</div>
-                    <h2>Interface Analyzer</h2>
-                    <p>Analyze UI screenshots or URLs to evaluate design patterns and UX.</p>
-                </a>
-
-                <a href="web_restyler.html" class="tool-card">
-                    <div class="tool-icon">✨</div>
-                    <h2>Web Restyler</h2>
-                    <p>Restyle existing HTML/CSS according to specified design preferences.</p>
-                </a>
-
-                <a href="md_converter.html" class="tool-card">
-                    <div class="tool-icon">📝</div>
-                    <h2>Markdown Converter</h2>
-                    <p>Bidirectional converter between README.md and styled HTML documentation.</p>
-                </a>
-
-                <a href="collabra.html" class="tool-card">
-                    <div class="tool-icon">🤝</div>
-                    <h2>Collabra</h2>
-                    <p>Collaborative development tool with dual-agent frontend/backend workflow.</p>
-                </a>
-            </div>
+        <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <span class="badge" id="welcome-user">Welcome to NextGen</span>
+            <a href="../index.php" class="btn btn-secondary logout-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">Logout</a>
         </div>
     </div>
+
+    <hr class="divider">
+
+    <div class="scroll-area">
+        <!-- API KEY SECTION -->
+        <div class="card api-key-card">
+            <div class="section-title">🔑 OpenAI API Configuration</div>
+            <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Set your API Key here to use it across all tools. Stored only in your browser.</p>
+            <div class="api-key-input-group">
+                <input type="password" id="globalApiKey" placeholder="sk-...">
+                <button class="btn btn-primary" id="btnSaveKey">Save Key</button>
+                <button class="btn btn-secondary" onclick="openGitHubSettings()">🐙 GitHub Settings</button>
+            </div>
+            <div id="apiKeyStatus" style="margin-top: 10px; font-size: 0.75rem;"></div>
+        </div>
+
+        <!-- AVAILABLE TOOLS -->
+        <div class="section-title">🛠 Available Tools</div>
+        
+        <div class="dashboard-grid">
+            <a href="webforge.html" class="tool-card">
+                <div class="tool-icon">🛠️</div>
+                <h2>WebForge AI</h2>
+                <p>Multi-agent pipeline for full-stack web applications. Strategist, Frontend, Backend & Validator.</p>
+            </a>
+
+            <a href="viber_coder.html" class="tool-card">
+                <div class="tool-icon">⚡</div>
+                <h2>Vibe Coder</h2>
+                <p>Task-based AI code generator. Decompose your project into small tasks and execute them sequentially.</p>
+            </a>
+                
+            <a href="collabra.html" class="tool-card">
+                <div class="tool-icon">🤝</div>
+                <h2>Collabra</h2>
+                <p>Collaborative dev tool for dual-agent workflow (Frontend & Backend).</p>
+            </a>                
+
+            <a href="website_builder_plus.html" class="tool-card">
+                <div class="tool-icon">🏗️</div>
+                <h2>Website Builder Plus</h2>
+                <p>Generate complete websites with 4 preset styles and smart content generation.</p>
+            </a>
+
+            <a href="web_restyler.html" class="tool-card">
+                <div class="tool-icon">🎭</div>
+                <h2>Web Restyler</h2>
+                <p>Restyle existing HTML, generate from prompts, or convert WordPress to clean code.</p>
+            </a>
+
+            <a href="interface_analyzer.html" class="tool-card">
+                <div class="tool-icon">🔍</div>
+                <h2>Interface Analyzer</h2>
+                <p>Analyze UI screenshots or URLs for UX/UI improvements and accessibility.</p>
+            </a>
+                
+            <a href="img_rebuilder.html" class="tool-card">
+                <div class="tool-icon">🖼️</div>
+                <h2>Image Rebuilder</h2>
+                <p>AI-powered image manipulation and regeneration for web assets.</p>
+            </a>                
+
+            <a href="repo_analyzer.html" class="tool-card">
+                <div class="tool-icon">📦</div>
+                <h2>Repo Analyzer</h2>
+                <p>Gain insights from GitHub repositories and technical documentation.</p>
+            </a>
+
+            <a href="repo_publisher.html" class="tool-card">
+                <div class="tool-icon">🐙</div>
+                <h2>Repo Publisher</h2>
+                <p>Push your micro-apps directly to GitHub repositories with one click.</p>
+            </a>
+
+            <a href="md_converter.html" class="tool-card">
+                <div class="tool-icon">📝</div>
+                <h2>Markdown Converter</h2>
+                <p>Convert README.md to professional documentation or vice-versa.</p>
+            </a>
+
+            <a href="../management/planner.html" class="tool-card">
+                <div class="tool-icon">📅</div>
+                <h2>Agency Planner <span class="badge">View-Only</span></h2>
+                <p>View agency schedules, milestones and project timelines.</p>
+            </a>
+        </div>
+
+        <!-- ACTIVE PROJECTS SECTION -->
+        <div class="section-title" style="margin-top: 40px;">📂 Active Projects</div>
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <table class="manager-table" id="projectsTable">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th style="text-align: right;">Workspace</th>
+                    </tr>
+                </thead>
+                <tbody id="projectsList">
+                    <tr>
+                        <td colspan="5" style="padding: 40px; text-align: center; color: rgba(255,255,255,0.4);">
+                            Loading active projects...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MICRO-APP MANAGER SECTION -->
+        <div class="section-title" style="margin-top: 40px;">🚀 Micro-App Manager</div>
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <table class="manager-table" id="appsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>URL</th>
+                        <th>Created</th>
+                        <th>Client</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="appsList">
+                    <tr>
+                        <td colspan="5" style="padding: 40px; text-align: center; color: rgba(255,255,255,0.4);">
+                            Loading deployed applications...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div id="detailsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <div class="modal-title">🚀 Micro-App <em>Details</em></div>
+            <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="detailsContent" style="padding: 24px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8;">
+            <!-- Content will be injected here -->
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="closeDetailsModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- GitHub Settings Modal -->
+<div id="ghSettingsModal" class="modal-overlay">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">🐙 GitHub <em>Settings</em></div>
+            <button class="modal-close" onclick="closeGitHubSettings()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            <div class="field-group" style="max-width: 100%;">
+                <label>Personal Access Token (Classic)</label>
+                <div class="input-row">
+                    <input type="password" id="ghTokenInput" placeholder="ghp_...">
+                </div>
+                <p class="field-hint" style="margin-top: 10px;">
+                    Need a token? <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--cyan);">Generate one here</a>.<br>
+                    Ensure it has <strong>repo</strong> and <strong>workflow</strong> scopes.
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-secondary" onclick="closeGitHubSettings()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveGitHubSettings()">Save Token</button>
+        </div>
+    </div>
+</div>
+
+<script src="../management/js/identity.js?v=<?php echo $version; ?>"></script>
+<script src="js/core.js?v=<?php echo $version; ?>"></script>
+<script src="../management/js/messaging.js?v=<?php echo $version; ?>"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const keyInput = document.getElementById('globalApiKey');
+        const saveBtn = document.getElementById('btnSaveKey');
+        const status = document.getElementById('apiKeyStatus');
+        const APP_MODE = '<?php echo $app_mode; ?>';
+
+        let allApps = [];
+        let allProjects = [];
+        let allClients = [];
+
+        // Load existing key
+        const savedKey = Core.getApiKey();
+        if (savedKey) {
+            keyInput.value = savedKey;
+            status.innerHTML = '✅ API Key is set and ready.';
+            status.style.color = '#00f2a0';
+        }
+
+        saveBtn.addEventListener('click', () => {
+            const key = keyInput.value.trim();
+            if (key) {
+                Core.setApiKey(key);
+                status.innerHTML = '✅ API Key saved successfully!';
+                status.style.color = '#00f2a0';
+                setTimeout(() => {
+                    status.innerHTML = '✅ API Key is set and ready.';
+                }, 3000);
+            } else {
+                localStorage.removeItem('openaikey');
+                status.innerHTML = '⚠️ API Key removed.';
+                status.style.color = '#ff6b6b';
+            }
+        });
+
+        // GitHub Settings logic
+        window.openGitHubSettings = () => {
+            const token = Core.getGitHubToken();
+            document.getElementById('ghTokenInput').value = token;
+            document.getElementById('ghSettingsModal').classList.add('open');
+        };
+
+        window.closeGitHubSettings = () => {
+            document.getElementById('ghSettingsModal').classList.remove('open');
+        };
+
+        window.saveGitHubSettings = () => {
+            const token = document.getElementById('ghTokenInput').value.trim();
+            Core.setGitHubToken(token);
+            closeGitHubSettings();
+            if (token) {
+                alert('GitHub token saved successfully!');
+            }
+        };
+
+        // --- Active Projects Logic ---
+        const projectsList = document.getElementById('projectsList');
+
+        async function fetchProjects() {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`../management/project_handler.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', username })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    allProjects = result.data;
+                    renderProjects(allProjects);
+                } else {
+                    projectsList.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">${result.message}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                projectsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">Error loading projects</td></tr>';
+            }
+        }
+
+        function renderProjects(projects) {
+            if (!projects || projects.length === 0) {
+                projectsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:rgba(255,255,255,0.4);">No projects found.</td></tr>';
+                return;
+            }
+
+            projectsList.innerHTML = projects.map(p => {
+                const statusBadge = `<span class="badge" style="font-size:0.7rem; background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.7);">${p.stato}</span>`;
+                const priorityColor = {
+                    'low': '#00f2a0',
+                    'medium': '#ffd700',
+                    'high': '#ff8c00',
+                    'urgent': '#ff4444'
+                }[p.priorita] || '#fff';
+
+                return `
+                    <tr>
+                        <td><strong>${p.nome_progetto}</strong></td>
+                        <td style="color:rgba(255,255,255,0.5);">${p.tipologia}</td>
+                        <td>${statusBadge}</td>
+                        <td style="color:${priorityColor}; font-weight:500;">${p.priorita.toUpperCase()}</td>
+                        <td class="actions-cell">
+                            <a href="project_workspace.html?id=${p.id}" class="btn btn-primary btn-small">Open Workspace</a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- Micro-App Manager Logic ---
+        const appsList = document.getElementById('appsList');
+
+        window.showDetails = (id) => {
+            const app = allApps.find(a => a.id === id);
+            if (!app) return;
+
+            const client = allClients.find(c => c.id === app.client_id);
+            const project = allProjects.find(p => p.id === app.project_id);
+
+            const content = `
+                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 10px;">
+                    <div style="color: var(--text-muted);">App ID:</div>
+                    <div style="color: var(--cyan);">${app.id}</div>
+                    
+                    <div style="color: var(--text-muted);">Name:</div>
+                    <div>${app.name}</div>
+                    
+                    <div style="color: var(--text-muted);">Creator:</div>
+                    <div>${app.created_by || 'Unknown'}</div>
+                    
+                    <div style="color: var(--text-muted);">Date:</div>
+                    <div>${app.date}</div>
+                    
+                    <div style="color: var(--text-muted);">Client:</div>
+                    <div>${client ? client.nominativo : (app.client_id || 'None')}</div>
+                    
+                    <div style="color: var(--text-muted);">Project:</div>
+                    <div>${project ? project.nome_progetto : (app.project_id || 'None')}</div>
+                    
+                    <div style="color: var(--text-muted);">URL:</div>
+                    <div><a href="${app.url}" target="_blank" style="color: var(--cyan); text-decoration: none;">${app.url} ↗</a></div>
+                </div>
+            `;
+
+            document.getElementById('detailsContent').innerHTML = content;
+            document.getElementById('detailsModal').classList.add('open');
+        };
+
+        window.closeDetailsModal = () => {
+            document.getElementById('detailsModal').classList.remove('open');
+        };
+
+        async function fetchClients() {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch('../management/client_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', username })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    allClients = result.data;
+                }
+            } catch (error) {
+                console.error('Error fetching clients:', error);
+            }
+        }
+
+        async function fetchApps() {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const response = await fetch(`api/microapps.php?action=list&u=${encodeURIComponent(username)}`);
+                const apps = await response.json();
+                allApps = apps;
+                renderApps(allApps);
+            } catch (error) {
+                console.error('Error fetching apps:', error);
+                appsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#ff6b6b;">Error loading apps</td></tr>';
+            }
+        }
+
+        function renderApps(apps) {
+            if (!apps || apps.length === 0) {
+                appsList.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:rgba(255,255,255,0.4);">No micro-apps deployed yet.</td></tr>';
+                return;
+            }
+
+            const role = localStorage.getItem('sync_role') || 'technician';
+            const isRestricted = (APP_MODE === 'CONTROL' && role === 'technician');
+
+            appsList.innerHTML = apps.map(app => {
+                const clientOptions = allClients.map(c => `
+                    <option value="${c.id}" ${app.client_id === c.id ? 'selected' : ''}>${c.nominativo}</option>
+                `).join('');
+
+                const clientCell = isRestricted ? 
+                    (allClients.find(c => c.id === app.client_id)?.nominativo || 'Unassigned') :
+                    `<select class="client-select" onchange="assignClient('${app.id}', this.value)">
+                        <option value="">Unassigned</option>
+                        ${clientOptions}
+                    </select>`;
+
+                const actionsCell = `
+                    <a href="${app.url}" target="_blank" class="btn btn-primary btn-small">Preview</a>
+                    <button class="btn btn-secondary btn-small" onclick="showDetails('${app.id}')">Details</button>
+                    ${isRestricted ? '' : `
+                        <button class="btn btn-secondary btn-small" onclick="renameApp('${app.id}')">Rename</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteApp('${app.id}')">Delete</button>
+                    `}
+                `;
+
+                return `
+                    <tr id="app-row-${app.id}">
+                        <td><strong id="app-name-${app.id}">${app.name}</strong></td>
+                        <td><a href="${app.url}" target="_blank" class="app-url">${app.id} ↗</a></td>
+                        <td style="color:rgba(255,255,255,0.4); font-size:0.75rem;">${app.date}</td>
+                        <td>${clientCell}</td>
+                        <td class="actions-cell">${actionsCell}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.assignClient = async (id, clientId) => {
+            try {
+                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const res = await fetch('api/microapps.php?action=assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, client_id: clientId, username })
+                });
+                const result = await res.json();
+                if (!result.success) {
+                    alert('Error: ' + result.message);
+                }
+            } catch (e) {
+                alert('Assignment failed');
+            }
+        };
+
+        window.renameApp = async (id) => {
+            const oldName = document.getElementById(`app-name-${id}`).textContent;
+            const newName = prompt('Enter new name:', oldName);
+            if (newName && newName !== oldName) {
+                try {
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
+                    const res = await fetch('api/microapps.php?action=rename', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, name: newName, username })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        document.getElementById(`app-name-${id}`).textContent = newName;
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (e) {
+                    alert('Rename failed');
+                }
+            }
+        };
+
+        window.deleteApp = async (id) => {
+            if (confirm('Are you sure you want to delete this app? This action cannot be undone.')) {
+                try {
+                    const username = localStorage.getItem('sync_username') || 'Anonymous';
+                    const res = await fetch(`api/microapps.php?action=delete&id=${id}&u=${encodeURIComponent(username)}`);
+                    const result = await res.json();
+                    if (result.success) {
+                        document.getElementById(`app-row-${id}`).remove();
+                        if (appsList.children.length === 0) {
+                            renderApps([]);
+                        }
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (e) {
+                    alert('Delete failed');
+                }
+            }
+        };
+
+        async function init() {
+            await fetchClients();
+            await fetchApps();
+            await fetchProjects();
+        }
+
+        init();
+    });
+</script>
 </body>
 </html>

@@ -1,0 +1,50 @@
+<?php
+header('Content-Type: application/json');
+
+$messagesFile = __DIR__ . '/messages.json';
+
+if (!file_exists($messagesFile)) {
+    file_put_contents($messagesFile, json_encode([]));
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET') {
+    $messages = json_decode(file_get_contents($messagesFile), true);
+    echo json_encode($messages ?: []);
+} elseif ($method === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$data || !isset($data['text']) || !isset($data['role'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid data']);
+        exit;
+    }
+
+    $messages = json_decode(file_get_contents($messagesFile), true);
+    if (!$messages) $messages = [];
+    
+    $newMessage = [
+        'id' => uniqid(),
+        'text' => $data['text'],
+        'role' => $data['role'], // 'manager' or 'tech'
+        'project_id' => isset($data['project_id']) ? $data['project_id'] : 'general',
+        'username' => isset($data['username']) ? $data['username'] : 'Anonymous',
+        'timestamp' => date('c'),
+        'status' => 'unanswered'
+    ];
+
+    // When someone replies, mark all previous messages from the OTHER role as answered
+    $otherRole = ($data['role'] === 'manager') ? 'tech' : 'manager';
+    foreach ($messages as &$msg) {
+        if ($msg['role'] === $otherRole && $msg['status'] === 'unanswered') {
+            $msg['status'] = 'answered';
+        }
+    }
+
+    $messages[] = $newMessage;
+    file_put_contents($messagesFile, json_encode($messages, JSON_PRETTY_PRINT));
+    
+    echo json_encode($newMessage);
+}
+?>

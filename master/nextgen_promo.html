@@ -1,0 +1,557 @@
+<?php $version = time(); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivacity NextGen | The Future of Web Agency Workflows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="management/js/identity.js?v=<?php echo $version; ?>"></script>
+    <style>
+        :root {
+            --bg: #07090f;
+            --bg-surface: #0d1017;
+            --bg-card: #111520;
+            --green: #10b981;
+            --gold: #f59e0b;
+            --green-glow: rgba(16, 185, 129, 0.3);
+            --gold-glow: rgba(245, 158, 11, 0.3);
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --font-display: 'Syne', sans-serif;
+            --font-serif: 'Instrument Serif', serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-display);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        header {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--green);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            color: var(--gold);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            padding: 8rem 2rem;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--green), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px var(--green-glow);
+        }
+
+        .btn-secondary {
+            border: 2px solid var(--gold);
+            color: var(--gold);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--bg);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* --- FEATURES GRID --- */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 2.5rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: var(--green);
+            transform: translateY(-5px);
+        }
+
+        .feature-card i {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--gold);
+        }
+
+        .feature-card ul {
+            list-style: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .feature-card li {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-card li::before {
+            content: "→";
+            color: var(--green);
+        }
+
+        /* --- WORKFLOW VISUAL --- */
+        .workflow {
+            background: var(--bg-surface);
+            border-radius: 30px;
+            padding: 4rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .workflow-steps::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--green), var(--gold));
+            z-index: 0;
+            opacity: 0.2;
+        }
+
+        .step {
+            background: var(--bg-card);
+            border: 1px solid var(--green);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            position: relative;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .step span {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* --- USE CASES --- */
+        .use-cases {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .use-case-content h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--green);
+        }
+
+        .use-case-content p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* --- BENEFITS --- */
+        .benefits {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(245, 158, 11, 0.05));
+            padding: 4rem;
+            border-radius: 30px;
+            margin-top: 4rem;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .benefit-item h4 {
+            font-family: var(--font-mono);
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-item p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 4rem 2rem;
+            background: #000;
+            margin-top: 6rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .footer-brand h2 {
+            margin-bottom: 1rem;
+            color: var(--green);
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 4rem;
+        }
+
+        .link-group h5 {
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+        }
+
+        .link-group ul {
+            list-style: none;
+        }
+
+        .link-group li {
+            margin-bottom: 0.8rem;
+        }
+
+        .link-group a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .link-group a:hover {
+            color: var(--green);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .use-cases { grid-template-columns: 1fr; }
+            .workflow-steps { flex-direction: column; gap: 2rem; }
+            .workflow-steps::before { display: none; }
+            .footer-content { flex-direction: column; gap: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <header>
+        <a href="#" class="logo">VIVACITY <span>NEXTGEN</span></a>
+        <div class="cta-group">
+            <a href="login.php" class="btn btn-secondary">Login</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <h1>Empower Your Agency with Next-Gen AI Intelligence</h1>
+            <p>The ultimate framework for modern web agencies. Seamlessly integrate business management with state-of-the-art multi-agent development pipelines.</p>
+            <div class="cta-group">
+                <a href="#features" class="btn btn-primary">Explore Suite</a>
+                <a href="#workflow" class="btn btn-secondary">How it Works</a>
+            </div>
+        </section>
+
+        <!-- FEATURES GRID -->
+        <section id="features" class="section">
+            <div class="section-title">
+                <p>Comprehensive Ecosystem</p>
+                <h2>Engineered for Success</h2>
+            </div>
+
+            <div class="features-grid">
+                <!-- Management Suite -->
+                <div class="feature-card">
+                    <h3>Management Suite</h3>
+                    <ul>
+                        <li>AI-Enhanced Client Portfolio</li>
+                        <li>Robust Project Manager</li>
+                        <li>Professional PDF Quotes Generator</li>
+                        <li>Automated Contracts Manager</li>
+                        <li>Sync'd Email Campaigner</li>
+                    </ul>
+                </div>
+
+                <!-- AI Tech Suite -->
+                <div class="feature-card" style="border-color: var(--green-glow);">
+                    <h3>AI Tech Suite</h3>
+                    <ul>
+                        <li>AI Canvas (Generative UI)</li>
+                        <li>WebForge AI (4-Agent Pipeline)</li>
+                        <li>Collabra Dual-Agent Workflow</li>
+                        <li>Website Builder Plus (Presets)</li>
+                        <li>Web Restyler (Natural Language)</li>
+                        <li>AI Interface Analyzer</li>
+                    </ul>
+                </div>
+
+                <!-- Operational Tools -->
+                <div class="feature-card">
+                    <h3>Operational Tools</h3>
+                    <ul>
+                        <li>NextGen Kanban (Drag & Drop)</li>
+                        <li>Project-Context Messaging</li>
+                        <li>Live System Audit Log</li>
+                        <li>Micro-App Deployment</li>
+                        <li>Automated System Backups</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORKFLOW VISUAL -->
+        <section id="workflow" class="section">
+            <div class="workflow">
+                <div class="section-title">
+                    <p>The Pipeline</p>
+                    <h2>From Brief to Deployment</h2>
+                </div>
+                <div class="workflow-steps">
+                    <div class="step"><span>📝</span>Brief</div>
+                    <div class="step"><span>🤖</span>Strategize</div>
+                    <div class="step"><span>💻</span>Develop</div>
+                    <div class="step"><span>✅</span>Validate</div>
+                    <div class="step"><span>🚀</span>Deploy</div>
+                </div>
+                <p style="margin-top: 3rem; color: var(--text-muted); font-family: var(--font-serif); font-style: italic;">
+                    "Our multi-agent pipeline orchestrates specialized AI entities to ensure production-ready results in record time."
+                </p>
+            </div>
+        </section>
+
+        <!-- USE CASES -->
+        <section class="section">
+            <div class="use-cases">
+                <div class="use-case-image">
+                    <img src="NextGen_WAF.jpg?v=<?php echo $version; ?>" alt="NextGen Framework" style="width: 100%; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                </div>
+                <div class="use-case-content">
+                    <h3>Versatility Meets Innovation</h3>
+                    <p>Whether you're a solo freelancer looking to scale or a full-service agency demanding operational excellence, Vivacity NextGen adapts to your needs.</p>
+                    <div class="feature-card" style="background: transparent; padding: 0; border: none;">
+                        <ul style="color: var(--text);">
+                            <li><strong>Freelancers:</strong> Automate client onboarding and code generation.</li>
+                            <li><strong>Agencies:</strong> Centralize management and boost dev speed by 10x.</li>
+                            <li><strong>Enterprises:</strong> Maintain a portable, database-less internal toolset.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECHNICAL BENEFITS -->
+        <section class="section">
+            <div class="section-title">
+                <p>The Architecture</p>
+                <h2>Technical Advantages</h2>
+            </div>
+            <div class="benefits">
+                <div class="benefit-item">
+                    <h4>No Database</h4>
+                    <p>High-performance JSON storage.</p>
+                </div>
+                <div class="benefit-item">
+                    <h4>Cache Busting</h4>
+                    <p>Instant CSS/JS asset updates.</p>
+                </div>
+                <div class="benefit-item">
+                    <h4>High Portability</h4>
+                    <p>Zero-configuration deployment.</p>
+                </div>
+                <div class="benefit-item">
+                    <h4>AI-Native</h4>
+                    <p>Built for the GPT-4o ecosystem.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2>VIVACITY <span>NEXTGEN</span></h2>
+                <p>Empowering the next generation of web agencies through AI-driven innovation.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-group">
+                    <h5>Suites</h5>
+                    <ul>
+                        <li><a href="#">Management Suite</a></li>
+                        <li><a href="#">AI Tech Suite</a></li>
+                        <li><a href="#">Operational Tools</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">System Audit</a></li>
+                        <li><a href="#">Backups</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h5>Contact</h5>
+                    <ul>
+                        <li><a href="mailto:info@vivacitydesign.net">info@vivacitydesign.net</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 <strong>Vivacity Design</strong>. All rights reserved. Intellectual Property of Alessandro Demontis.
+        </div>
+    </footer>
+</body>
+</html>
