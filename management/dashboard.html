@@ -51,6 +51,18 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
                 </div>
             </div>
 
+            <div id="user-manager-section" style="display: none;">
+                <div class="section-title">Workspace Administration</div>
+                <div class="dashboard-grid">
+                    <a href="user_manager.html" class="tool-card">
+                        <div class="tool-icon">👤</div>
+                        <h2>User Manager</h2>
+                        <p>Manage users for your workspace. Add technicians and administrators.</p>
+                    </a>
+                </div>
+                <br>
+            </div>
+
             <div class="section-title">Clients and Projects</div>
             
             <div class="dashboard-grid">
@@ -141,5 +153,25 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
     <script src="js/identity.js?v=<?php echo $version; ?>"></script>
     <script src="js/main.js?v=<?php echo $version; ?>"></script>
     <script src="js/messaging.js?v=<?php echo $version; ?>"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tenant = localStorage.getItem('sync_tenant');
+            var role = localStorage.getItem('sync_role');
+
+            if (tenant && role === 'management') {
+                var section = document.getElementById('user-manager-section');
+                if (section) section.style.display = 'block';
+            }
+
+            if (tenant) {
+                var cards = document.querySelectorAll('.tool-card');
+                cards.forEach(function(card) {
+                    if (card.getAttribute('href') === 'tenants_manager.html') {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
