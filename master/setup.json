@@ -1,11 +1,11 @@
 {
     "mode": "sync",
     "company": {
-        "name": "Alessandro Demontis",
-        "alias": "NextGen Web Agency",
-        "address": "via delle Arti 22, Pomezia 00071 (RM)",
-        "phone": "+39 328 08 75 032",
-        "iva": "17770011009",
-        "email": "info@vivacitydesign.net"            
+        "name": "Nome Cognome",
+        "alias": "Noe Azienda",
+        "address": "via dell'Azienda 11, Città 00000 (Prov)",
+        "phone": "+39 328 00 00 000",
+        "iva": "00000000000",
+        "email": "info@aziendadomain.net"            
     }
 }
