@@ -292,6 +292,12 @@ class TenantHandler
             file_put_contents($auditFile, json_encode([], JSON_PRETTY_PRINT));
         }
 
+        // Save tenant to registry FIRST so addUser can find it
+        $tenant['copy_complete'] = true;
+        $tenants = $this->loadRegistry();
+        $tenants[] = $tenant;
+        $this->saveRegistry($tenants);
+
         $usersFile = $tenantPath . '/users.json';
         file_put_contents($usersFile, json_encode([], JSON_PRETTY_PRINT));
 
@@ -309,12 +315,6 @@ class TenantHandler
             'created_by' => $username,
             'master_version' => date('Y-m-d')
         ], JSON_PRETTY_PRINT));
-
-        $tenant['copy_complete'] = true;
-
-        $tenants = $this->loadRegistry();
-        $tenants[] = $tenant;
-        $this->saveRegistry($tenants);
 
         SecurityHelper::logEvent('Tenant Created', $username, [
             'tenant_id' => $id,
