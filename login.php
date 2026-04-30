@@ -10,6 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
     $tenantSlug = filter_input(INPUT_POST, 'tenant', FILTER_SANITIZE_SPECIAL_CHARS);
 
+    // Auto-detect tenant from path if running from a tenant directory
+    $currentPath = __DIR__;
+    $tenantsBase = dirname(__DIR__) . '/tenants';
+    if (strpos($currentPath, $tenantsBase) === 0) {
+        $relPath = substr($currentPath, strlen($tenantsBase) + 1);
+        if (preg_match('/^[^_]+___(.+?)[\/\\\\]/', $relPath, $m)) {
+            $tenantSlug = $m[1];
+        }
+    }
+
     if ($username && $password) {
         // If tenant is specified, try tenant authentication first
         if ($tenantSlug) {
