@@ -168,6 +168,7 @@
                         <option value="1024x1024" selected>Square (1:1)</option>
                         <option value="1536x1024">Landscape (3:2)</option>
                         <option value="1024x1536">Portrait (2:3)</option>
+                        <option value="auto">Auto (Responsive)</option>
                     </select>
                 </div>
             </div>
@@ -265,11 +266,23 @@
             const options = {
                 model: modelSelect.value,
                 quality: qualitySelect.value,
-                size: orientationSelect.value
+                size: orientationSelect.value,
+                response_format: 'url'
             };
 
             const data = await Core.rebuildImage(prompt, options);
-            const url = data.data[0].url;
+            
+            // Handle both url and b64_json responses
+            const imgData = data.data && data.data[0];
+            if (!imgData) {
+                throw new Error('Unexpected API response: no image data found');
+            }
+            
+            // Support both URL and base64 responses
+            const url = imgData.url || (imgData.b64_json ? 'data:image/png;base64,' + imgData.b64_json : null);
+            if (!url) {
+                throw new Error('Unexpected API response: no image URL or base64 data found');
+            }
             
             document.getElementById('generated-box').innerHTML = `<img src="${url}" alt="Generated">`;
             
@@ -277,7 +290,19 @@
             dlBtn.className = 'btn btn-success';
             dlBtn.style.marginTop = '10px';
             dlBtn.textContent = '⬇️ Download Image';
-            dlBtn.onclick = () => window.open(url, '_blank');
+            dlBtn.onclick = () => {
+                if (imgData.b64_json) {
+                    // For base64, use anchor download attribute
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'rebuilt-image.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    window.open(url, '_blank');
+                }
+            };
             document.getElementById('generated-box').appendChild(dlBtn);
 
         } catch (error) {

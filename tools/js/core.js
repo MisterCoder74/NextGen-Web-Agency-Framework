@@ -71,7 +71,8 @@ const Core = {
                 username: username,
                 model: options.model || 'gpt-image-1',
                 size: options.size || '1024x1024',
-                quality: options.quality || 'medium'
+                quality: options.quality || 'medium',
+                response_format: options.response_format || 'url'
             })
         });
 
