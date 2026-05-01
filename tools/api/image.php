@@ -99,9 +99,16 @@ if (!in_array($model, $allowedModels, true)) {
 }
 
 /* --- Whitelist allowed sizes --- */
-$allowedSizes = ['256x256', '512x512', '1024x1024', '1024x1792', '1792x1024'];
+$allowedSizes = ['1024x1024', '1536x1024', '1024x1536', 'auto'];
 if (!in_array($size, $allowedSizes, true)) {
     $size = '1024x1024';
+}
+
+/* --- Whitelist allowed response format --- */
+$response_format = isset($body['response_format']) ? trim($body['response_format']) : 'url';
+$allowedFormats = ['url', 'b64_json'];
+if (!in_array($response_format, $allowedFormats, true)) {
+    $response_format = 'url';
 }
 
 /* --- Whitelist allowed quality --- */
@@ -132,6 +139,7 @@ $payload = json_encode([
     'size'    => $size,
     'quality' => $quality,
     'n'       => 1,
+    'response_format' => $response_format,
 ]);
 
 /* --- cURL to OpenAI --- */
