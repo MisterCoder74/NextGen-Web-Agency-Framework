@@ -617,7 +617,7 @@ $job_prices = [
             if (quote.discountRate > 0) {
                 y += 7;
                 doc.setTextColor(200, 0, 0);
-                doc.text(`Discount (${quote.discountLabel} - ${quote.discountRate}%):`, summaryX, y);
+                doc.text(`Discount (${quote.discountRate}%):`, summaryX, y);
                 doc.text(`-€${parseFloat(quote.discountAmount).toFixed(2)}`, 190, y, { align: 'right' });
                 doc.setTextColor(0, 0, 0);
             }
