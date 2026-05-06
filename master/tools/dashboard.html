@@ -117,7 +117,7 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
             <p>Integrated Web Agency Framework — AI-Powered Development Suite</p>
         </div>
         <div class="header-meta" style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-            <span class="badge" id="welcome-user">Welcome to NextGen</span>
+            <span class="badge" id="welcome-user" onclick="openProfileModal()" style="cursor: pointer;">Welcome to NextGen</span>
             <a href="../index.php" class="btn btn-secondary logout-btn" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">Logout</a>
         </div>
     </div>
@@ -294,6 +294,51 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
         <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
             <button class="btn btn-secondary" onclick="closeGitHubSettings()">Cancel</button>
             <button class="btn btn-primary" onclick="saveGitHubSettings()">Save Token</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+            <div class="modal-title">👤 User <em>Profile</em></div>
+            <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+            <div class="field-group" style="max-width: 100%;">
+                <label>Username (Read-only)</label>
+                <input type="text" id="profileUsername" readonly style="background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5);">
+            </div>
+            <div class="field-group" style="max-width: 100%;">
+                <label>Email</label>
+                <input type="email" id="profileEmail" placeholder="your@email.com">
+            </div>
+            <div class="field-group" style="max-width: 100%;">
+                <label>Password</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="password" id="profilePassword" style="flex: 1;">
+                    <button class="btn btn-secondary" onclick="toggleProfilePassword()" style="min-width: 80px;">Show</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <div class="section-title" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--cyan);">📂 Attributed Projects</div>
+                <div id="profileProjectsList" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <!-- Projects will be listed here -->
+                </div>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <div class="section-title" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--cyan);">🚀 Generated Micro-Apps</div>
+                <div id="profileAppsList" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <!-- Apps will be listed here -->
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-secondary" onclick="closeProfileModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
         </div>
     </div>
 </div>
@@ -591,6 +636,119 @@ $mode_class = ($app_mode === 'CONTROL') ? 'mode-control' : 'mode-sync';
         }
 
         init();
+
+        // --- Profile Modal Logic ---
+        window.openProfileModal = async () => {
+            const username = localStorage.getItem('sync_username');
+            if (!username) return;
+
+            try {
+                const response = await fetch('api/tenant_user_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_profile', requester: username })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('profileUsername').value = result.data.username;
+                    document.getElementById('profileEmail').value = result.data.email || '';
+                    document.getElementById('profilePassword').value = result.data.password;
+                    document.getElementById('profilePassword').type = 'password';
+                    
+                    renderProfileItems();
+                    
+                    document.getElementById('profileModal').classList.add('open');
+                } else {
+                    alert('Error loading profile: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load profile');
+            }
+        };
+
+        window.closeProfileModal = () => {
+            document.getElementById('profileModal').classList.remove('open');
+        };
+
+        window.toggleProfilePassword = () => {
+            const passInput = document.getElementById('profilePassword');
+            const btn = event.target;
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                passInput.type = 'password';
+                btn.textContent = 'Show';
+            }
+        };
+
+        window.saveProfile = async () => {
+            const username = localStorage.getItem('sync_username');
+            const email = document.getElementById('profileEmail').value.trim();
+            const password = document.getElementById('profilePassword').value.trim();
+
+            if (!email || !password) {
+                alert('Email and Password are required');
+                return;
+            }
+
+            try {
+                const response = await fetch('api/tenant_user_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'update_profile', 
+                        requester: username,
+                        email: email,
+                        password: password
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Profile updated successfully');
+                    closeProfileModal();
+                } else {
+                    alert('Error updating profile: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save profile');
+            }
+        };
+
+        function renderProfileItems() {
+            const projectsContainer = document.getElementById('profileProjectsList');
+            const appsContainer = document.getElementById('profileAppsList');
+            const username = localStorage.getItem('sync_username');
+
+            // Filter projects attributed to this user
+            const myProjects = allProjects.filter(p => p.assigned_to === username);
+            
+            if (myProjects.length === 0) {
+                projectsContainer.innerHTML = '<p style="color: rgba(255,255,255,0.3); font-size: 0.8rem;">No attributed projects.</p>';
+            } else {
+                projectsContainer.innerHTML = myProjects.map(p => `
+                    <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>${p.nome_progetto}</span>
+                        <span class="badge" style="font-size: 0.65rem; background: rgba(255,255,255,0.05);">${p.stato}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Filter apps generated by this user
+            const myApps = allApps.filter(a => a.created_by === username);
+            if (myApps.length === 0) {
+                appsContainer.innerHTML = '<p style="color: rgba(255,255,255,0.3); font-size: 0.8rem;">No generated micro-apps.</p>';
+            } else {
+                appsContainer.innerHTML = myApps.map(a => `
+                    <div style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>${a.name}</span>
+                        <a href="${a.url}" target="_blank" style="color: var(--cyan); font-size: 0.75rem; text-decoration: none;">View ↗</a>
+                    </div>
+                `).join('');
+            }
+        }
     });
 </script>
 </body>

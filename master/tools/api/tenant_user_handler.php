@@ -88,9 +88,66 @@ class TenantUserHandler
                 return $this->removeUser($input, $username);
             case 'update':
                 return $this->updateUser($input, $username);
+            case 'get_profile':
+                return $this->getProfile($username);
+            case 'update_profile':
+                return $this->updateProfile($input, $username);
             default:
                 return $this->error('Action not recognized');
         }
+    }
+
+    private function getProfile($username)
+    {
+        $users = $this->loadUsers();
+        foreach ($users as $u) {
+            if ($u['username'] === $username) {
+                return $this->success('Profile loaded', [
+                    'username' => $u['username'],
+                    'email' => $u['email'] ?? '',
+                    'password' => $u['password']
+                ]);
+            }
+        }
+        return $this->error('User not found');
+    }
+
+    private function updateProfile($input, $username)
+    {
+        $newPassword = trim($input['password'] ?? '');
+        $newEmail = trim($input['email'] ?? '');
+
+        if (empty($newPassword) || empty($newEmail)) {
+            return $this->error('Password and Email are required');
+        }
+
+        $users = $this->loadUsers();
+        $found = false;
+
+        foreach ($users as &$u) {
+            if ($u['username'] === $username) {
+                $u['password'] = $newPassword;
+                $u['email'] = $newEmail;
+                $u['updated_at'] = date('Y-m-d H:i:s');
+                $u['updated_by'] = $username;
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            return $this->error('User not found');
+        }
+
+        if (!$this->saveUsers($users)) {
+            return $this->error('Failed to save profile');
+        }
+
+        $this->logEvent('Profile Updated', $username, [
+            'target_user' => $username
+        ]);
+
+        return $this->success('Profile updated successfully');
     }
 
     private function listUsers($username)
