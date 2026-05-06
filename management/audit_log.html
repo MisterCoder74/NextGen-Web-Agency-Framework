@@ -87,7 +87,7 @@
         async function loadLogs() {
             try {
                 const username = localStorage.getItem('sync_username') || 'Anonymous';
-                const response = await fetch(`../audit_log.json?u=${encodeURIComponent(username)}`);
+                const response = await fetch(`../audit_log.json?u=${encodeURIComponent(username)}`, { cache: 'no-store' })
                 if (!response.ok) throw new Error('Could not load logs');
                 const logs = await response.json();
                 
