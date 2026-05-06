@@ -183,6 +183,128 @@
         .footer-details strong {
             color: rgba(255, 255, 255, 0.7);
         }
+
+        /* --- MODAL BASE --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 9, 15, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: #111520;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.96) translateY(16px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #5eead4;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.5);
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 107, 107, 0.1);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+            padding: 24px;
+            font-family: 'Syne', sans-serif;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            color: #fff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .code-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -237,9 +359,9 @@
     <footer>
         <div class="footer-content">
             <div class="footer-links">
-                <a href="#">Terms of Service</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Cookie Policy</a>
+                <a href="javascript:void(0)" onclick="openModal('tos-modal')">Terms of Service</a>
+                <a href="javascript:void(0)" onclick="openModal('pp-modal')">Privacy Policy</a>
+                <a href="javascript:void(0)" onclick="openModal('cp-modal')">Cookie Policy</a>
             </div>
             <div class="footer-details">
                 &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. All rights reserved.<br>
@@ -250,5 +372,96 @@
         </div>
     </footer>
 
+    <!-- Terms of Service Modal -->
+    <div class="modal-overlay" id="tos-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Terms of Service</div>
+                <button class="modal-close" onclick="closeModal('tos-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing the NextGen Web Agency Framework, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the framework.</p>
+                
+                <h3>2. Intellectual Property</h3>
+                <p>The framework, including its architecture, tools, and generated code patterns, is the exclusive property of Vivacity Design. Users are granted a limited license to utilize the tools for their professional web development projects.</p>
+                
+                <h3>3. AI Usage and Responsibility</h3>
+                <p>This suite leverages OpenAI's GPT models. Users are responsible for the inputs they provide and the generated outputs. Vivacity Design is not responsible for any inaccuracies or issues caused by the AI-generated code.</p>
+                
+                <h3>4. Usage Restrictions</h3>
+                <p>Users may not attempt to reverse engineer, decompile, or disassemble the core framework files. Unauthorized distribution of the framework is strictly prohibited.</p>
+                
+                <h3>5. Limitation of Liability</h3>
+                <p>Vivacity Design provides this framework "as is" without any warranties. We shall not be liable for any direct, indirect, or incidental damages resulting from the use or inability to use the suite.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal-overlay" id="pp-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Privacy Policy</div>
+                <button class="modal-close" onclick="closeModal('pp-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h3>1. Data Governance</h3>
+                <p>NextGen Web Agency Framework is designed with privacy in mind. We collect minimal information necessary for the operation of the tools.</p>
+                
+                <h3>2. Local Storage vs. Server Storage</h3>
+                <p>All sensitive information, including API keys and user preferences, is stored locally in your browser's localStorage. This data is never transmitted to Vivacity Design servers.</p>
+                
+                <h3>3. Third-Party AI Services</h3>
+                <p>When using AI-powered tools, your prompts are sent to OpenAI for processing. We recommend not sharing highly sensitive or personal information within the prompts.</p>
+                
+                <h3>4. No Tracking</h3>
+                <p>We do not use tracking pixels, analytics scripts, or any other form of user behavior monitoring. Your workflow remains private.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Policy Modal -->
+    <div class="modal-overlay" id="cp-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Cookie Policy</div>
+                <button class="modal-close" onclick="closeModal('cp-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h3>1. No Cookies Policy</h3>
+                <p>True to our commitment to privacy and simplicity, this framework does not use cookies of any kind. We do not store sessions or tracking information on your device through cookie technology.</p>
+                
+                <h3>2. Local Storage Usage</h3>
+                <p>Instead of cookies, we use browser <strong>LocalStorage</strong> to keep your API keys and project settings persistent. This data stays on your machine and is never sent to our servers.</p>
+                
+                <h3>3. Compliance</h3>
+                <p>Since no cookies or tracking mechanisms are employed, the framework is exempt from many standard GDPR and ePrivacy Directive cookie consent requirements.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            if (!document.querySelector('.modal-overlay.open')) {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeModal(overlay.id);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
