@@ -2,11 +2,13 @@
     {
         "username": "admin",
         "password": "password123",
-        "role": "management"
+        "role": "management",
+        "email": "admin@example.com"
     },
     {
         "username": "tech1",
         "password": "techpassword",
-        "role": "technician"
+        "role": "technician",
+        "email": "tech1@example.com"
     }
 ]
