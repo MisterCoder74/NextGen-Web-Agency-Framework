@@ -1,21 +1,32 @@
 <?php
+require_once __DIR__ . '/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
 
 $jsonFile = __DIR__ . DIRECTORY_SEPARATOR . 'microapps.json';
 $appsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'microapps';
 
 $action = $_GET['action'] ?? '';
-$username = $_GET['username'] ?? $_GET['u'] ?? '';
+$username = $_SESSION['username'];
 $postData = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!SecurityHelper::verifyCSRFToken()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
+        exit;
+    }
     $rawInput = file_get_contents('php://input');
     $postData = json_decode($rawInput, true) ?: [];
-    if (!$username) {
-        $username = $postData['username'] ?? $postData['u'] ?? '';
-    }
 }
-if (!$username) $username = 'Anonymous';
 
 function getUserRole($username) {
     $usersFile = dirname(dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'users.json';
@@ -122,7 +133,7 @@ switch ($action) {
         }
 
         if ($found) {
-            file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($jsonFile, $apps);
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'App not found']);
@@ -155,7 +166,7 @@ switch ($action) {
         }
 
         if ($found) {
-            file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($jsonFile, $apps);
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'App not found']);
@@ -198,7 +209,7 @@ switch ($action) {
             if (file_exists($dir)) {
                 deleteDirectory($dir);
             }
-            file_put_contents($jsonFile, json_encode($newApps, JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($jsonFile, $newApps);
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'App not found']);

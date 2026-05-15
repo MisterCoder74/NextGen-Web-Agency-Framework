@@ -1,13 +1,13 @@
 [
     {
         "username": "admin",
-        "password": "password123",
+        "password": "$2y$10$uk8FmKH.1els..BTK6baJu3q5pZGDgjp7FBwxPlLsWHE1JklXAcVe",
         "role": "management",
         "email": "admin@example.com"
     },
     {
         "username": "tech1",
-        "password": "techpassword",
+        "password": "$2y$10$PJPvEUrFoS7WW0MgkuiwWec6zSszo6r\/\/7RfI2cy7Eqrr0l46EAx.",
         "role": "technician",
         "email": "tech1@example.com"
     }

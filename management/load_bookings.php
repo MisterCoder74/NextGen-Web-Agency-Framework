@@ -1,6 +1,16 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
 
 $jsonFile = 'bookings.json';
 
@@ -9,7 +19,7 @@ if (!file_exists($jsonFile)) {
     $initialData = [
         'bookings' => []
     ];
-    file_put_contents($jsonFile, json_encode($initialData, JSON_PRETTY_PRINT));
+    SecurityHelper::writeJson($jsonFile, $initialData);
 }
 
 // Read and return data

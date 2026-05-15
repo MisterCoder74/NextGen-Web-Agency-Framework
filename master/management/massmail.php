@@ -1,12 +1,28 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 // Handle email sending via PHP
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'send_email') {
     header('Content-Type: application/json');
+
+    if (!isset($_SESSION['username'])) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+        exit;
+    }
+
+    if (!SecurityHelper::verifyCSRFToken()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token']);
+        exit;
+    }
     
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
     $recipients = $_POST['recipients'] ?? [];
-    $username = $_POST['username'] ?? 'Anonymous';
+    $username = $_SESSION['username'];
     
     $response = ['success' => false, 'message' => ''];
 
@@ -55,21 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     // Log an event to the audit log.
     function logEvent($action, $username = 'Anonymous') {
-        $logFile = __DIR__ . '/../audit_log.json';
-        $entry = [
-            'timestamp' => date('Y-m-d H:i:s'),
-            'action'    => $action,
-            'user'      => $username,
-            'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-            'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-        ];
-
-        $logs = [];
-        if (file_exists($logFile)) {
-            $logs = json_decode(file_get_contents($logFile), true) ?: [];
-        }
-        $logs[] = $entry;
-        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+        SecurityHelper::logEvent($action, $username);
     }
     
     // Email configuration
@@ -201,6 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/identity.js"></script>
     <style>
         .upload-section {
             background: rgba(20, 184, 166, 0.05);
@@ -390,8 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const username = localStorage.getItem('sync_username') || 'Anonymous';
-                const response = await fetch(`clients.json?u=${encodeURIComponent(username)}`);
+                const response = await fetch(`clients.json`);
                 if (response.ok) {
                     clientsData = await response.json();
                     if (clientsData.length > 0) {
@@ -512,12 +514,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             btn.innerHTML = '<span>⏳</span> Sending...';
 
             try {
-                const username = localStorage.getItem('sync_username') || 'Anonymous';
+                const username = window.session?.username || 'Anonymous';
+                const csrfToken = window.session?.csrfToken;
+                
                 const formData = new FormData();
                 formData.append('action', 'send_email');
                 formData.append('subject', subject);
                 formData.append('message', message);
-                formData.append('username', username);
+                if (csrfToken) formData.append('csrf_token', csrfToken);
+                
                 selectedClients.forEach(c => formData.append('recipients[]', c.email));
 
                 const res = await fetch(window.location.href, { method: 'POST', body: formData });

@@ -1,5 +1,21 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
+
+if (!SecurityHelper::verifyCSRFToken()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
+    exit;
+}
 
 function getUserRole($username) {
     $usersFile = __DIR__ . '/../users.json';
@@ -19,21 +35,7 @@ function getSetupConfig() {
 
 // Log an event to the audit log.
 function logEvent($action, $username = 'Anonymous') {
-    $logFile = __DIR__ . '/../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
-
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+    SecurityHelper::logEvent($action, $username);
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -42,7 +44,7 @@ if (!$input) {
     exit;
 }
 
-$username = $input['username'] ?? 'Anonymous';
+$username = $_SESSION['username'];
 
 // Permission Check
 $config = getSetupConfig();
@@ -54,7 +56,7 @@ if (strtolower($config['mode'] ?? '') === 'control' && getUserRole($username) ==
 $file = 'quotes.json';
 
 if (!file_exists($file)) {
-    file_put_contents($file, json_encode([]));
+    SecurityHelper::writeJson($file, []);
 }
 
 $content = file_get_contents($file);
@@ -78,7 +80,7 @@ $quote_to_save = [
 
 $quotes[] = $quote_to_save;
 
-if (file_put_contents($file, json_encode($quotes, JSON_PRETTY_PRINT))) {
+if (SecurityHelper::writeJson($file, $quotes)) {
     $clientInfo = 'Unknown Client';
     if (isset($input['client']) && is_array($input['client'])) {
         $clientName = $input['client']['nominativo'] ?? 'Unknown Name';

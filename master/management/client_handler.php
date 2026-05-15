@@ -1,12 +1,14 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+require_once __DIR__ . '/../tools/api/security_helper.php';
 
-// Handle OPTIONS requests for CORS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+SecurityHelper::initSession();
+
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
 }
 
 class ClientManager {
@@ -15,13 +17,17 @@ class ClientManager {
     public function __construct() {
         // Create file if it doesn't exist
         if (!file_exists($this->filename)) {
-            file_put_contents($this->filename, json_encode([]));
+            SecurityHelper::writeJson($this->filename, []);
         }
     }
     
     public function handleRequest() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return $this->error('Method not supported');
+        }
+
+        if (!SecurityHelper::verifyCSRFToken()) {
+            return $this->error('Invalid CSRF token');
         }
         
         $input = file_get_contents('php://input');
@@ -31,7 +37,7 @@ class ClientManager {
             return $this->error('Invalid data');
         }
         
-        $username = $data['username'] ?? 'Anonymous';
+        $username = $_SESSION['username'];
         
         switch ($data['action']) {
             case 'add':
@@ -93,21 +99,7 @@ class ClientManager {
     }
 
     private function logEvent($action, $username = 'Anonymous') {
-        $logFile = __DIR__ . '/../audit_log.json';
-        $entry = [
-            'timestamp' => date('Y-m-d H:i:s'),
-            'action'    => $action,
-            'user'      => $username,
-            'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-            'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-        ];
-
-        $logs = [];
-        if (file_exists($logFile)) {
-            $logs = json_decode(file_get_contents($logFile), true) ?: [];
-        }
-        $logs[] = $entry;
-        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+        SecurityHelper::logEvent($action, $username);
     }
     
     private function addClient($data) {
@@ -295,8 +287,7 @@ class ClientManager {
     }
     
     private function saveClients($clients) {
-        $json = json_encode($clients, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        return file_put_contents($this->filename, $json) !== false;
+        return SecurityHelper::writeJson($this->filename, $clients);
     }
     
     private function validateClientData($data) {

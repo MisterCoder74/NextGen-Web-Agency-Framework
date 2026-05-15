@@ -19,13 +19,14 @@
 
 require_once __DIR__ . '/security_helper.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+SecurityHelper::initSession();
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
 }
 
 class TenantHandler
@@ -53,8 +54,12 @@ class TenantHandler
         $input = $method === 'POST' ? json_decode(file_get_contents('php://input'), true) : [];
 
         $action = $input['action'] ?? $_GET['action'] ?? '';
-        $username = $input['username'] ?? $input['u'] ?? $_GET['u'] ?? 'Anonymous';
+        $username = $_SESSION['username'];
         $tenantId = $input['tenant_id'] ?? $_GET['tenant_id'] ?? '';
+
+        if ($method === 'POST' && !SecurityHelper::verifyCSRFToken()) {
+            return $this->error('Invalid CSRF token');
+        }
 
         if (empty($action)) {
             return $this->error('Action is required');
@@ -136,7 +141,7 @@ class TenantHandler
 
     private function saveRegistry($tenants)
     {
-        return file_put_contents($this->registryFile, json_encode($tenants, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+        return SecurityHelper::writeJson($this->registryFile, $tenants);
     }
 
     private function slugify($string)
@@ -277,30 +282,36 @@ class TenantHandler
             $setup['tenant_id'] = $id;
             $setup['tenant_name'] = $name;
             $setup['tenant_mode'] = 'active';
-            file_put_contents($setupFile, json_encode($setup, JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($setupFile, $setup);
         }
 
         $setupFileBase = $tenantPath . '/setup.json';
         if (file_exists($setupFileBase)) {
             $setupBase = json_decode(file_get_contents($setupFileBase), true);
             $setupBase['mode'] = 'sync';
-            file_put_contents($setupFileBase, json_encode($setupBase, JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($setupFileBase, $setupBase);
         }
 
         $auditFile = $tenantPath . '/audit_log.json';
         if (file_exists($auditFile)) {
-            file_put_contents($auditFile, json_encode([], JSON_PRETTY_PRINT));
+            SecurityHelper::writeJson($auditFile, []);
         }
 
+        // Save tenant to registry FIRST so addUser can find it
+        $tenant['copy_complete'] = true;
+        $tenants = $this->loadRegistry();
+        $tenants[] = $tenant;
+        $this->saveRegistry($tenants);
+
         $usersFile = $tenantPath . '/users.json';
-        file_put_contents($usersFile, json_encode([], JSON_PRETTY_PRINT));
+        SecurityHelper::writeJson($usersFile, []);
 
         if (!empty($initialUser['username']) && !empty($initialUser['password'])) {
             $this->addUser($id, $initialUser, 'system');
         }
 
         $setupDataFile = $tenantPath . '/.setup.json';
-        file_put_contents($setupDataFile, json_encode([
+        SecurityHelper::writeJson($setupDataFile, [
             'id' => $id,
             'slug' => $slug,
             'name' => $name,
@@ -308,13 +319,7 @@ class TenantHandler
             'created_at' => $tenant['created_at'],
             'created_by' => $username,
             'master_version' => date('Y-m-d')
-        ], JSON_PRETTY_PRINT));
-
-        $tenant['copy_complete'] = true;
-
-        $tenants = $this->loadRegistry();
-        $tenants[] = $tenant;
-        $this->saveRegistry($tenants);
+        ]);
 
         SecurityHelper::logEvent('Tenant Created', $username, [
             'tenant_id' => $id,
@@ -400,7 +405,7 @@ class TenantHandler
                     $setup = json_decode(file_get_contents($setupFile), true);
                     $setup['name'] = $t['name'];
                     $setup['authorized_emails'] = $t['authorized_emails'];
-                    file_put_contents($setupFile, json_encode($setup, JSON_PRETTY_PRINT));
+                    SecurityHelper::writeJson($setupFile, $setup);
                 }
 
                 $found = true;
@@ -473,16 +478,16 @@ class TenantHandler
 
                 $tenantPath = $this->getTenantPath($t['id'], $t['slug']);
                 $activatedFile = $tenantPath . '/.activated';
-                file_put_contents($activatedFile, json_encode([
+                SecurityHelper::writeJson($activatedFile, [
                     'activated_at' => $t['activated_at'],
                     'activated_by' => $username
-                ], JSON_PRETTY_PRINT));
+                ]);
 
                 $setupFile = $tenantPath . '/management/setup.json';
                 if (file_exists($setupFile)) {
                     $setup = json_decode(file_get_contents($setupFile), true);
                     $setup['tenant_mode'] = 'active';
-                    file_put_contents($setupFile, json_encode($setup, JSON_PRETTY_PRINT));
+                    SecurityHelper::writeJson($setupFile, $setup);
                 }
                 break;
             }
@@ -547,14 +552,14 @@ class TenantHandler
 
         $newUser = [
             'username' => $userUsername,
-            'password' => $userPassword,
+            'password' => password_hash($userPassword, PASSWORD_DEFAULT),
             'role' => $userRole,
             'created_at' => date('Y-m-d H:i:s'),
             'created_by' => $username
         ];
 
         $users[] = $newUser;
-        file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        SecurityHelper::writeJson($usersFile, $users);
 
         SecurityHelper::logEvent('Tenant User Added', $username, [
             'tenant_id' => $tenantId,
@@ -650,7 +655,7 @@ class TenantHandler
             return $this->error('User not found');
         }
 
-        file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        SecurityHelper::writeJson($usersFile, $users);
 
         SecurityHelper::logEvent('Tenant User Removed', $username, [
             'tenant_id' => $tenantId,

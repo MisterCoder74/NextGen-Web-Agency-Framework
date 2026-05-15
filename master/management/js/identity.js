@@ -1,53 +1,70 @@
 /**
  * Identity Layer for Vivacity NextGen SYNC
- * Handles user persistence across sessions (global version)
+ * Handles user persistence across sessions (Secure Session Version)
  */
 
 (function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlUser = urlParams.get('u');
-    const urlRole = urlParams.get('r');
-    const urlTenant = urlParams.get('tenant');
+    // Current identity state
+    window.session = {
+        authenticated: false,
+        username: 'Anonymous',
+        role: null,
+        tenant: null,
+        csrfToken: null
+    };
 
-    if (urlUser) {
-        localStorage.setItem('sync_username', urlUser);
-    }
-    if (urlRole) {
-        localStorage.setItem('sync_role', urlRole);
-    }
-    if (urlTenant) {
-        localStorage.setItem('sync_tenant', urlTenant);
-    }
-
-    let updateUrl = false;
-    const storedUser = localStorage.getItem('sync_username');
-    const storedRole = localStorage.getItem('sync_role');
-    const storedTenant = localStorage.getItem('sync_tenant');
-
-    if (!urlUser && storedUser) {
-        urlParams.set('u', storedUser);
-        updateUrl = true;
-    }
-    if (!urlRole && storedRole) {
-        urlParams.set('r', storedRole);
-        updateUrl = true;
-    }
-    if (!urlTenant && storedTenant) {
-        urlParams.set('tenant', storedTenant);
-        updateUrl = true;
+    /**
+     * Determine the correct base path for API calls based on current depth
+     */
+    function getRootBase() {
+        const path = window.location.pathname;
+        if (path.includes('/tenants/')) {
+            return '../../';
+        } else if (path.includes('/management/') || path.includes('/tools/')) {
+            return '../';
+        }
+        return '';
     }
 
-    if (updateUrl) {
-        const paramsString = urlParams.toString();
-        const newUrl = window.location.pathname + (paramsString ? '?' + paramsString : '');
-        window.history.replaceState({}, document.title, newUrl);
+    /**
+     * Fetch session information from server
+     */
+    async function refreshSession() {
+        const root = getRootBase();
+        try {
+            const response = await fetch(root + 'tools/api/session_info.php');
+            if (response.ok) {
+                const data = await response.json();
+                window.session = {
+                    authenticated: data.authenticated,
+                    username: data.username,
+                    role: data.role,
+                    tenant: data.tenant,
+                    csrfToken: data.csrf_token
+                };
+                
+                // Backwards compatibility for old scripts using localStorage
+                localStorage.setItem('sync_username', data.username);
+                localStorage.setItem('sync_role', data.role);
+                if (data.tenant) {
+                    localStorage.setItem('sync_tenant', data.tenant);
+                } else {
+                    localStorage.removeItem('sync_tenant');
+                }
+                
+                updateUI();
+            } else if (response.status === 401) {
+                // Not authenticated, but we don't necessarily redirect immediately
+                // as some pages might be public or handle it themselves.
+            }
+        } catch (error) {
+            console.error('Failed to fetch session info:', error);
+        }
     }
 
-    // Initialize UI elements when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        const username = localStorage.getItem('sync_username') || 'Anonymous';
-        const tenant = localStorage.getItem('sync_tenant');
-
+    function updateUI() {
+        const { username, tenant, role } = window.session;
+        
         // Update "Welcome" message if element exists
         const welcomeElement = document.getElementById('welcome-user');
         if (welcomeElement) {
@@ -58,6 +75,24 @@
             welcomeElement.textContent = text;
         }
 
+        // Add tenant indicator to page title
+        if (tenant && !document.title.startsWith(`[${tenant}]`)) {
+            document.title = `[${tenant}] ` + document.title;
+        }
+        
+        // Handle back to dashboard links for technicians
+        if (role === 'technician' && window.location.pathname.includes('/management/')) {
+            const dashboardLinks = document.querySelectorAll('a[href="dashboard.html"], a[href="./dashboard.html"]');
+            dashboardLinks.forEach(link => {
+                link.href = '../tools/dashboard.html';
+            });
+        }
+    }
+
+    // Initialize UI elements when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshSession();
+
         // Add Logout functionality to logout buttons
         const logoutButtons = document.querySelectorAll('.logout-btn');
         logoutButtons.forEach(btn => {
@@ -66,77 +101,51 @@
                 logout();
             });
         });
-
-        // Redirect "Back to Dashboard" links for technicians in management area
-        const userRole = localStorage.getItem('sync_role');
-        if (userRole === 'technician' && window.location.pathname.includes('/management/')) {
-            const dashboardLinks = document.querySelectorAll('a[href="dashboard.html"], a[href="./dashboard.html"]');
-            dashboardLinks.forEach(link => {
-                link.href = '../tools/dashboard.html';
-            });
-            
-            // Robust selector: Also check for links containing "Back to Dashboard" text
-            const allLinks = document.querySelectorAll('a');
-            allLinks.forEach(link => {
-                const text = link.textContent.trim().toLowerCase();
-                if (text.includes('back to dashboard')) {
-                    const currentHref = link.getAttribute('href');
-                    if (currentHref === 'dashboard.html' || currentHref === './dashboard.html' || !currentHref) {
-                        link.href = '../tools/dashboard.html';
-                    }
-                }
-            });
-        }
-
-        // Add tenant indicator to page title
-        if (tenant) {
-            document.title = `[${tenant}] ` + document.title;
-        }
     });
 
     /**
      * Clear local storage and redirect to login
      */
     function logout() {
-        const tenant = localStorage.getItem('sync_tenant');
         localStorage.removeItem('sync_username');
         localStorage.removeItem('sync_role');
         localStorage.removeItem('sync_tenant');
-
-        if (tenant) {
-            window.location.href = '../../index.php';
-        } else if (window.location.pathname.includes('/management/') || window.location.pathname.includes('/tools/')) {
-            window.location.href = '../index.php';
-        } else {
-            window.location.href = 'index.php';
-        }
+        
+        const root = getRootBase();
+        window.location.href = root + 'index.php';
     }
 
     // Export logout to window object
     window.syncLogout = logout;
 
     /**
-     * Get the base path for API calls (respects tenant context)
-     */
-    window.getTenantBase = function() {
-        const tenant = localStorage.getItem('sync_tenant');
-        if (!tenant) return '';
-        return '../../';
-    };
-
-    /**
-     * Make an API call that respects tenant context
+     * Make an API call that respects tenant context and includes CSRF token
      */
     window.apiCall = async function(endpoint, data = {}) {
-        const tenant = localStorage.getItem('sync_tenant');
-        const base = window.getTenantBase() || '';
-        const url = base + endpoint + (tenant ? (endpoint.includes('?') ? '&' : '?') + 'tenant=' + encodeURIComponent(tenant) : '');
+        const root = getRootBase();
+        const tenant = window.session.tenant;
+        
+        // If endpoint doesn't start with root, prepend it
+        let url = endpoint;
+        if (!url.startsWith('http') && !url.startsWith('/')) {
+            url = root + endpoint;
+        }
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.session.csrfToken
+            },
             body: JSON.stringify(data)
         });
+        
+        if (response.status === 401) {
+            console.warn('Unauthorized API call - redirecting to login');
+            logout();
+            return { error: 'Unauthorized' };
+        }
+        
         return response.json();
     };
 })();

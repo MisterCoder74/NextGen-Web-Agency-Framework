@@ -1,9 +1,11 @@
 <?php
 /**
  * Vivacity NextGen Web Agency Framework
- * Login Validation - No Sessions
+ * Login Validation - Secure Sessions
  * Supports both global and tenant-scoped authentication.
  */
+
+require_once __DIR__ . '/tools/api/security_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -72,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $matchedUser = null;
 
                         foreach ($tenantUsers as $user) {
-                            if ($user['username'] === $username && $user['password'] === $password) {
+                            if ($user['username'] === $username && password_verify($password, $user['password'])) {
                                 $authenticated = true;
                                 $role = $user['role'] ?? 'technician';
                                 $matchedUser = $user;
@@ -93,13 +95,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         break;
                                     }
                                 }
-                                file_put_contents($tenantUsersFile, json_encode($tenantUsers, JSON_PRETTY_PRINT));
+                                SecurityHelper::writeJson($tenantUsersFile, $tenantUsers);
                             }
 
-                            // Redirect to tenant workspace
-                            $redirect = $tenantPath . '/management/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role) . '&tenant=' . urlencode($tenantSlug);
+                            // Start session
+                            SecurityHelper::initSession();
+                            $_SESSION['username'] = $username;
+                            $_SESSION['role'] = $role;
+                            $_SESSION['tenant'] = $tenantSlug;
+                            $_SESSION['tenant_path'] = $tenantPath;
+
+                            // Redirect to tenant workspace - No sensitive data in URL
+                            $redirect = $tenantPath . '/management/dashboard.html';
                             if ($needsActivation) {
-                                $redirect .= '&first_login=1';
+                                $redirect .= '?first_login=1';
                             }
                             header('Location: ' . $redirect);
                             exit;
@@ -118,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $role = 'technician';
 
             foreach ($users as $user) {
-                if ($user['username'] === $username && $user['password'] === $password) {
+                if ($user['username'] === $username && password_verify($password, $user['password'])) {
                     $authenticated = true;
                     $role = $user['role'] ?? 'technician';
                     break;
@@ -126,10 +135,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($authenticated) {
+                // Start session
+                SecurityHelper::initSession();
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $role;
+                $_SESSION['tenant'] = null;
+
                 if ($role === 'management') {
-                    header('Location: ./management/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role));
+                    header('Location: ./management/dashboard.html');
                 } else {
-                    header('Location: ./tools/dashboard.html?u=' . urlencode($username) . '&r=' . urlencode($role));
+                    header('Location: ./tools/dashboard.html');
                 }
                 exit;
             }

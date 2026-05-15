@@ -13,13 +13,16 @@
  *   update - Update a user's role
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+require_once __DIR__ . '/security_helper.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+SecurityHelper::initSession();
+
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
 }
 
 class TenantUserHandler
@@ -60,7 +63,11 @@ class TenantUserHandler
         $input = $method === 'POST' ? json_decode(file_get_contents('php://input'), true) : [];
         
         $action = $input['action'] ?? $_GET['action'] ?? '';
-        $username = $input['requester'] ?? 'Anonymous';
+        $username = $_SESSION['username'];
+
+        if ($method === 'POST' && !SecurityHelper::verifyCSRFToken()) {
+            return $this->error('Invalid CSRF token');
+        }
         
         if (empty($action)) {
             return $this->error('Action is required');
@@ -126,7 +133,8 @@ class TenantUserHandler
 
         foreach ($users as &$u) {
             if ($u['username'] === $username) {
-                $u['password'] = $newPassword;
+                // Hash the new password
+                $u['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
                 $u['email'] = $newEmail;
                 $u['updated_at'] = date('Y-m-d H:i:s');
                 $u['updated_by'] = $username;
@@ -193,7 +201,7 @@ class TenantUserHandler
         
         $newUser = [
             'username' => $userUsername,
-            'password' => $userPassword,
+            'password' => password_hash($userPassword, PASSWORD_DEFAULT),
             'role' => $userRole,
             'created_at' => date('Y-m-d H:i:s'),
             'created_by' => $username
@@ -299,7 +307,7 @@ class TenantUserHandler
 
     private function saveUsers($users)
     {
-        return file_put_contents($this->usersFile, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+        return SecurityHelper::writeJson($this->usersFile, $users);
     }
 
     private function logEvent($action, $username, $params)
@@ -326,7 +334,7 @@ class TenantUserHandler
             $logs = array_slice($logs, -1000);
         }
         
-        file_put_contents($auditFile, json_encode($logs, JSON_PRETTY_PRINT), LOCK_EX);
+        SecurityHelper::writeJson($auditFile, $logs);
     }
 
     private function success($message, $data = null)

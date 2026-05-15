@@ -1,6 +1,22 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
+
+if (!SecurityHelper::verifyCSRFToken()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
+    exit;
+}
 
 $jsonFile = 'bookings.json';
 
@@ -75,9 +91,9 @@ if (!$found) {
 }
 
 // Save to JSON file
-if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
-    $username = $updatedBooking['username'] ?? 'Anonymous';
-    logEvent("Booking Updated: " . ($taskName), $username);
+if (SecurityHelper::writeJson($jsonFile, $data)) {
+    $username = $_SESSION['username'];
+    SecurityHelper::logEvent("Booking Updated: " . ($taskName), $username);
     echo json_encode([
         'success' => true,
         'message' => 'Task updated successfully',
@@ -89,21 +105,5 @@ if (file_put_contents($jsonFile, json_encode($data, JSON_PRETTY_PRINT))) {
         'message' => 'Error during update'
     ], JSON_PRETTY_PRINT);
 }
-
-function logEvent($action, $username = 'Anonymous') {
-    $logFile = __DIR__ . '/../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
-}
+exit; // Remove old logEvent function
 ?>

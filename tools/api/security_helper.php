@@ -275,6 +275,65 @@ class SecurityHelper
             $logs = array_slice($logs, -10000);
         }
         
-        file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT), LOCK_EX);
+        self::writeJson($logFile, $logs);
+    }
+
+    /**
+     * Initialize secure session.
+     */
+    public static function initSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            // Only set cookie_secure if we're on HTTPS
+            $secure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+                      (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            
+            ini_set('session.cookie_httponly', '1');
+            if ($secure) {
+                ini_set('session.cookie_secure', '1');
+            }
+            ini_set('session.cookie_samesite', 'Lax');
+            ini_set('session.use_only_cookies', '1');
+            session_start();
+        }
+    }
+
+    /**
+     * Generate and store CSRF token in session.
+     */
+    public static function generateCSRFToken(): string
+    {
+        self::initSession();
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+
+    /**
+     * Verify CSRF token from request.
+     */
+    public static function verifyCSRFToken(?string $token = null): bool
+    {
+        self::initSession();
+        if (!$token) {
+            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? null;
+        }
+        if (!$token || empty($_SESSION['csrf_token'])) {
+            return false;
+        }
+        return hash_equals($_SESSION['csrf_token'], $token);
+    }
+
+    /**
+     * Atomic write to JSON file.
+     */
+    public static function writeJson(string $path, array $data, bool $pretty = true): bool
+    {
+        $content = json_encode($data, $pretty ? JSON_PRETTY_PRINT : 0);
+        if ($content === false) {
+            return false;
+        }
+        return file_put_contents($path, $content, LOCK_EX) !== false;
     }
 }

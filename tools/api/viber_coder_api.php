@@ -1,11 +1,27 @@
 <?php
+require_once __DIR__ . '/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized. Please log in.']);
+    exit;
+}
 
 $input = json_decode(file_get_contents('php://input'), true);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !SecurityHelper::verifyCSRFToken()) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Invalid CSRF token.']);
+    exit;
+}
+
 $apiKey = $input['apiKey'] ?? '';
 $model = $input['model'] ?? 'gpt-4o-mini';
-$username = $input['username'] ?? 'Anonymous';
+$username = $_SESSION['username'];
 $action = $input['action'] ?? null;
 
 // User-specific task file for session isolation
@@ -48,7 +64,7 @@ switch ($action) {
         $tasks = $respData['tasks'] ?? $respData;
         $totalTokens = $resp['usage']['total_tokens'] ?? 0;
 
-        file_put_contents($file, json_encode(['prompt'=>$userPrompt,'tasks'=>$tasks], JSON_PRETTY_PRINT));
+        SecurityHelper::writeJson($file, ['prompt'=>$userPrompt,'tasks'=>$tasks]);
         echo json_encode(['tasks'=>$tasks, 'tokens'=>$totalTokens]);
         break;
 
@@ -145,7 +161,7 @@ switch ($action) {
         if (!is_array($newTasks)) { echo json_encode(['error'=>'Invalid data']); exit; }
         $bundle = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
         $bundle['tasks'] = $newTasks;
-        file_put_contents($file, json_encode($bundle, JSON_PRETTY_PRINT));
+        SecurityHelper::writeJson($file, $bundle);
         echo json_encode(['success'=>true]);
         break;
 
