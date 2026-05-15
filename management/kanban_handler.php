@@ -1,11 +1,21 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
 
 $file = 'kanban.json';
 
 // Ensure file exists
 if (!file_exists($file)) {
-    file_put_contents($file, json_encode([]));
+    SecurityHelper::writeJson($file, []);
 }
 
 function getUserRole($username) {
@@ -25,9 +35,9 @@ function getSetupConfig() {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
+$username = $_SESSION['username'];
 
 if ($method === 'GET') {
-    $username = $_GET['u'] ?? 'Anonymous';
     $config = getSetupConfig();
     $allTasks = json_decode(file_get_contents($file), true) ?: [];
     
@@ -41,11 +51,16 @@ if ($method === 'GET') {
         echo json_encode($allTasks);
     }
 } elseif ($method === 'POST') {
+    if (!SecurityHelper::verifyCSRFToken()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token']);
+        exit;
+    }
+
     $rawInput = file_get_contents('php://input');
     $data = json_decode($rawInput, true);
     
     if ($data !== null) {
-        $username = $data['username'] ?? 'Anonymous';
         $config = getSetupConfig();
         $role = getUserRole($username);
         
@@ -74,22 +89,9 @@ if ($method === 'GET') {
             $tasksToSave = $incomingTasks;
         }
 
-        if (file_put_contents($file, json_encode($tasksToSave, JSON_PRETTY_PRINT))) {
+        if (SecurityHelper::writeJson($file, $tasksToSave)) {
             // Logging
-            $logFile = __DIR__ . '/../audit_log.json';
-            $entry = [
-                'timestamp' => date('Y-m-d H:i:s'),
-                'action'    => 'Kanban Board Updated',
-                'user'      => $username,
-                'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-                'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-            ];
-            $logs = [];
-            if (file_exists($logFile)) {
-                $logs = json_decode(file_get_contents($logFile), true) ?: [];
-            }
-            $logs[] = $entry;
-            file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+            SecurityHelper::logEvent('Kanban Board Updated', $username);
 
             echo json_encode(['success' => true]);
         } else {

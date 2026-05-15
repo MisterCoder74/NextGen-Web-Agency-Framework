@@ -1,33 +1,30 @@
 <?php
-// deploy.php
-// Attiva error reporting in sviluppo
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
+require_once __DIR__ . '/api/security_helper.php';
+
+SecurityHelper::initSession();
 
 header('Content-Type: application/json');
 
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Please log in.']);
+    exit;
+}
+
+if (!SecurityHelper::verifyCSRFToken()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
+    exit;
+}
+
 // Log an event to the audit log.
 function logEvent($action, $username = 'Anonymous') {
-    $logFile = __DIR__ . '/../audit_log.json';
-    $entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'action'    => $action,
-        'user'      => $username,
-        'ip'        => $_SERVER['REMOTE_ADDR'] ?? 'CLI',
-        'user_agent'=> $_SERVER['HTTP_USER_AGENT'] ?? 'None'
-    ];
-
-    $logs = [];
-    if (file_exists($logFile)) {
-        $logs = json_decode(file_get_contents($logFile), true) ?: [];
-    }
-    $logs[] = $entry;
-    file_put_contents($logFile, json_encode($logs, JSON_PRETTY_PRINT));
+    SecurityHelper::logEvent($action, $username);
 }
 
 // Leggo input JSON
 $data = json_decode(file_get_contents('php://input'), true);
-$username = $data['username'] ?? 'Anonymous';
+$username = $_SESSION['username'];
 
 if (!$data || !isset($data['frontend']) || !isset($data['backend'])) {
 echo json_encode(['success' => false, 'message' => 'Dati mancanti']);
@@ -109,9 +106,9 @@ $newApp = [
     'created_by' => $username
 ];
 array_unshift($apps, $newApp);
-file_put_contents($jsonFile, json_encode($apps, JSON_PRETTY_PRINT));
+SecurityHelper::writeJson($jsonFile, $apps);
 
 logEvent("Microapp Deployed: $appId", $username);
-echo json_encode(['success' => true, 'url' => $finalUrl]);
+
 exit;
 ?>

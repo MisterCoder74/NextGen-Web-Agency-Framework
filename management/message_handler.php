@@ -1,10 +1,20 @@
 <?php
+require_once __DIR__ . '/../tools/api/security_helper.php';
+
+SecurityHelper::initSession();
+
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized. Please log in.']);
+    exit;
+}
 
 $messagesFile = __DIR__ . '/messages.json';
 
 if (!file_exists($messagesFile)) {
-    file_put_contents($messagesFile, json_encode([]));
+    SecurityHelper::writeJson($messagesFile, []);
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -13,6 +23,11 @@ if ($method === 'GET') {
     $messages = json_decode(file_get_contents($messagesFile), true);
     echo json_encode($messages ?: []);
 } elseif ($method === 'POST') {
+    if (!SecurityHelper::verifyCSRFToken()) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Invalid CSRF token.']);
+        exit;
+    }
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (!$data || !isset($data['text']) || !isset($data['role'])) {
@@ -29,7 +44,7 @@ if ($method === 'GET') {
         'text' => $data['text'],
         'role' => $data['role'], // 'manager' or 'tech'
         'project_id' => isset($data['project_id']) ? $data['project_id'] : 'general',
-        'username' => isset($data['username']) ? $data['username'] : 'Anonymous',
+        'username' => $_SESSION['username'],
         'timestamp' => date('c'),
         'status' => 'unanswered'
     ];
@@ -43,7 +58,7 @@ if ($method === 'GET') {
     }
 
     $messages[] = $newMessage;
-    file_put_contents($messagesFile, json_encode($messages, JSON_PRETTY_PRINT));
+    SecurityHelper::writeJson($messagesFile, $messages);
     
     echo json_encode($newMessage);
 }

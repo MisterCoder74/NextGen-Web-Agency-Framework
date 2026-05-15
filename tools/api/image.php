@@ -7,19 +7,25 @@
 
 require_once __DIR__ . '/security_helper.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+SecurityHelper::initSession();
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['username'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized. Please log in.']);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed. Use POST.']);
+    exit;
+}
+
+if (!SecurityHelper::verifyCSRFToken()) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Invalid CSRF token.']);
     exit;
 }
 
@@ -56,7 +62,7 @@ if (!$rateLimit['allowed']) {
 }
 
 $apiKey   = isset($body['api_key'])  ? trim($body['api_key'])  : '';
-$username = isset($body['username']) ? trim($body['username']) : 'Anonymous';
+$username = $_SESSION['username'];
 $prompt   = isset($body['prompt'])   ? trim($body['prompt'])   : '';
 $model    = isset($body['model'])    ? trim($body['model'])    : 'gpt-image-1';
 $size     = !empty($body['size'])    ? trim($body['size'])     : '1024x1024';
@@ -180,24 +186,6 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlErr  = curl_error($ch);
 $curlErrNo= curl_errno($ch);
 curl_close($ch);
-
-/* SSL fallback */
-if ($result === false && in_array($curlErrNo, [CURLE_SSL_CACERT, CURLE_SSL_PEER_CERTIFICATE, 60, 77, 35], true)) {
-    $ch2 = curl_init('https://api.openai.com/v1/images/generations');
-    $curlOpts[CURLOPT_SSL_VERIFYPEER] = false;
-    $curlOpts[CURLOPT_SSL_VERIFYHOST] = 0;
-    unset($curlOpts[CURLOPT_CAINFO]);
-    curl_setopt_array($ch2, $curlOpts);
-    $result   = curl_exec($ch2);
-    $httpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
-    $curlErr  = curl_error($ch2);
-    curl_close($ch2);
-    
-    SecurityHelper::logEvent("SSL Fallback Used (Image)", $username, [
-        'model' => $model,
-        'reason' => 'SSL verification failed'
-    ]);
-}
 
 if ($result === false || $result === '') {
     http_response_code(502);
