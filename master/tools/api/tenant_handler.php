@@ -57,10 +57,6 @@ class TenantHandler
         $username = $_SESSION['username'];
         $tenantId = $input['tenant_id'] ?? $_GET['tenant_id'] ?? '';
 
-        if ($method === 'POST' && !SecurityHelper::verifyCSRFToken()) {
-            return $this->error('Invalid CSRF token');
-        }
-
         if (empty($action)) {
             return $this->error('Action is required');
         }

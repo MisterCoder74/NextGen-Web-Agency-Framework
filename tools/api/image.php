@@ -23,12 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!SecurityHelper::verifyCSRFToken()) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Invalid CSRF token.']);
-    exit;
-}
-
 /* --- Read & validate body --- */
 $raw  = file_get_contents('php://input');
 $body = json_decode($raw, true);

@@ -11,12 +11,6 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-if (!SecurityHelper::verifyCSRFToken()) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
-    exit;
-}
-
 // Log an event to the audit log.
 function logEvent($action, $username = 'Anonymous') {
     SecurityHelper::logEvent($action, $username);

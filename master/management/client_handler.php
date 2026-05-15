@@ -25,10 +25,6 @@ class ClientManager {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return $this->error('Method not supported');
         }
-
-        if (!SecurityHelper::verifyCSRFToken()) {
-            return $this->error('Invalid CSRF token');
-        }
         
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);

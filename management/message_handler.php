@@ -23,11 +23,6 @@ if ($method === 'GET') {
     $messages = json_decode(file_get_contents($messagesFile), true);
     echo json_encode($messages ?: []);
 } elseif ($method === 'POST') {
-    if (!SecurityHelper::verifyCSRFToken()) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Invalid CSRF token.']);
-        exit;
-    }
     $data = json_decode(file_get_contents('php://input'), true);
     
     if (!$data || !isset($data['text']) || !isset($data['role'])) {

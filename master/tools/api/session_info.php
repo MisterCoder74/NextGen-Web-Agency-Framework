@@ -20,6 +20,5 @@ echo json_encode([
     'authenticated' => true,
     'username' => $_SESSION['username'],
     'role' => $_SESSION['role'],
-    'tenant' => $_SESSION['tenant'] ?? null,
-    'csrf_token' => SecurityHelper::generateCSRFToken()
+    'tenant' => $_SESSION['tenant'] ?? null
 ]);

@@ -19,11 +19,6 @@ $username = $_SESSION['username'];
 $postData = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!SecurityHelper::verifyCSRFToken()) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
-        exit;
-    }
     $rawInput = file_get_contents('php://input');
     $postData = json_decode($rawInput, true) ?: [];
 }

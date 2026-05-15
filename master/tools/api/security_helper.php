@@ -300,33 +300,6 @@ class SecurityHelper
     }
 
     /**
-     * Generate and store CSRF token in session.
-     */
-    public static function generateCSRFToken(): string
-    {
-        self::initSession();
-        if (empty($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-        }
-        return $_SESSION['csrf_token'];
-    }
-
-    /**
-     * Verify CSRF token from request.
-     */
-    public static function verifyCSRFToken(?string $token = null): bool
-    {
-        self::initSession();
-        if (!$token) {
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? null;
-        }
-        if (!$token || empty($_SESSION['csrf_token'])) {
-            return false;
-        }
-        return hash_equals($_SESSION['csrf_token'], $token);
-    }
-
-    /**
      * Atomic write to JSON file.
      */
     public static function writeJson(string $path, array $data, bool $pretty = true): bool

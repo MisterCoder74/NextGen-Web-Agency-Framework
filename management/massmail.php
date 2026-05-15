@@ -12,12 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo json_encode(['success' => false, 'message' => 'Unauthorized']);
         exit;
     }
-
-    if (!SecurityHelper::verifyCSRFToken()) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token']);
-        exit;
-    }
     
     $subject = trim($_POST['subject'] ?? '');
     $message = trim($_POST['message'] ?? '');
@@ -515,13 +509,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             try {
                 const username = window.session?.username || 'Anonymous';
-                const csrfToken = window.session?.csrfToken;
                 
                 const formData = new FormData();
                 formData.append('action', 'send_email');
                 formData.append('subject', subject);
                 formData.append('message', message);
-                if (csrfToken) formData.append('csrf_token', csrfToken);
                 
                 selectedClients.forEach(c => formData.append('recipients[]', c.email));
 
