@@ -289,6 +289,7 @@ class SecurityHelper
                       (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
             
             ini_set('session.cookie_httponly', '1');
+            ini_set('session.cookie_path', '/');
             if ($secure) {
                 ini_set('session.cookie_secure', '1');
             }

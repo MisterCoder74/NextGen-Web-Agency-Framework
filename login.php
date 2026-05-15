@@ -9,7 +9,7 @@ require_once __DIR__ . '/tools/api/security_helper.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
-    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
+    $password = $_POST['password'] ?? '';
     $tenantSlug = filter_input(INPUT_POST, 'tenant', FILTER_SANITIZE_SPECIAL_CHARS);
 
     // Auto-detect tenant from path if running from a tenant directory
@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     if ($currentTenant && ($currentTenant['status'] ?? '') === 'suspended') {
+                        session_write_close();
                         header('Location: index.php?error=5&tenant=' . urlencode($tenantSlug));
                         exit;
                     }
@@ -110,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if ($needsActivation) {
                                 $redirect .= '?first_login=1';
                             }
+                            session_write_close();
                             header('Location: ' . $redirect);
                             exit;
                         }
@@ -141,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['role'] = $role;
                 $_SESSION['tenant'] = null;
 
+                session_write_close();
                 if ($role === 'management') {
                     header('Location: ./management/dashboard.html');
                 } else {
@@ -151,6 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // All authentication failed
+        session_write_close();
         if ($tenantSlug) {
             header('Location: index.php?error=1&tenant=' . urlencode($tenantSlug));
         } else {
@@ -158,10 +162,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         exit;
     } else {
+        session_write_close();
         header('Location: index.php?error=3' . ($tenantSlug ? '&tenant=' . urlencode($tenantSlug) : ''));
         exit;
     }
 } else {
+    session_write_close();
     header('Location: index.php');
     exit;
 }

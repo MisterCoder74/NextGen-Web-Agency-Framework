@@ -367,7 +367,7 @@
                 &copy; <?php echo date('Y'); ?> <strong>Vivacity Design</strong>. All rights reserved.<br>
                 The intellectual property of this framework and all the code that constitutes it remains the exclusive property of Vivacity Design.<br>
                 <strong>Data Controller:</strong> Alessandro Demontis | <strong>Contact:</strong> info@vivacitydesign.net<br>
-                The framework does not use sessions or cookies of any kind, therefore it is exempt from GDPR Compliance.
+                The framework uses technical sessions and cookies to manage authentication and security, in compliance with GDPR.
             </div>
         </div>
     </footer>
@@ -429,14 +429,14 @@
                 <button class="modal-close" onclick="closeModal('cp-modal')">✕</button>
             </div>
             <div class="modal-body">
-                <h3>1. No Cookies Policy</h3>
-                <p>True to our commitment to privacy and simplicity, this framework does not use cookies of any kind. We do not store sessions or tracking information on your device through cookie technology.</p>
+                <h3>1. Technical Cookies</h3>
+                <p>This framework uses essential technical cookies to manage user sessions and authentication. These cookies are necessary for the secure operation of the platform and do not require prior consent.</p>
                 
                 <h3>2. Local Storage Usage</h3>
-                <p>Instead of cookies, we use browser <strong>LocalStorage</strong> to keep your API keys and project settings persistent. This data stays on your machine and is never sent to our servers.</p>
+                <p>We use browser <strong>LocalStorage</strong> to keep your API keys and project settings persistent. This data stays on your machine and is never sent to our servers.</p>
                 
-                <h3>3. Compliance</h3>
-                <p>Since no cookies or tracking mechanisms are employed, the framework is exempt from many standard GDPR and ePrivacy Directive cookie consent requirements.</p>
+                <h3>3. GDPR Compliance</h3>
+                <p>Our use of cookies is limited to what is strictly necessary for the service requested by the user. We do not use any tracking or profiling cookies.</p>
             </div>
         </div>
     </div>
