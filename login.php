@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $matchedUser = null;
 
                         foreach ($tenantUsers as $user) {
-                            if ($user['username'] === $username && password_verify($password, $user['password'])) {
+                            if ($user['username'] === $username && $user['password'] === $password) {
                                 $authenticated = true;
                                 $role = $user['role'] ?? 'technician';
                                 $matchedUser = $user;
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $role = 'technician';
 
             foreach ($users as $user) {
-                if ($user['username'] === $username && password_verify($password, $user['password'])) {
+                if ($user['username'] === $username && $user['password'] === $password) {
                     $authenticated = true;
                     $role = $user['role'] ?? 'technician';
                     break;

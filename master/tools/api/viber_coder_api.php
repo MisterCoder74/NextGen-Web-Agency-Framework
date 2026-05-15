@@ -13,12 +13,6 @@ if (!isset($_SESSION['username'])) {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !SecurityHelper::verifyCSRFToken()) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Invalid CSRF token.']);
-    exit;
-}
-
 $apiKey = $input['apiKey'] ?? '';
 $model = $input['model'] ?? 'gpt-4o-mini';
 $username = $_SESSION['username'];

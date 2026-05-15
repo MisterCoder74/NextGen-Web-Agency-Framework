@@ -51,12 +51,6 @@ if ($method === 'GET') {
         echo json_encode($allTasks);
     }
 } elseif ($method === 'POST') {
-    if (!SecurityHelper::verifyCSRFToken()) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Invalid CSRF token']);
-        exit;
-    }
-
     $rawInput = file_get_contents('php://input');
     $data = json_decode($rawInput, true);
     

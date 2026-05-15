@@ -9,8 +9,7 @@
         authenticated: false,
         username: 'Anonymous',
         role: null,
-        tenant: null,
-        csrfToken: null
+        tenant: null
     };
 
     /**
@@ -39,8 +38,7 @@
                     authenticated: data.authenticated,
                     username: data.username,
                     role: data.role,
-                    tenant: data.tenant,
-                    csrfToken: data.csrf_token
+                    tenant: data.tenant
                 };
                 
                 // Backwards compatibility for old scripts using localStorage
@@ -134,8 +132,7 @@
         const response = await fetch(url, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': window.session.csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         });

@@ -11,12 +11,6 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-if (!SecurityHelper::verifyCSRFToken()) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
-    exit;
-}
-
 function getUserRole($username) {
     $usersFile = __DIR__ . '/../users.json';
     if (!file_exists($usersFile)) return 'technician';
